@@ -1,0 +1,1 @@
+ssh -i "mykeypair_frontdesk.pem" ubuntu@ec2-13-218-55-33.compute-1.amazonaws.com
