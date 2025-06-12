@@ -91,7 +91,7 @@ const Header = () => {
         {(!user || (user && user.role !== "Business")) && (
           <motion.button
             onClick={() => {
-              navigate("/for-business")
+              navigate("/auth/login")
             }}
             className="tw-cursor-pointer focus:tw-outline-none tw-bg-white tw-px-4 tw-py-2 tw-rounded-2xl"
             initial={{ opacity: 0, scale: 0 }}

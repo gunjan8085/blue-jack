@@ -71,7 +71,7 @@ const Header = () => {
 
         {user?.role !== 'Business' && (
           <motion.button
-            onClick={() => router.push('/for-business')}
+            onClick={() => router.push('/auth/login')}
             className="tw-cursor-pointer tw-bg-white tw-px-4 tw-py-2 tw-rounded-2xl"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -124,7 +124,7 @@ const Header = () => {
             )}
 
             {user?.role !== 'Business' && (
-              <motion.div whileHover={{ scale: 1.1 }} onClick={() => router.push('/for-business')}>
+              <motion.div whileHover={{ scale: 1.1 }} onClick={() => router.push('/businesses')}>
                 For Business
               </motion.div>
             )}

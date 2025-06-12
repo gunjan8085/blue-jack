@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import Hero from "@/components/Hero"
+import { useRouter } from "next/navigation"
 
+// const router = useRouter();
 // Mock data for featured businesses
 const featuredBusinesses = [
   {
@@ -90,7 +92,7 @@ export default function LandingPage() {
             <Link href="/businesses" className="text-gray-600 hover:text-purple-600 transition-colors">
               Find Services
             </Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-purple-600 transition-colors">
+            <Link href="/auth/login" className="text-gray-600 hover:text-purple-600 transition-colors">
               For Business
             </Link>
             <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-purple-50">
@@ -276,6 +278,7 @@ export default function LandingPage() {
               Book Appointment
             </Button>
             <Button
+              // onClick={() => router.push('/auth/login')}
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-purple-600"
@@ -322,7 +325,9 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-4">For Business</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="#" className="hover:text-white transition-colors">
+                  <Link 
+                  // onClick={()=> router.push('/auth/login')}
+                  href="#" className="hover:text-white transition-colors">
                     List Your Business
                   </Link>
                 </li>

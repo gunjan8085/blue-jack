@@ -34,4 +34,9 @@ app.use((req, res, next) => {
 const businessRoutes = require("../Backend/routes/business.route");
 app.use("/api/v1/business", businessRoutes);
 
+// Employee Routes
+const employeeRoutes = require("../Backend/routes/employee.route");
+app.use("/api/v1/employee", employeeRoutes);
+
+
 module.exports = { app };
