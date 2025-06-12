@@ -30,4 +30,8 @@ app.use((req, res, next) => {
   res.status(404).json({ message: "Route Not Found" });
 });
 
+// Business Routes
+const businessRoutes = require("../Backend/routes/business.route");
+app.use("/api/v1/business", businessRoutes);
+
 module.exports = { app };
