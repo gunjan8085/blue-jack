@@ -24,4 +24,31 @@ module.exports = {
       return res.status(500).send({ success: false, message: "Internal Server Error" });
     }
   },
+  getBusinessByOwnerId: async (req, res) => {
+    try {
+      const { ownerId } = req.params;
+      
+      // Get the business without owner verification first
+      const business = await businessService.getBusinessByOwnerId(ownerId);
+      
+      if (!business) {
+        return res.status(404).json({
+          success: false,
+          message: "No business found for this owner"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: business,
+        message: "Business retrieved successfully"
+      });
+    } catch (error) {
+      logger.error("Error fetching business by owner:", error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Internal Server Error"
+      });
+    }
+  }
 };

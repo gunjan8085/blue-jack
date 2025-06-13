@@ -63,20 +63,22 @@ export const logout = () => {
 // Business profile check
 export const checkBusinessProfile = async (userId: string) => {
   try {
-    const response = await fetch(`${API_URL}/business/profile/${userId}`, {
+    const response = await fetch(`${API_URL}/business/by-owner/${userId}`, {
       headers: {
         'Authorization': `Bearer ${getAuthToken()}`,
       },
     });
 
+    const data = await response.json();
+    console.log('Business check response:', data);
+
     if (!response.ok) {
       if (response.status === 404) {
         return null; // Business profile not found
       }
-      throw new Error('Failed to check business profile');
+      throw new Error(data.message || 'Failed to check business profile');
     }
 
-    const data = await response.json();
     return data.data;
   } catch (error) {
     console.error('Error checking business profile:', error);

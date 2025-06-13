@@ -88,7 +88,20 @@ module.exports = {
     } catch (error) {
       throw new ApiError(500, "Error fetching businesses: " + error.message);
     }
-  }
+  },
+
+  getBusinessByOwnerId: async (ownerId) => {
+    try {
+      const business = await Business.findOne({ owner: ownerId })
+        .populate('owner', 'name email')
+        .populate('serviceCategories', 'name')
+        .lean();
+
+      return business;
+    } catch (error) {
+      throw new Error(`Error finding business by owner: ${error.message}`);
+    }
+  },
 
   // loginBusiness: async (email, password) => {
   //   try {

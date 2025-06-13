@@ -14,6 +14,16 @@ app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+  const startTime = Date.now();
+
+  res.on('finish', () => {
+      const duration = Date.now() - startTime;
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+  });
+
+    next();
+});
 // Router
 app.use(router);
 app.get("/", (req, res) => {
@@ -37,6 +47,7 @@ app.use("/api/v1/business", businessRoutes);
 // Employee Routes
 const employeeRoutes = require("../Backend/routes/employee.route");
 app.use("/api/v1/employee", employeeRoutes);
+
 
 
 module.exports = { app };
