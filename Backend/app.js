@@ -48,6 +48,7 @@ app.use("/api/v1/business", businessRoutes);
 const employeeRoutes = require("../Backend/routes/employee.route");
 app.use("/api/v1/employee", employeeRoutes);
 
-
+// const serviceRoutes = require("./routes/services.route")
+// app.use("/api/v1/services", serviceRoutes);
 
 module.exports = { app };

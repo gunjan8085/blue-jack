@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { ENUMS } = require("../configs/constants.config");
+const { required } = require("joi");
 
 const businessSchema = new mongoose.Schema(
   {
@@ -12,9 +13,11 @@ const businessSchema = new mongoose.Schema(
     website: String,
     thumbnail: String,
     about: String,
-    serviceCategories: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "ServiceCategory" },
-    ],
+    serviceCategories: {
+      type: [String],
+      required: false
+    }
+    ,
     teamSize: {
       min: { type: Number, default: 1 },
       max: { type: Number, default: null },
