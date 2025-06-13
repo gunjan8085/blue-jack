@@ -50,5 +50,30 @@ module.exports = {
         message: error.message || "Internal Server Error"
       });
     }
+  },
+  getBusinessById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const business = await businessService.getBusinessById(id);
+      
+      if (!business) {
+        return res.status(404).json({
+          success: false,
+          message: "Business not found"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: business,
+        message: "Business retrieved successfully"
+      });
+    } catch (error) {
+      logger.error("Error fetching business by ID:", error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Internal Server Error"
+      });
+    }
   }
 };

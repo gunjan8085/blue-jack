@@ -118,4 +118,23 @@ module.exports = {
   //     throw new ApiError(500, error.message, error);
   //   }
   // },
+
+  getBusinessById: async (id) => {
+    try {
+      const business = await Business.findById(id)
+        .populate('serviceCategories', 'name')
+        .populate('employees', 'name email')
+        .populate('workspace', 'name')
+        .populate('reviews', 'rating comment')
+        .lean();
+
+      if (!business) {
+        throw new Error("Business not found");
+      }
+
+      return business;
+    } catch (error) {
+      throw error;
+    }
+  }
 };
