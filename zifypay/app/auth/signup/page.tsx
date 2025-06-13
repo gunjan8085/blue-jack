@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { setAuthToken, setUserData } from '@/lib/auth';
+import { API_URL } from '../../../lib/const';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function SignupPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5001/api/v1/employee/signup', {
+      const response = await fetch(`${API_URL}/employee/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

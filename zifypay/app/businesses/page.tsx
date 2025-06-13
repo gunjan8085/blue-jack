@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import Link from "next/link"
+import { API_URL } from "@/lib/const"
 
 interface BusinessTiming {
   days: number[]
@@ -85,7 +86,7 @@ export default function BusinessListingPage() {
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch('http://localhost:5001/api/v1/business/getAllBusiness')
+        const response = await fetch(`${API_URL}/business/getAllBusiness`)
         const result: ApiResponse = await response.json()
         setFilteredBusinesses(result.data)
         setError(null)
