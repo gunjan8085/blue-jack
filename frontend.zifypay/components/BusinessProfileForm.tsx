@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,24 +40,15 @@ const businessProfileSchema = z.object({
 
 type BusinessProfileFormData = z.infer<typeof businessProfileSchema>;
 
-const SERVICE_CATEGORIES = [
-  "Hair & Styling",
-  "Nail services",
-  "Eyebrow & lashes",
-  "Facial & skincare",
-  "Injectables & fillers",
-  "Makeup",
-  "Barbering",
-  "Massage",
-  "Hair extensions",
-  "Hair removal",
-  "Tattoo & piercing",
-  "Fitness",
-  "Other",
-];
+interface ServiceCategory {
+  _id: string;
+  name: string;
+}
 
 export function BusinessProfileForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<BusinessProfileFormData>({
     resolver: zodResolver(businessProfileSchema),
     defaultValues: {
@@ -65,6 +56,42 @@ export function BusinessProfileForm() {
       teamSize: { min: 1, max: 10 },
     },
   });
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_URL}/catalog/categories`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok || !responseData.success) {
+          throw new Error(responseData.message || 'Failed to fetch categories');
+        }
+
+        setCategories(responseData.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load service categories. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const onSubmit = async (data: BusinessProfileFormData) => {
     try {
@@ -182,14 +209,15 @@ export function BusinessProfileForm() {
                       setValue("serviceCategories", [...currentCategories, value]);
                     }
                   }}
+                  disabled={isLoadingCategories}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue placeholder="Select service categories" />
+                    <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select service categories"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {SERVICE_CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                    {categories.map((category) => (
+                      <SelectItem key={category._id} value={category.name}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

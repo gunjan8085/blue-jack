@@ -1,6 +1,6 @@
 'use client'; // Required for interactivity in Next.js App Router
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Settings, Edit, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -346,26 +346,20 @@ const ServiceManagement = () => {
       const responseData = await response.json();
       console.log('Categories API Response data:', responseData);
 
-      if (!response.ok) {
+      if (!response.ok || !responseData.success) {
         throw new Error(responseData.message || 'Failed to fetch categories');
       }
 
-      // Handle the response data structure properly
-      const categoriesData = Array.isArray(responseData) ? responseData : 
-                           responseData.data ? responseData.data : 
-                           [];
-      
-      console.log('Transformed categories data:', categoriesData);
-      
       // Transform the API response to match our ServiceCategory interface
-      const transformedCategories = categoriesData.map((cat: any) => ({
-        id: cat.id,
+      const transformedCategories = responseData.data.map((cat: any) => ({
+        id: cat._id,
         name: cat.name,
-        description: cat.description,
-        color: cat.appointmentColor,
+        description: cat.description || '',
+        color: cat.appointmentColor || '#3B82F6',
         services: cat.services || []
       }));
-      console.log('Setting categories state with:', transformedCategories);
+      
+      console.log('Transformed categories:', transformedCategories);
       setCategories(transformedCategories);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -375,7 +369,7 @@ const ServiceManagement = () => {
   };
 
   // Fetch categories when component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     fetchCategories();
   }, []);
 
@@ -416,7 +410,7 @@ const ServiceManagement = () => {
     setIsLoading(true);
     try {
       const response = await createCategory(category);
-      setCategories([...categories, { ...category, id: response.id, services: [] }]);
+      setCategories([...categories, { ...category, id: response.data._id, services: [] }]);
       setShowAddCategory(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create category';
@@ -491,13 +485,65 @@ const ServiceManagement = () => {
     }
   };
 
-  const deleteCategory = (id: string) => setCategories(categories.filter(c => c.id !== id));
-  const deleteService = (catId: string, svcId: string) =>
-    setCategories(categories.map(cat =>
-      cat.id === catId
-        ? { ...cat, services: cat.services.filter(s => s.id !== svcId) }
-        : cat
-    ));
+  const deleteCategory = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`http://localhost:5001/api/v1/catalog/category/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete category');
+      }
+
+      // Remove the category from the state
+      setCategories(categories.filter(c => c.id !== id));
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete category';
+      setError(errorMessage);
+    }
+  };
+
+  const deleteService = async (catId: string, svcId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`http://localhost:5001/api/v1/catalog/services/${svcId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete service');
+      }
+
+      // Update the categories state to remove the service
+      setCategories(categories.map(cat =>
+        cat.id === catId
+          ? { ...cat, services: cat.services.filter(s => s.id !== svcId) }
+          : cat
+      ));
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete service';
+      setError(errorMessage);
+    }
+  };
 
   return (
     <div className="p-6">

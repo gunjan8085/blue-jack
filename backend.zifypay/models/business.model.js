@@ -14,8 +14,8 @@ const businessSchema = new mongoose.Schema(
     thumbnail: String,
     about: String,
     serviceCategories: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ServiceCategory"
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "ServiceCategory"
     }],
     teamSize: {
       min: { type: Number, default: 1 },
