@@ -122,7 +122,7 @@ module.exports = {
   getBusinessById: async (id) => {
     try {
       const business = await Business.findById(id)
-        .populate('serviceCategories', 'name')
+        .populate('serviceCategories', 'name description appointmentColor')
         .populate('employees', 'name email')
         .populate('workspace', 'name')
         .populate('reviews', 'rating comment')

@@ -67,20 +67,43 @@ export function BusinessProfileForm() {
   });
 
   const onSubmit = async (data: BusinessProfileFormData) => {
-    console.log('Form submitted with data:', data);
     try {
       setIsSubmitting(true);
       const userId = getuserid();
-      console.log('User ID from getuserid():', userId);
-      console.log('User data from localStorage:', localStorage.getItem('userData'));
       
       if (!userId) {
         throw new Error("User not authenticated");
       }
 
+      // First, create service categories
+      const categoryPromises = data.serviceCategories.map(async (categoryName) => {
+        const response = await fetch(`${API_URL}/catalog/categories`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({
+            name: categoryName,
+            description: `${categoryName} services`,
+            appointmentColor: "#F0F0FF"
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to create category: ${categoryName}`);
+        }
+        
+        const result = await response.json();
+        return result.data._id;
+      });
+
+      const categoryIds = await Promise.all(categoryPromises);
+
       const payload = {
         ...data,
         owner: userId,
+        serviceCategories: categoryIds,
         media: [],
         timings: [
           {
@@ -95,9 +118,6 @@ export function BusinessProfileForm() {
         ],
       };
 
-      console.log('Sending payload:', payload);
-      console.log('API URL:', `${API_URL}/business/signup`);
-
       const response = await fetch(`${API_URL}/business/signup`, {
         method: "POST",
         headers: {
@@ -107,15 +127,12 @@ export function BusinessProfileForm() {
         body: JSON.stringify(payload),
       });
 
-      console.log('Response status:', response.status);
       const responseData = await response.json();
-      console.log('Response data:', responseData);
 
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to create business profile");
       }
       
-      // Store the business profile data
       localStorage.setItem('businessProfile', JSON.stringify(responseData.data));
 
       toast({
@@ -123,7 +140,6 @@ export function BusinessProfileForm() {
         description: "Business profile created successfully.",
       });
 
-      // Redirect to dashboard after successful creation
       window.location.href = '/dashboard';
     } catch (error: any) {
       console.error('Error creating business profile:', error);

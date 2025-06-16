@@ -8,17 +8,41 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
+  serviceType: string;
+  category: string;
   description?: string;
-  price: number;
-  duration: string;
+  price: {
+    priceType: string;
+    amount: number;
+  };
+  duration: number;
+  teamMembers: string[];
+  resourcesRequired: boolean;
+  availableFor: string;
+  isOnline: boolean;
+  status: string;
+  rebookReminderAfter: {
+    count: number;
+    period: string;
+  };
+  costOfService: number;
 }
 
 interface ServiceCategory {
-  id: number;
+  id: string;
   name: string;
   description: string;
   color: string;
@@ -28,10 +52,12 @@ interface ServiceCategory {
 const AddCategoryModal: React.FC<{
   onClose: () => void;
   onAdd: (category: { name: string; description: string; color: string }) => void;
-}> = ({ onClose, onAdd }) => {
+  isLoading?: boolean;
+}> = ({ onClose, onAdd, isLoading = false }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('#3B82F6');
+  const [error, setError] = useState<string | null>(null);
 
   const colorOptions = [
     { value: '#3B82F6', name: 'Blue' },
@@ -102,53 +128,128 @@ const AddCategoryModal: React.FC<{
             </div>
           </div>
           <div className="flex justify-end space-x-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-              Add Category
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Adding...' : 'Add Category'}
             </Button>
           </div>
+          {error && (
+            <div className="text-red-500 text-sm mt-2">
+              {error}
+            </div>
+          )}
         </form>
       </div>
     </div>
   );
 };
 
-const AddServiceModal: React.FC<{
-  onClose: () => void;
-  onAdd: (service: { name: string; description?: string; price: number; duration: string }) => void;
+const AddServiceDialog: React.FC<{
+  onAdd: (service: {
+    name: string;
+    description?: string;
+    price: number;
+    duration: string;
+  }, categoryId: string) => void;
   categoryName: string;
-}> = ({ onClose, onAdd, categoryName }) => {
+  categoryId: string;
+}> = ({ onAdd, categoryName, categoryId }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [duration, setDuration] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && price.trim() && duration.trim()) {
-      onAdd({ name, description, price: parseFloat(price), duration });
-      setName('');
-      setDescription('');
-      setPrice('');
-      setDuration('');
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Convert duration from string (e.g., "1-2 weeks") to minutes
+        const durationInMinutes = parseInt(duration) * 60; // Assuming duration is in hours
+
+        const serviceData = {
+          name,
+          serviceType: "project",
+          category: categoryId,
+          description,
+          price: {
+            priceType: "fixed",
+            amount: parseFloat(price)
+          },
+          duration: durationInMinutes,
+          teamMembers: [],
+          resourcesRequired: false,
+          availableFor: "all",
+          isOnline: true,
+          status: "active",
+          rebookReminderAfter: {
+            count: 3,
+            period: "weeks"
+          },
+          costOfService: parseFloat(price) * 0.8 // Assuming 20% margin
+        };
+
+        console.log('Sending service data:', serviceData);
+
+        const response = await fetch('http://localhost:5001/api/v1/catalog/services', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(serviceData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create service');
+        }
+
+        const data = await response.json();
+        onAdd({ name, description, price: parseFloat(price), duration }, categoryId);
+        setName('');
+        setDescription('');
+        setPrice('');
+        setDuration('');
+        setOpen(false);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create service';
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Add New Service</h2>
-            <p className="text-sm text-gray-600 mt-1">to {categoryName}</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full mt-3" variant="outline">
+          <Plus className="w-4 h-4 mr-2" /> Add Service
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add New Service</DialogTitle>
+          <DialogDescription>
+            Add a new service to {categoryName}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="service-name">Service Name</Label>
             <Input
@@ -158,6 +259,7 @@ const AddServiceModal: React.FC<{
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., SEO Audit"
               required
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -168,6 +270,7 @@ const AddServiceModal: React.FC<{
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional description..."
+              disabled={isLoading}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -180,67 +283,221 @@ const AddServiceModal: React.FC<{
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="500"
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
-              <Label htmlFor="service-duration">Duration</Label>
+              <Label htmlFor="service-duration">Duration (hours)</Label>
               <Input
                 id="service-duration"
-                type="text"
+                type="number"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                placeholder="1-2 weeks"
+                placeholder="2"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+          {error && (
+            <div className="text-red-500 text-sm">
+              {error}
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-              Add Service
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Adding...' : 'Add Service'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
 const ServiceManagement = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [showAddService, setShowAddService] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAddCategory = (category: Omit<ServiceCategory, 'id' | 'services'>) => {
-    setCategories([...categories, { ...category, id: Date.now(), services: [] }]);
-    setShowAddCategory(false);
+  const fetchCategories = async () => {
+    console.log('Fetching categories...');
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:5001/api/v1/catalog/categories', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('Categories API Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Categories API Response data:', responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to fetch categories');
+      }
+
+      // Handle the response data structure properly
+      const categoriesData = Array.isArray(responseData) ? responseData : 
+                           responseData.data ? responseData.data : 
+                           [];
+      
+      console.log('Transformed categories data:', categoriesData);
+      
+      // Transform the API response to match our ServiceCategory interface
+      const transformedCategories = categoriesData.map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        description: cat.description,
+        color: cat.appointmentColor,
+        services: cat.services || []
+      }));
+      console.log('Setting categories state with:', transformedCategories);
+      setCategories(transformedCategories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch categories';
+      setError(errorMessage);
+    }
   };
 
-  const handleAddService = (service: Service) => {
-    setCategories(categories.map(cat =>
-      cat.id === selectedCategoryId
-        ? { ...cat, services: [...cat.services, { ...service, id: Date.now() }] }
-        : cat
-    ));
-    setShowAddService(false);
-    setSelectedCategoryId(null);
+  // Fetch categories when component mounts
+  React.useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const createCategory = async (categoryData: { name: string; description: string; color: string }) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:5001/api/v1/catalog/category', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: categoryData.name,
+          description: categoryData.description,
+          appointmentColor: categoryData.color,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create category');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
   };
 
-  const deleteCategory = (id: number) => setCategories(categories.filter(c => c.id !== id));
-  const deleteService = (catId: number, svcId: number) =>
+  const handleAddCategory = async (category: Omit<ServiceCategory, 'id' | 'services'>) => {
+    setIsLoading(true);
+    try {
+      const response = await createCategory(category);
+      setCategories([...categories, { ...category, id: response.id, services: [] }]);
+      setShowAddCategory(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create category';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddService = async (service: { name: string; description?: string; price: number; duration: string }, categoryId: string) => {
+    console.log('Starting service creation with:', service);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Convert duration from string (e.g., "1-2 weeks") to minutes
+      const durationInMinutes = parseInt(service.duration) * 60; // Assuming duration is in hours
+
+      const payload = {
+        name: service.name,
+        serviceType: "project",
+        category: categoryId,
+        description: service.description,
+        price: {
+          priceType: "fixed",
+          amount: service.price
+        },
+        duration: durationInMinutes,
+        teamMembers: [],
+        resourcesRequired: false,
+        availableFor: "all",
+        isOnline: true,
+        status: "active",
+        rebookReminderAfter: {
+          count: 3,
+          period: "weeks"
+        },
+        costOfService: service.price * 0.8 // Assuming 20% margin
+      };
+
+      console.log('Sending payload to API:', payload);
+
+      const response = await fetch('http://localhost:5001/api/v1/catalog/services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('API Response status:', response.status);
+      const responseData = await response.json();
+      console.log('API Response data:', responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to create service');
+      }
+
+      // Refresh the categories list to show the new service
+      console.log('Refreshing categories...');
+      await fetchCategories();
+      console.log('Categories refreshed');
+      
+      setShowAddCategory(false);
+    } catch (error) {
+      console.error('Error creating service:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create service';
+      setError(errorMessage);
+    }
+  };
+
+  const deleteCategory = (id: string) => setCategories(categories.filter(c => c.id !== id));
+  const deleteService = (catId: string, svcId: string) =>
     setCategories(categories.map(cat =>
       cat.id === catId
         ? { ...cat, services: cat.services.filter(s => s.id !== svcId) }
         : cat
     ));
-
-  const openServiceModal = (id: number) => {
-    setSelectedCategoryId(id);
-    setShowAddService(true);
-  };
 
   return (
     <div className="p-6">
@@ -254,62 +511,69 @@ const ServiceManagement = () => {
         </Button>
       </div>
 
-      {/* Category Cards */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-        {categories.map((cat) => (
-          <Card key={cat.id}>
-            <CardHeader>
-              <div className="flex justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                  <CardTitle>{cat.name}</CardTitle>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => deleteCategory(cat.id)}>
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </div>
-              <p className="text-sm text-gray-600">{cat.description}</p>
-            </CardHeader>
-            <CardContent>
-              {cat.services.map((s) => (
-                <div key={s.id} className="flex justify-between items-center mb-3">
-                  <div>
-                    <h4 className="font-medium">{s.name}</h4>
-                    <div className="text-xs text-gray-600">
-                      ${s.price} • {s.duration}
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteService(cat.id, s.id)}>
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
-              ))}
-              <Button onClick={() => openServiceModal(cat.id)} className="w-full mt-3" variant="outline">
-                <Plus className="w-4 h-4 mr-2" /> Add Service
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {categories.length === 0 && (
-        <div className="text-center text-gray-500 py-12">
-          No categories yet. Start by adding your first one.
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+          {error}
         </div>
       )}
 
-      {/* Modals */}
+      {/* Category Cards */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        {isLoading ? (
+          <div className="col-span-full text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading categories...</p>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500 py-12">
+            No categories yet. Start by adding your first one.
+          </div>
+        ) : (
+          categories.map((cat) => (
+            <Card key={cat.id}>
+              <CardHeader>
+                <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                    <CardTitle>{cat.name}</CardTitle>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => deleteCategory(cat.id)}>
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-600">{cat.description}</p>
+              </CardHeader>
+              <CardContent>
+                {cat.services.map((s) => (
+                  <div key={s.id} className="flex justify-between items-center mb-3">
+                    <div>
+                      <h4 className="font-medium">{s.name}</h4>
+                      <div className="text-xs text-gray-600">
+                        ${s.price.amount} • {Math.floor(s.duration / 60)} hours
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => deleteService(cat.id, s.id)}>
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+                <AddServiceDialog
+                  onAdd={handleAddService}
+                  categoryName={cat.name}
+                  categoryId={cat.id}
+                />
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Category Modal */}
       {showAddCategory && (
-        <AddCategoryModal onClose={() => setShowAddCategory(false)} onAdd={handleAddCategory} />
-      )}
-      {showAddService && selectedCategoryId && (
-        <AddServiceModal
-          onClose={() => {
-            setShowAddService(false);
-            setSelectedCategoryId(null);
-          }}
-          onAdd={handleAddService}
-          categoryName={categories.find((c) => c.id === selectedCategoryId)?.name || ''}
+        <AddCategoryModal 
+          onClose={() => setShowAddCategory(false)} 
+          onAdd={handleAddCategory}
+          isLoading={isLoading}
         />
       )}
     </div>

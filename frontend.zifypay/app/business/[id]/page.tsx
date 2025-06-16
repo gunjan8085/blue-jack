@@ -45,7 +45,12 @@ interface Business {
   website: string
   thumbnail: string
   about: string
-  serviceCategories: string[]
+  serviceCategories: {
+    _id: string
+    name: string
+    description: string
+    appointmentColor: string
+  }[]
   teamSize: {
     min: number
     max: number
@@ -301,13 +306,16 @@ export default function BusinessProfilePage() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Service Categories</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {business.serviceCategories.map((category, index) => (
-                            <div key={index} className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
-                              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                                <span className="text-purple-600 font-semibold">{category.charAt(0)}</span>
+                          {business.serviceCategories.map((category) => (
+                            <div key={category._id} className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
+                              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center" style={{ backgroundColor: category.appointmentColor || '#F0F0FF' }}>
+                                <span className="text-purple-600 font-semibold">{category.name.charAt(0)}</span>
                               </div>
                               <div>
-                                <h4 className="font-medium text-gray-900">{category}</h4>
+                                <h4 className="font-medium text-gray-900">{category.name}</h4>
+                                {category.description && (
+                                  <p className="text-sm text-gray-600">{category.description}</p>
+                                )}
                               </div>
                             </div>
                           ))}
