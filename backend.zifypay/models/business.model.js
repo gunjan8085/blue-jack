@@ -13,8 +13,10 @@ const businessSchema = new mongoose.Schema(
     website: String,
     thumbnail: String,
     about: String,
-    serviceCategories: []
-    ,
+    serviceCategories: [{
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "ServiceCategory"
+    }],
     teamSize: {
       min: { type: Number, default: 1 },
       max: { type: Number, default: null },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,6 +20,7 @@ const businessProfileSchema = z.object({
   website: z.string().url("Please enter a valid website URL"),
   thumbnail: z.string().url("Please enter a valid thumbnail URL"),
   about: z.string().min(10, "About must be at least 10 characters"),
+  serviceCategories: z.array(z.string()).min(1, "Please select at least one service category"),
   teamSize: z.object({
     min: z.number().min(1, "Minimum team size must be at least 1"),
     max: z.number().min(1, "Maximum team size must be at least 1"),
@@ -39,8 +40,15 @@ const businessProfileSchema = z.object({
 
 type BusinessProfileFormData = z.infer<typeof businessProfileSchema>;
 
+interface ServiceCategory {
+  _id: string;
+  name: string;
+}
+
 export function BusinessProfileForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<BusinessProfileFormData>({
     resolver: zodResolver(businessProfileSchema),
     defaultValues: {
@@ -49,22 +57,80 @@ export function BusinessProfileForm() {
     },
   });
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_URL}/catalog/categories`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok || !responseData.success) {
+          throw new Error(responseData.message || 'Failed to fetch categories');
+        }
+
+        setCategories(responseData.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load service categories. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const onSubmit = async (data: BusinessProfileFormData) => {
-    console.log('Form submitted with data:', data);
     try {
       setIsSubmitting(true);
       const userId = getuserid();
-      console.log('User ID from getuserid():', userId);
-      console.log('User data from localStorage:', localStorage.getItem('userData'));
       
       if (!userId) {
         throw new Error("User not authenticated");
       }
 
+      // First, create service categories
+      const categoryPromises = data.serviceCategories.map(async (categoryName) => {
+        const response = await fetch(`${API_URL}/catalog/categories`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({
+            name: categoryName,
+            description: `${categoryName} services`,
+            appointmentColor: "#F0F0FF"
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to create category: ${categoryName}`);
+        }
+        
+        const result = await response.json();
+        return result.data._id;
+      });
+
+      const categoryIds = await Promise.all(categoryPromises);
+
       const payload = {
         ...data,
         owner: userId,
-        serviceCategories: [],
+        serviceCategories: categoryIds,
         media: [],
         timings: [
           {
@@ -79,9 +145,6 @@ export function BusinessProfileForm() {
         ],
       };
 
-      console.log('Sending payload:', payload);
-      console.log('API URL:', `${API_URL}/business/signup`);
-
       const response = await fetch(`${API_URL}/business/signup`, {
         method: "POST",
         headers: {
@@ -91,15 +154,12 @@ export function BusinessProfileForm() {
         body: JSON.stringify(payload),
       });
 
-      console.log('Response status:', response.status);
       const responseData = await response.json();
-      console.log('Response data:', responseData);
 
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to create business profile");
       }
       
-      // Store the business profile data
       localStorage.setItem('businessProfile', JSON.stringify(responseData.data));
 
       toast({
@@ -107,7 +167,6 @@ export function BusinessProfileForm() {
         description: "Business profile created successfully.",
       });
 
-      // Redirect to dashboard after successful creation
       window.location.href = '/dashboard';
     } catch (error: any) {
       console.error('Error creating business profile:', error);
@@ -138,6 +197,56 @@ export function BusinessProfileForm() {
                 />
                 {errors.brandName && (
                   <p className="text-red-500 text-sm">{errors.brandName.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="serviceCategories">Service Categories</Label>
+                <Select
+                  onValueChange={(value) => {
+                    const currentCategories = watch("serviceCategories") || [];
+                    if (!currentCategories.includes(value)) {
+                      setValue("serviceCategories", [...currentCategories, value]);
+                    }
+                  }}
+                  disabled={isLoadingCategories}
+                >
+                  <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select service categories"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category._id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {watch("serviceCategories")?.map((category) => (
+                    <div
+                      key={category}
+                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    >
+                      {category}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentCategories = watch("serviceCategories") || [];
+                          setValue(
+                            "serviceCategories",
+                            currentCategories.filter((c) => c !== category)
+                          );
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {errors.serviceCategories && (
+                  <p className="text-red-500 text-sm">{errors.serviceCategories.message}</p>
                 )}
               </div>
 
