@@ -81,7 +81,6 @@ export function BusinessProfileForm() {
       const payload = {
         ...data,
         owner: userId,
-        serviceCategories: [],
         media: [],
         timings: [
           {

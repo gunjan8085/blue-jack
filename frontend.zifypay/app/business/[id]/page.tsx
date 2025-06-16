@@ -98,6 +98,8 @@ export default function BusinessProfilePage() {
         const response = await fetch(`${API_URL}/business/${params.id}`)
         const result: ApiResponse = await response.json()
         if (result.success) {
+          console.log('Business data:', result.data)
+          console.log('Service categories:', result.data.serviceCategories)
           setBusiness(result.data)
         } else {
           throw new Error(result.message || 'Failed to fetch business details')
