@@ -20,6 +20,7 @@ const businessProfileSchema = z.object({
   website: z.string().url("Please enter a valid website URL"),
   thumbnail: z.string().url("Please enter a valid thumbnail URL"),
   about: z.string().min(10, "About must be at least 10 characters"),
+  serviceCategories: z.array(z.string()).min(1, "Please select at least one service category"),
   teamSize: z.object({
     min: z.number().min(1, "Minimum team size must be at least 1"),
     max: z.number().min(1, "Maximum team size must be at least 1"),
@@ -38,6 +39,22 @@ const businessProfileSchema = z.object({
 });
 
 type BusinessProfileFormData = z.infer<typeof businessProfileSchema>;
+
+const SERVICE_CATEGORIES = [
+  "Hair & Styling",
+  "Nail services",
+  "Eyebrow & lashes",
+  "Facial & skincare",
+  "Injectables & fillers",
+  "Makeup",
+  "Barbering",
+  "Massage",
+  "Hair extensions",
+  "Hair removal",
+  "Tattoo & piercing",
+  "Fitness",
+  "Other",
+];
 
 export function BusinessProfileForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,6 +155,55 @@ export function BusinessProfileForm() {
                 />
                 {errors.brandName && (
                   <p className="text-red-500 text-sm">{errors.brandName.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="serviceCategories">Service Categories</Label>
+                <Select
+                  onValueChange={(value) => {
+                    const currentCategories = watch("serviceCategories") || [];
+                    if (!currentCategories.includes(value)) {
+                      setValue("serviceCategories", [...currentCategories, value]);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder="Select service categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SERVICE_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {watch("serviceCategories")?.map((category) => (
+                    <div
+                      key={category}
+                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    >
+                      {category}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentCategories = watch("serviceCategories") || [];
+                          setValue(
+                            "serviceCategories",
+                            currentCategories.filter((c) => c !== category)
+                          );
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {errors.serviceCategories && (
+                  <p className="text-red-500 text-sm">{errors.serviceCategories.message}</p>
                 )}
               </div>
 

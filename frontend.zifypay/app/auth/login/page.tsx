@@ -67,6 +67,10 @@ export default function LoginPage() {
       const userData = responseData.data.employee;
       console.log('Storing user data:', userData);
       setUserData(userData);
+      
+      // Verify the data was stored correctly
+      console.log('Verifying stored user data:', localStorage.getItem('userData'));
+      console.log('Verifying stored token:', localStorage.getItem('token'));
 
       // Check if business profile exists
       const businessProfile = await checkBusinessProfile(userData._id);
