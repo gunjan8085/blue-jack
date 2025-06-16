@@ -20,7 +20,7 @@ const businessProfileSchema = z.object({
   website: z.string().url("Please enter a valid website URL"),
   thumbnail: z.string().url("Please enter a valid thumbnail URL"),
   about: z.string().min(10, "About must be at least 10 characters"),
-  serviceCategories: z.array(z.string()).min(1, "Please select at least one service category"),
+serviceCategories: z.array(z.string()).optional(),
   teamSize: z.object({
     min: z.number().min(1, "Minimum team size must be at least 1"),
     max: z.number().min(1, "Maximum team size must be at least 1"),
@@ -102,35 +102,10 @@ export function BusinessProfileForm() {
         throw new Error("User not authenticated");
       }
 
-      // First, create service categories
-      const categoryPromises = data.serviceCategories.map(async (categoryName) => {
-        const response = await fetch(`${API_URL}/catalog/categories`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({
-            name: categoryName,
-            description: `${categoryName} services`,
-            appointmentColor: "#F0F0FF"
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to create category: ${categoryName}`);
-        }
-        
-        const result = await response.json();
-        return result.data._id;
-      });
-
-      const categoryIds = await Promise.all(categoryPromises);
-
       const payload = {
         ...data,
         owner: userId,
-        serviceCategories: categoryIds,
+        serviceCategories: [],
         media: [],
         timings: [
           {
@@ -200,55 +175,55 @@ export function BusinessProfileForm() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="serviceCategories">Service Categories</Label>
-                <Select
-                  onValueChange={(value) => {
-                    const currentCategories = watch("serviceCategories") || [];
-                    if (!currentCategories.includes(value)) {
-                      setValue("serviceCategories", [...currentCategories, value]);
-                    }
-                  }}
-                  disabled={isLoadingCategories}
-                >
-                  <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select service categories"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category._id} value={category.name}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {watch("serviceCategories")?.map((category) => (
-                    <div
-                      key={category}
-                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                    >
-                      {category}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentCategories = watch("serviceCategories") || [];
-                          setValue(
-                            "serviceCategories",
-                            currentCategories.filter((c) => c !== category)
-                          );
-                        }}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </div>
+            {/* <div className="space-y-2">
+              <Label htmlFor="serviceCategories">Service Categories</Label>
+              <Select
+                onValueChange={(value) => {
+                  const currentCategories = watch("serviceCategories") || [];
+                  if (!currentCategories.includes(value)) {
+                    setValue("serviceCategories", [...currentCategories, value]);
+                  }
+                }}
+                disabled={isLoadingCategories}
+              >
+                <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select service categories"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category._id} value={category.name}>
+                      {category.name}
+                    </SelectItem>
                   ))}
-                </div>
-                {errors.serviceCategories && (
-                  <p className="text-red-500 text-sm">{errors.serviceCategories.message}</p>
-                )}
+                </SelectContent>
+              </Select>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {watch("serviceCategories")?.map((category) => (
+                  <div
+                    key={category}
+                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  >
+                    {category}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentCategories = watch("serviceCategories") || [];
+                        setValue(
+                          "serviceCategories",
+                          currentCategories.filter((c) => c !== category)
+                        );
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
+              {errors.serviceCategories && (
+                <p className="text-red-500 text-sm">{errors.serviceCategories.message}</p>
+              )}
+            </div> */}
 
               <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>

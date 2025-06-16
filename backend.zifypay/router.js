@@ -7,7 +7,7 @@ const catalogRoutes = require("./routes/catalog.route");
 const calenderRoutes = require("./routes/calender.route");
 const homeRoutes = require("./routes/home.route");
 // const businessRoutes = require("./routes/business.route");
-
+const serviceCategoriesRoutes = require("./routes/serviceCategories.route");
 const employeeRoutes = require("./routes/employee.route");
 // const serviceRoutes = require("./routes/services.route")
 
@@ -23,5 +23,6 @@ router.use("/api/v1/employee", employeeRoutes);
 router.use("/api/v1/business", businessRoutes);
 const serviceRoutes = require("./routes/services.route")
 router.use("/api/v1/services", serviceRoutes);
+router.use("/api/v1/service-categories", serviceCategoriesRoutes);
 module.exports = router;
 
