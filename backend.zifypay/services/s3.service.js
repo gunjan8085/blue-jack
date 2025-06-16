@@ -1,5 +1,5 @@
-import AWS from 'aws-sdk';
-
+// import AWS from 'aws-sdk';
+const AWS = require('aws-sdk');
 // Initialize AWS
 try {
   const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET_NAME } = process.env;
