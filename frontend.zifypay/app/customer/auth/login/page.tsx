@@ -57,13 +57,18 @@ export default function CustomerLoginPage() {
         console.error('Invalid response format:', responseData);
         throw new Error('Invalid login response structure');
       }
+      localStorage.setItem('userData', JSON.stringify(responseData.data.user));
+      localStorage.setItem('token', responseData.data.token);
+      localStorage.setItem('userId', responseData.data.user._id);
+      localStorage.setItem('userEmail', responseData.data.user.email);
+      localStorage.setItem('isLoggedIn',  'true');
 
       // Store user data and token
       setAuthToken(responseData.data.token);
       setUserData(responseData.data.user);
 
       // Redirect to dashboard
-      router.push('/dashboard');
+      router.push('/businesses');
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Something went wrong');

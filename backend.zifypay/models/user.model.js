@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
     country: {
       type: String,
     },
+    isCustomer: {
+      type: Boolean,
+      default: true,
+    },
     favourites: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "Business",

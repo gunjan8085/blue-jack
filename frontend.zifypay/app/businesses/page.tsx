@@ -12,7 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
-
+import Header from "@/components/Header"
+import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
 interface BusinessTiming {
   days: number[]
   time: {
@@ -76,7 +77,7 @@ export default function BusinessListingPage() {
 
   const categories: Category[] = [
     { id: "salon", label: "Hair Salon" },
-    { id: "barbershop", label: "Barbershop" },
+  { id: "barbershop", label: "Barbershop" },
     { id: "spa", label: "Spa" },
     { id: "nail-salon", label: "Nail Salon" },
   ]
@@ -183,37 +184,7 @@ export default function BusinessListingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BB</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">BookBeauty</span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                Sign In
-              </Button>
-              <Button size="sm" className="bg-gradient-to-r from-purple-600 to-purple-700">
-                Get Started
-              </Button>
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <Input
-              placeholder="Search for services, salons, or spas..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 pr-4 py-3 border-2 border-purple-200 focus:border-purple-400 rounded-full"
-            />
-          </div>
-        </div>
-      </header>
+      <HeaderForCustomer />
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -366,7 +337,8 @@ export default function BusinessListingPage() {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">{business.about.substring(0, 50)}...</span>
+               
+         <span className="text-sm text-gray-600">{business.about.substring(0, 50)}...</span>
                         <Link href={`/business/${business._id}`}>
                           <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
                             View Profile

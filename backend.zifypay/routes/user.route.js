@@ -7,5 +7,11 @@ const { newUserValidation } = require("../validations/user.validation");
 // POST Routes
 router.post("/signup", userController.createNewUser);
 router.post("/login", userController.loginUser);
-
+router.patch("/update-profile/:userId",  userController.updateUserProfile);
+router.delete("/delete-profile/:userId", userController.deleteUserProfile);
+// GET Routes
+router.get("/profile", userController.getUserProfile);
 module.exports = router;
+
+
+

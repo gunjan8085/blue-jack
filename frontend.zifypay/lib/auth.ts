@@ -56,6 +56,7 @@ export const isAuthenticated = () => {
 
 // Logout
 export const logout = () => {
+  localStorage.clear();
   removeAuthToken();
   removeUserData();
 };
