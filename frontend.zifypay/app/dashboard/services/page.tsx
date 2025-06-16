@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '@/lib/const';
 
 const businessId = '684fb87fcd4a0faad62fc12f';
 
@@ -24,7 +25,7 @@ const ServiceManager = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/v1/service-categories/${businessId}/service-categories`);
+        const res = await axios.get(`${API_URL}/service-categories/${businessId}/service-categories`);
         setAllServices(res.data.data);
       } catch (error) {
         console.error('Failed to fetch services:', error);
@@ -72,7 +73,7 @@ const ServiceManager = () => {
 
       try {
         const res = await axios.post(
-          `http://localhost:5001/api/v1/service-categories/${businessId}/service-categories`,
+          `${API_URL}/service-categories/${businessId}/service-categories`,
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
