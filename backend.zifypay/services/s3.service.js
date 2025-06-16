@@ -1,28 +1,23 @@
-// import AWS from 'aws-sdk';
 const AWS = require('aws-sdk');
-// Initialize AWS
-try {
-  const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET_NAME } = process.env;
 
-  if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_REGION || !AWS_BUCKET_NAME) {
-    throw new Error('Missing AWS environment variables.');
-  }
+const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET_NAME } = process.env;
 
-  AWS.config.update({
-    accessKeyId: AWS_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY,
-    region: AWS_REGION,
-  });
-
-  console.log('✅ AWS S3 Service Initialized');
-  console.log(`ℹ️ Region: ${AWS_REGION}, Bucket: ${AWS_BUCKET_NAME}`);
-} catch (error) {
-  console.error('❌ AWS S3 Initialization Failed:', error.message);
+if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_REGION || !AWS_BUCKET_NAME) {
+  throw new Error('Missing AWS environment variables.');
 }
+
+AWS.config.update({
+  accessKeyId: AWS_ACCESS_KEY_ID,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  region: AWS_REGION,
+});
+
+console.log('✅ AWS S3 Service Initialized');
+console.log(`ℹ️ Region: ${AWS_REGION}, Bucket: ${AWS_BUCKET_NAME}`);
 
 const s3 = new AWS.S3();
 
-export const uploadFile = async (file) => {
+const uploadFile = async (file) => {
   try {
     if (!file || !file.buffer || !file.originalname) {
       throw new Error('Invalid file object passed to uploadFile.');
@@ -46,3 +41,5 @@ export const uploadFile = async (file) => {
     return null;
   }
 };
+
+module.exports = { uploadFile };
