@@ -309,7 +309,7 @@ export default function BusinessProfilePage() {
                           {business.serviceCategories.map((category) => (
                             <div key={category._id} className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
                               <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center" style={{ backgroundColor: category.appointmentColor || '#F0F0FF' }}>
-                                <span className="text-purple-600 font-semibold">{category.name.charAt(0)}</span>
+                                <span className="text-purple-600 font-semibold">{category?.name?.charAt(0)}</span>
                               </div>
                               <div>
                                 <h4 className="font-medium text-gray-900">{category.name}</h4>
