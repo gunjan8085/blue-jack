@@ -16,7 +16,8 @@ import CTA from "@/components/CTA"
 import Reviews from "@/components/Reviews"
 
 
-function FeaturedBusinesses({featuredBusinesses} : any) {
+function FeaturedBusinesses({featuredBusinesses} : any) {4
+  const router = useRouter() 
   return (
    <section className="py-16 px-4 bg-white">
         <div className="container mx-auto">
@@ -79,12 +80,16 @@ function FeaturedBusinesses({featuredBusinesses} : any) {
           </div>
 
           <div className="text-center mt-12">
-            <Link href="/businesses">
-              <Button variant="outline" size="lg" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+            {/* <Link href="/businesses"> */}
+              <Button onClick={()=>{
+                let route = "/businesses"
+                localStorage.getItem("isLoggedIn") === "true" ? route = "/customer/home" : route = "/businesses";
+                router.push(route)
+              }} variant="outline" size="lg" className="border-blue-200 text-blue-600 hover:bg-blue-50">
                 View All Businesses
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </Link>
+            {/* </Link> */}
           </div>
         </div>
       </section>
