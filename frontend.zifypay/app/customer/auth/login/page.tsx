@@ -68,7 +68,7 @@ export default function CustomerLoginPage() {
       setUserData(responseData.data.user);
 
       // Redirect to dashboard
-      router.push('/businesses');
+      router.push('/customer/home');
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Something went wrong');
