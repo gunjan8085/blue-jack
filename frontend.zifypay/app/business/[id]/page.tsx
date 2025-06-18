@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Star, MapPin, Clock, Phone, Globe, Calendar, User, ArrowLeft, Heart, Share2, AlertCircle } from "lucide-react"
+import { Star, MapPin, Clock, Phone, Globe, Calendar, User, ArrowLeft, Heart, Share2, AlertCircle, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -37,6 +37,19 @@ interface Employee {
   _id: string
   name: string
   email: string
+}
+
+interface Service {
+  _id: string
+  title: string
+  description: string
+  hashtags: string[]
+  imageUrl: string
+  tags: string[]
+  price: number
+  duration: number
+  isActive: boolean
+  createdAt: string
 }
 
 interface Business {
@@ -77,12 +90,18 @@ interface ApiResponse {
   message: string
 }
 
+interface ServicesApiResponse {
+  success: boolean
+  data: Service[]
+  message: string
+}
+
 export default function BusinessProfilePage() {
   const params = useParams()
   const [selectedImage, setSelectedImage] = useState(0)
   const [isBookingOpen, setIsBookingOpen] = useState(false)
   const [bookingStep, setBookingStep] = useState(1)
-  const [selectedService, setSelectedService] = useState("")
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [selectedStaff, setSelectedStaff] = useState("")
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
@@ -93,7 +112,9 @@ export default function BusinessProfilePage() {
     notes: "",
   })
   const [business, setBusiness] = useState<Business | null>(null)
+  const [services, setServices] = useState<Service[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isServicesLoading, setIsServicesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -120,6 +141,24 @@ export default function BusinessProfilePage() {
     fetchBusiness()
   }, [params.id])
 
+  const fetchServices = async () => {
+    try {
+      setIsServicesLoading(true)
+      const response = await fetch(`${API_URL}/service-categories/${params.id}/service-categories`)
+      const result: ServicesApiResponse = await response.json()
+      if (result.success) {
+        console.log('Services data:', result.data)
+        setServices(result.data.filter(service => service.isActive && service.title))
+      } else {
+        console.error('Failed to fetch services:', result.message)
+      }
+    } catch (err) {
+      console.error('Error fetching services:', err)
+    } finally {
+      setIsServicesLoading(false)
+    }
+  }
+
   const handleBookingNext = () => {
     if (bookingStep < 3) {
       setBookingStep(bookingStep + 1)
@@ -144,16 +183,38 @@ export default function BusinessProfilePage() {
     setIsBookingOpen(false)
     // Reset form
     setBookingStep(1)
-    setSelectedService("")
+    setSelectedService(null)
     setSelectedStaff("")
     setSelectedDate("")
     setSelectedTime("")
     setCustomerInfo({ name: "", email: "", phone: "", notes: "" })
   }
 
+  const openBookingDialog = (service: Service) => {
+    setSelectedService(service)
+    setIsBookingOpen(true)
+    setBookingStep(1)
+  }
+
   const getDayName = (dayNumber: number) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     return days[dayNumber]
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(price)
+  }
+
+  const formatDuration = (duration: number) => {
+    const hours = Math.floor(duration / 60)
+    const minutes = duration % 60
+    if (hours > 0) {
+      return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`
+    }
+    return `${minutes}m`
   }
 
   if (isLoading) {
@@ -276,7 +337,7 @@ export default function BusinessProfilePage() {
             <Tabs defaultValue="about" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="services">Services</TabsTrigger>
+                <TabsTrigger value="services" onClick={fetchServices}>Services</TabsTrigger>
                 <TabsTrigger value="team">Team</TabsTrigger>
                 <TabsTrigger value="location">Location</TabsTrigger>
               </TabsList>
@@ -304,22 +365,65 @@ export default function BusinessProfilePage() {
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Service Categories</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {business.serviceCategories.map((category) => (
-                            <div key={category._id} className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
-                              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center" style={{ backgroundColor: category.appointmentColor || '#F0F0FF' }}>
-                                <span className="text-purple-600 font-semibold">{category?.name?.charAt(0)}</span>
-                              </div>
-                              <div>
-                                <h4 className="font-medium text-gray-900">{category.name}</h4>
-                                {category.description && (
-                                  <p className="text-sm text-gray-600">{category.description}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Services</h3>
+                        
+                        {isServicesLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                          </div>
+                        ) : services.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {services.map((service) => (
+                              <Card key={service._id} className="hover:shadow-lg transition-shadow">
+                                <CardContent className="p-4">
+                                  <div className="space-y-3">
+                                    {service.imageUrl && (
+                                      <div className="relative h-32 overflow-hidden rounded-lg">
+                                        <img
+                                          src={service.imageUrl}
+                                          alt={service.title}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <h4 className="font-semibold text-gray-900 text-lg">{service.title}</h4>
+                                      {service.description && (
+                                        <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                        <span className="font-medium text-purple-600">{formatPrice(service.price)}</span>
+                                        <span>{formatDuration(service.duration)}</span>
+                                      </div>
+                                      <Button 
+                                        onClick={() => openBookingDialog(service)}
+                                        className="bg-purple-600 hover:bg-purple-700"
+                                      >
+                                        <BookOpen className="h-4 w-4 mr-2" />
+                                        Book Appointment
+                                      </Button>
+                                    </div>
+                                    {service.tags && service.tags.length > 0 && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {service.tags.map((tag, index) => (
+                                          <Badge key={index} variant="secondary" className="text-xs">
+                                            {tag}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className="text-gray-500">No services available at the moment.</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -432,6 +536,151 @@ export default function BusinessProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Booking Dialog */}
+      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Book Appointment</DialogTitle>
+          </DialogHeader>
+          
+          {selectedService && (
+            <div className="space-y-4">
+              {/* Step 1: Service Details */}
+              {bookingStep === 1 && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-900">{selectedService.title}</h3>
+                    {selectedService.description && (
+                      <p className="text-sm text-gray-600 mt-1">{selectedService.description}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-medium text-purple-600">{formatPrice(selectedService.price)}</span>
+                      <span className="text-sm text-gray-600">{formatDuration(selectedService.duration)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="staff">Select Staff Member</Label>
+                    <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a staff member" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {business.employees.map((employee) => (
+                          <SelectItem key={employee._id} value={employee._id}>
+                            {employee.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button onClick={handleBookingNext} className="w-full" disabled={!selectedStaff}>
+                    Next
+                  </Button>
+                </div>
+              )}
+
+              {/* Step 2: Date and Time */}
+              {bookingStep === 2 && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Select Date</Label>
+                    <Input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="time">Select Time</Label>
+                    <Select value={selectedTime} onValueChange={setSelectedTime}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                        <SelectItem value="12:00">12:00 PM</SelectItem>
+                        <SelectItem value="13:00">1:00 PM</SelectItem>
+                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                        <SelectItem value="17:00">5:00 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={handleBookingBack} className="flex-1">
+                      Back
+                    </Button>
+                    <Button onClick={handleBookingNext} className="flex-1" disabled={!selectedDate || !selectedTime}>
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Customer Information */}
+              {bookingStep === 3 && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      value={customerInfo.name}
+                      onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      type="email"
+                      value={customerInfo.email}
+                      onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      value={customerInfo.phone}
+                      onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                    <Textarea
+                      value={customerInfo.notes}
+                      onChange={(e) => setCustomerInfo({...customerInfo, notes: e.target.value})}
+                      placeholder="Any special requests or notes"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={handleBookingBack} className="flex-1">
+                      Back
+                    </Button>
+                    <Button onClick={handleBookingSubmit} className="flex-1" disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone}>
+                      Book Appointment
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
