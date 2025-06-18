@@ -38,7 +38,19 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
+  .input {
+    @apply border border-gray-300 p-2 rounded w-full;
+  }
+  .btn {
+    @apply flex items-center justify-center px-4 py-2 rounded text-white transition;
+  }
+  .btn-blue {
+    @apply bg-blue-600 hover:bg-blue-700;
+  }
+  .btn-green {
+    @apply bg-green-600 hover:bg-green-700;
+  }
+  
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
