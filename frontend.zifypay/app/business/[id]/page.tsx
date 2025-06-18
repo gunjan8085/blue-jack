@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Star, MapPin, Clock, Phone, Globe, Calendar, User, ArrowLeft, Heart, Share2, AlertCircle, BookOpen } from "lucide-react"
+import { Star, MapPin, Clock, Phone, Globe, Calendar, User, ArrowLeft, Heart, Share2, AlertCircle, BookOpen, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -115,7 +115,10 @@ export default function BusinessProfilePage() {
   const [services, setServices] = useState<Service[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isServicesLoading, setIsServicesLoading] = useState(false)
+  const [isBookingLoading, setIsBookingLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [bookingError, setBookingError] = useState<string | null>(null)
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -162,38 +165,85 @@ export default function BusinessProfilePage() {
   const handleBookingNext = () => {
     if (bookingStep < 3) {
       setBookingStep(bookingStep + 1)
+      setBookingError(null)
+      setBookingSuccess(null)
     }
   }
 
   const handleBookingBack = () => {
     if (bookingStep > 1) {
       setBookingStep(bookingStep - 1)
+      setBookingError(null)
+      setBookingSuccess(null)
     }
   }
 
-  const handleBookingSubmit = () => {
-    // Handle booking submission
-    console.log("Booking submitted:", {
-      service: selectedService,
-      staff: selectedStaff,
-      date: selectedDate,
-      time: selectedTime,
-      customer: customerInfo,
-    })
-    setIsBookingOpen(false)
-    // Reset form
-    setBookingStep(1)
-    setSelectedService(null)
-    setSelectedStaff("")
-    setSelectedDate("")
-    setSelectedTime("")
-    setCustomerInfo({ name: "", email: "", phone: "", notes: "" })
+  const handleBookingSubmit = async () => {
+    if (!selectedService || !selectedStaff || !selectedDate || !selectedTime || !customerInfo.name || !customerInfo.email || !customerInfo.phone) {
+      setBookingError('Please fill in all required fields')
+      return
+    }
+
+    try {
+      setIsBookingLoading(true)
+      setBookingError(null)
+      setBookingSuccess(null)
+
+      const payload = {
+        service: selectedService._id,
+        staff: selectedStaff,
+        date: selectedDate,
+        time: selectedTime,
+        customer: {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          phone: customerInfo.phone,
+          notes: customerInfo.notes || ""
+        }
+      }
+
+      const response = await fetch(`${API_URL}/appointments/${params.id}/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        console.log("Appointment created successfully:", result.data)
+        setBookingSuccess("Appointment booked successfully! You will receive a confirmation email shortly.")
+        
+        // Reset form after a short delay to show success message
+        setTimeout(() => {
+          setIsBookingOpen(false)
+          setBookingStep(1)
+          setSelectedService(null)
+          setSelectedStaff("")
+          setSelectedDate("")
+          setSelectedTime("")
+          setCustomerInfo({ name: "", email: "", phone: "", notes: "" })
+          setBookingSuccess(null)
+        }, 2000)
+      } else {
+        throw new Error(result.message || 'Failed to create appointment')
+      }
+    } catch (err) {
+      console.error('Error creating appointment:', err)
+      setBookingError(err instanceof Error ? err.message : 'Failed to create appointment')
+    } finally {
+      setIsBookingLoading(false)
+    }
   }
 
   const openBookingDialog = (service: Service) => {
     setSelectedService(service)
     setIsBookingOpen(true)
     setBookingStep(1)
+    setBookingError(null)
+    setBookingSuccess(null)
   }
 
   const getDayName = (dayNumber: number) => {
@@ -546,6 +596,26 @@ export default function BusinessProfilePage() {
           
           {selectedService && (
             <div className="space-y-4">
+              {/* Error Message */}
+              {bookingError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <p className="text-sm text-red-600">{bookingError}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {bookingSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <p className="text-sm text-green-600">{bookingSuccess}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Step 1: Service Details */}
               {bookingStep === 1 && (
                 <div className="space-y-4">
@@ -630,7 +700,7 @@ export default function BusinessProfilePage() {
               {bookingStep === 3 && (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">Full Name *</Label>
                     <Input
                       value={customerInfo.name}
                       onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
@@ -639,7 +709,7 @@ export default function BusinessProfilePage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
                       type="email"
                       value={customerInfo.email}
@@ -649,7 +719,7 @@ export default function BusinessProfilePage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       value={customerInfo.phone}
                       onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
@@ -668,11 +738,22 @@ export default function BusinessProfilePage() {
                   </div>
                   
                   <div className="flex space-x-2">
-                    <Button variant="outline" onClick={handleBookingBack} className="flex-1">
+                    <Button variant="outline" onClick={handleBookingBack} className="flex-1" disabled={isBookingLoading}>
                       Back
                     </Button>
-                    <Button onClick={handleBookingSubmit} className="flex-1" disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone}>
-                      Book Appointment
+                    <Button 
+                      onClick={handleBookingSubmit} 
+                      className="flex-1" 
+                      disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone || isBookingLoading}
+                    >
+                      {isBookingLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Booking...
+                        </>
+                      ) : (
+                        'Book Appointment'
+                      )}
                     </Button>
                   </div>
                 </div>
