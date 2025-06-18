@@ -47,7 +47,7 @@ interface Appointment {
   business: string
   service: {
     _id: string
-    name: string
+    title: string
   } | null
   staff: Staff
   customer: Customer
@@ -220,7 +220,7 @@ export default function AppointmentsPage() {
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
       appointment.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (appointment.service?.name || 'No Service').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (appointment.service?.title || 'Service').toLowerCase().includes(searchQuery.toLowerCase()) ||
       appointment.staff.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
     const matchesDate = dateFilter === "all" || appointment.date === dateFilter
@@ -361,7 +361,7 @@ export default function AppointmentsPage() {
                         </Avatar>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{appointment.customer.name}</h3>
-                          <p className="text-purple-600 font-medium">{appointment.service?.name || 'Service'}</p>
+                          <p className="text-purple-600 font-medium">{appointment.service?.title || 'Service'}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                             <div className="flex items-center">
                               <User className="h-4 w-4 mr-1" />
@@ -438,7 +438,7 @@ export default function AppointmentsPage() {
                                   </div>
                                   <div>
                                     <Label>Service</Label>
-                                    <Input value={selectedAppointment.service?.name || 'No Service'} readOnly />
+                                    <Input value={selectedAppointment.service?.title || 'Service'} readOnly />
                                   </div>
                                   <div>
                                     <Label>Date</Label>
