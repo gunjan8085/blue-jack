@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { API_URL } from "@/lib/const"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -196,7 +197,7 @@ export default function StaffPage() {
         return
       }
 
-      const response = await fetch(`http://localhost:5001/api/v1/employee/business/${businessId}/all`, {
+      const response = await fetch(`${API_URL}/employee/business/${businessId}/all`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -250,7 +251,7 @@ export default function StaffPage() {
         return
       }
 
-      const response = await fetch(`http://localhost:5001/api/v1/employee/${businessId}/create`, {
+      const response = await fetch(`${API_URL}/employee/${businessId}/create`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`,

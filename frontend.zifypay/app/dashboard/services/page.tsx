@@ -3,11 +3,29 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_URL } from '@/lib/const';
 
-const businessId = '685247c09923ebfc856cdc51';
+interface Service {
+  title: string;
+  description: string;
+  hashtags: string;
+  tags: string;
+  price: string;
+  duration: string;
+  image: File | null;
+}
+
+interface CreatedService {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  duration: number;
+  imageUrl?: string;
+  [key: string]: any;
+}
 
 const ServiceManager = () => {
-  const [services, setServices] = useState([]);
-  const [currentService, setCurrentService] = useState({
+  const [services, setServices] = useState<Service[]>([]);
+  const [currentService, setCurrentService] = useState<Service>({
     title: '',
     description: '',
     hashtags: '',
@@ -17,14 +35,31 @@ const ServiceManager = () => {
     image: null
   });
   const [loading, setLoading] = useState(false);
-  const [createdServices, setCreatedServices] = useState([]);
-  const [allServices, setAllServices] = useState([]);
+  const [createdServices, setCreatedServices] = useState<CreatedService[]>([]);
+  const [allServices, setAllServices] = useState<CreatedService[]>([]);
   const [fetchLoading, setFetchLoading] = useState(true);
+
+  // Get business ID from localStorage
+  const getBusinessId = () => {
+    if (typeof window !== 'undefined') {
+      const businessProfile = localStorage.getItem('businessProfile')
+      if (businessProfile) {
+        const parsed = JSON.parse(businessProfile)
+        return parsed._id
+      }
+    }
+    return null
+  };
 
   // Fetch existing services
   useEffect(() => {
     const fetchServices = async () => {
       try {
+        const businessId = getBusinessId();
+        if (!businessId) {
+          console.error('Business profile not found');
+          return;
+        }
         const res = await axios.get(`${API_URL}/service-categories/${businessId}/service-categories`);
         setAllServices(res.data.data);
       } catch (error) {
@@ -36,13 +71,15 @@ const ServiceManager = () => {
     fetchServices();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCurrentService({ ...currentService, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    setCurrentService({ ...currentService, image: e.target.files[0] });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setCurrentService({ ...currentService, image: e.target.files[0] });
+    }
   };
 
   const addServiceToList = () => {
@@ -60,10 +97,20 @@ const ServiceManager = () => {
 
   const uploadServices = async () => {
     setLoading(true);
-    const newCreated = [];
+    const newCreated: CreatedService[] = [];
+    const businessId = getBusinessId();
+    
+    if (!businessId) {
+      console.error('Business profile not found');
+      setLoading(false);
+      return;
+    }
+
     for (let service of services) {
       const formData = new FormData();
-      formData.append('image', service.image);
+      if (service.image) {
+        formData.append('image', service.image);
+      }
       formData.append('title', service.title);
       formData.append('description', service.description);
       formData.append('hashtags', service.hashtags);
@@ -106,7 +153,7 @@ const ServiceManager = () => {
       {services.length > 0 && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold">Queued Services:</h3>
-          {services.map((s : any, i : any) => (
+          {services.map((s: Service, i: number) => (
             <div key={i} className="border p-3 my-2 rounded bg-gray-50">
               <p><strong>{s.title}</strong> — ₹{s.price} / {s.duration}min</p>
               <p>{s.description}</p>
@@ -121,7 +168,7 @@ const ServiceManager = () => {
       {createdServices.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold">Created Services</h3>
-          {createdServices.map((s : any, i : any) => (
+          {createdServices.map((s: CreatedService, i: number) => (
             <div key={i} className="border p-3 my-2 bg-green-100 rounded">
               <p><strong>{s.title}</strong> — ₹{s.price} / {s.duration}min</p>
               <p>{s.description}</p>
@@ -137,7 +184,7 @@ const ServiceManager = () => {
           <p>Loading existing services...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {allServices.map((s  : any) => (
+            {allServices.map((s: CreatedService) => (
               <div key={s._id} className="border p-4 rounded shadow-sm bg-gray-50 hover:shadow-md transition">
                 <h4 className="font-semibold text-lg">{s.title || 'Untitled Service'}</h4>
                 {s.description && <p className="text-sm text-gray-700">{s.description}</p>}

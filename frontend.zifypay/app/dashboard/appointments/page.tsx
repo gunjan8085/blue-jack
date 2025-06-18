@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
+import { API_URL } from "@/lib/const"
 
 // Types for API response
 interface Customer {
@@ -173,7 +174,7 @@ export default function AppointmentsPage() {
           throw new Error('Authentication token not found')
         }
 
-        const response = await fetch(`http://localhost:5001/api/v1/appointments/${businessId}`, {
+        const response = await fetch(`${API_URL}/appointments/${businessId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
