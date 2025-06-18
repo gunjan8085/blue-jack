@@ -280,4 +280,42 @@ module.exports = {
       throw error;
     }
   },
+  getEmployeesByBusinessId: async (businessId) => {
+    const employees = await Employee.aggregate([
+      {
+        $match: {
+          jobProfile: { $ne: null },
+        },
+      },
+      {
+        $lookup: {
+          from: "jobprofiles",
+          localField: "jobProfile",
+          foreignField: "_id",
+          as: "jobProfile"
+        }
+      },
+      { $unwind: "$jobProfile" },
+      {
+        $match: {
+          "jobProfile.company": new mongoose.Types.ObjectId(businessId)
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          isOwner: 1,
+          phoneNumber: 1,
+          jobTitle: "$jobProfile.jobTitle",
+          profilePicUrl: 1,
+          country: 1,
+        }
+      }
+    ]);
+  
+    return employees;
+  }
+  
 };

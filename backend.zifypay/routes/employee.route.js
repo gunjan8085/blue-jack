@@ -43,4 +43,20 @@ router.patch(
   employeeController.archiveEmployee
 );
 
+router.post(
+  "/:businessId/create",
+  authenticateBusinessToken,
+  checkIsOwner,
+  employeeController.createEmployeeForBusiness
+);
+
+router.get(
+  "/business/:businessId/all",
+  authenticateBusinessToken,
+  checkIsOwner,
+  employeeController.getEmployeesForBusiness
+);
+
+
+
 module.exports = router;

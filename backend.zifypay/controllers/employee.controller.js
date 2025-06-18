@@ -1,6 +1,7 @@
 const employeeService = require("../services/employee.service");
 const { securePassword } = require("../utils/bcrypt.util");
 const { generateToken } = require("../utils/token.util");
+const Business = require("../models/business.model");
 
 module.exports = {
   addEmployee: async (req, res, next) => {
@@ -129,4 +130,56 @@ module.exports = {
       next(err);
     }
   },
+//new code
+  createEmployeeForBusiness : async (req, res, next) => {
+    try {
+      const { businessId } = req.params;
+  
+      const business = await Business.findById(businessId);
+      if (!business) {
+        return res.status(404).json({ success: false, message: "Business not found" });
+      }
+  
+      // Encrypt password if authType is password
+      if (req.body.authType === "password") {
+        req.body.password = await securePassword(req.body.password);
+      }
+  
+      // Inject businessId into request body for jobProfile creation
+      req.body.businessId = businessId;
+  
+      const employee = await employeeService.addEmployee(req.body);
+  
+      // Add employee to the business' employees array
+      await Business.findByIdAndUpdate(businessId, {
+        $push: { employees: employee._id },
+      });
+  
+      res.status(201).json({ success: true, data: employee });
+    } catch (error) {
+      console.error("Error creating employee for business:", error);
+      next(error);
+    }
+  },
+   getEmployeesForBusiness : async (req, res, next) => {
+    try {
+      const { businessId } = req.params;
+  
+      const employees = await employeeService.getEmployeesByBusinessId(businessId);
+  
+      res.status(200).json({
+        success: true,
+        count: employees.length,
+        data: employees,
+      });
+    } catch (error) {
+      console.error("Error fetching employees for business:", error);
+      next(error);
+    }
+  }
+  
 };
+
+// const Business = require("../models/business.model");
+
+
