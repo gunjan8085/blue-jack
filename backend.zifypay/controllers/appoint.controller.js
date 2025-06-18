@@ -36,7 +36,7 @@ const getAppointmentsForBusiness = async (req, res, next) => {
     const { businessId } = req.params;
 
     const appointments = await Appoint.find({ business: businessId })
-      .populate("service", "title")
+      .populate("service", "name")
       .populate("staff", "name")
       .sort({ createdAt: -1 });
 

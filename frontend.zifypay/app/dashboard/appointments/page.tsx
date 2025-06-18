@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Calendar, Clock, User, Phone, Mail, Search, Plus, Edit, CheckCircle, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -29,94 +29,39 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 
-// Mock appointments data
-const appointmentsData = [
-  {
-    id: 1,
-    customer: {
-      name: "Sarah Johnson",
-      email: "sarah@email.com",
-      phone: "(555) 123-4567",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    service: "Hair Color",
-    staff: "Ayesha Khan",
-    date: "2025-06-12",
-    time: "2:30 PM",
-    duration: "2 hours",
-    status: "confirmed",
-    price: 85,
-    notes: "First time client, wants natural blonde highlights",
-  },
-  {
-    id: 2,
-    customer: {
-      name: "Michael Chen",
-      email: "michael@email.com",
-      phone: "(555) 234-5678",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    service: "Men's Haircut",
-    staff: "Marcus Johnson",
-    date: "2025-06-12",
-    time: "3:00 PM",
-    duration: "30 mins",
-    status: "confirmed",
-    price: 25,
-    notes: "Regular client, usual style",
-  },
-  {
-    id: 3,
-    customer: {
-      name: "Emma Davis",
-      email: "emma@email.com",
-      phone: "(555) 345-6789",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    service: "Facial Treatment",
-    staff: "Emma Wilson",
-    date: "2025-06-12",
-    time: "4:00 PM",
-    duration: "75 mins",
-    status: "pending",
-    price: 75,
-    notes: "Sensitive skin, avoid harsh products",
-  },
-  {
-    id: 4,
-    customer: {
-      name: "Jessica Brown",
-      email: "jessica@email.com",
-      phone: "(555) 456-7890",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    service: "Manicure",
-    staff: "Sofia Rodriguez",
-    date: "2025-06-13",
-    time: "10:00 AM",
-    duration: "45 mins",
-    status: "confirmed",
-    price: 35,
-    notes: "Gel polish, French tips",
-  },
-  {
-    id: 5,
-    customer: {
-      name: "David Wilson",
-      email: "david@email.com",
-      phone: "(555) 567-8901",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    service: "Deep Tissue Massage",
-    staff: "Emma Wilson",
-    date: "2025-06-13",
-    time: "2:00 PM",
-    duration: "60 mins",
-    status: "completed",
-    price: 80,
-    notes: "Focus on back and shoulders",
-  },
-]
+// Types for API response
+interface Customer {
+  name: string
+  email: string
+  phone: string
+  notes?: string
+}
+
+interface Staff {
+  _id: string
+  name: string
+}
+
+interface Appointment {
+  _id: string
+  business: string
+  service: {
+    _id: string
+    name: string
+  } | null
+  staff: Staff
+  customer: Customer
+  date: string
+  time: string
+  status: "pending" | "confirmed" | "cancelled" | "completed"
+  createdAt: string
+  updatedAt: string
+}
+
+interface ApiResponse {
+  success: boolean
+  data: Appointment[]
+}
 
 const sidebarItems = [
   {
@@ -200,8 +145,62 @@ export default function AppointmentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all")
-  const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch appointments from API
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Get business ID from localStorage
+        const businessProfile = localStorage.getItem('businessProfile')
+        if (!businessProfile) {
+          throw new Error('Business profile not found')
+        }
+        
+        const business = JSON.parse(businessProfile)
+        const businessId = business._id
+        
+        // Get auth token
+        const token = localStorage.getItem('token')
+        if (!token) {
+          throw new Error('Authentication token not found')
+        }
+
+        const response = await fetch(`http://localhost:5001/api/v1/appointments/${businessId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch appointments: ${response.status}`)
+        }
+
+        const data: ApiResponse = await response.json()
+        
+        if (data.success) {
+          setAppointments(data.data)
+        } else {
+          throw new Error('Failed to fetch appointments')
+        }
+      } catch (err: any) {
+        console.error('Error fetching appointments:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAppointments()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -218,20 +217,61 @@ export default function AppointmentsPage() {
     }
   }
 
-  const filteredAppointments = appointmentsData.filter((appointment) => {
+  const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
       appointment.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appointment.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appointment.staff.toLowerCase().includes(searchQuery.toLowerCase())
+      (appointment.service?.name || 'No Service').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      appointment.staff.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
     const matchesDate = dateFilter === "all" || appointment.date === dateFilter
 
     return matchesSearch && matchesStatus && matchesDate
   })
 
-  const handleStatusChange = (appointmentId: number, newStatus: string) => {
+  const handleStatusChange = (appointmentId: string, newStatus: string) => {
     // Handle status change logic here
     console.log(`Changing appointment ${appointmentId} status to ${newStatus}`)
+  }
+
+  if (loading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading appointments...</p>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
+
+  if (error) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <div className="text-red-500 mb-4">
+                <XCircle className="h-12 w-12 mx-auto" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Error loading appointments</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-gradient-to-r from-purple-600 to-purple-700"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
   }
 
   return (
@@ -286,8 +326,11 @@ export default function AppointmentsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Dates</SelectItem>
-                    <SelectItem value="2025-06-12">Today</SelectItem>
-                    <SelectItem value="2025-06-13">Tomorrow</SelectItem>
+                    {Array.from(new Set(appointments.map(apt => apt.date))).map(date => (
+                      <SelectItem key={date} value={date}>
+                        {new Date(date).toLocaleDateString()}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -303,12 +346,12 @@ export default function AppointmentsPage() {
 
             <TabsContent value="list" className="space-y-4">
               {filteredAppointments.map((appointment) => (
-                <Card key={appointment.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                <Card key={appointment._id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={appointment.customer.avatar || "/placeholder.svg"} />
+                          <AvatarImage src="/placeholder.svg" />
                           <AvatarFallback>
                             {appointment.customer.name
                               .split(" ")
@@ -318,19 +361,19 @@ export default function AppointmentsPage() {
                         </Avatar>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{appointment.customer.name}</h3>
-                          <p className="text-purple-600 font-medium">{appointment.service}</p>
+                          <p className="text-purple-600 font-medium">{appointment.service?.name || 'Service'}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                             <div className="flex items-center">
                               <User className="h-4 w-4 mr-1" />
-                              {appointment.staff}
+                              {appointment.staff.name}
                             </div>
                             <div className="flex items-center">
                               <Calendar className="h-4 w-4 mr-1" />
-                              {appointment.date}
+                              {new Date(appointment.date).toLocaleDateString()}
                             </div>
                             <div className="flex items-center">
                               <Clock className="h-4 w-4 mr-1" />
-                              {appointment.time} ({appointment.duration})
+                              {appointment.time}
                             </div>
                           </div>
                         </div>
@@ -338,7 +381,6 @@ export default function AppointmentsPage() {
 
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
-                          <div className="text-lg font-semibold text-gray-900">${appointment.price}</div>
                           <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
                         </div>
 
@@ -348,7 +390,7 @@ export default function AppointmentsPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleStatusChange(appointment.id, "confirmed")}
+                                onClick={() => handleStatusChange(appointment._id, "confirmed")}
                                 className="text-green-600 border-green-200 hover:bg-green-50"
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
@@ -357,7 +399,7 @@ export default function AppointmentsPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleStatusChange(appointment.id, "cancelled")}
+                                onClick={() => handleStatusChange(appointment._id, "cancelled")}
                                 className="text-red-600 border-red-200 hover:bg-red-50"
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
@@ -369,7 +411,7 @@ export default function AppointmentsPage() {
                           {appointment.status === "confirmed" && (
                             <Button
                               size="sm"
-                              onClick={() => handleStatusChange(appointment.id, "completed")}
+                              onClick={() => handleStatusChange(appointment._id, "completed")}
                               className="bg-gradient-to-r from-purple-600 to-purple-700"
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
@@ -396,17 +438,7 @@ export default function AppointmentsPage() {
                                   </div>
                                   <div>
                                     <Label>Service</Label>
-                                    <Select defaultValue={selectedAppointment.service}>
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="Hair Color">Hair Color</SelectItem>
-                                        <SelectItem value="Men's Haircut">Men's Haircut</SelectItem>
-                                        <SelectItem value="Facial Treatment">Facial Treatment</SelectItem>
-                                        <SelectItem value="Manicure">Manicure</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <Input value={selectedAppointment.service?.name || 'No Service'} readOnly />
                                   </div>
                                   <div>
                                     <Label>Date</Label>
@@ -414,11 +446,11 @@ export default function AppointmentsPage() {
                                   </div>
                                   <div>
                                     <Label>Time</Label>
-                                    <Input type="time" defaultValue="14:30" />
+                                    <Input type="time" defaultValue={selectedAppointment.time} />
                                   </div>
                                   <div>
                                     <Label>Notes</Label>
-                                    <Textarea defaultValue={selectedAppointment.notes} rows={3} />
+                                    <Textarea defaultValue={selectedAppointment.customer.notes || ''} rows={3} />
                                   </div>
                                   <div className="flex space-x-2">
                                     <Button variant="outline" className="flex-1">
@@ -436,10 +468,10 @@ export default function AppointmentsPage() {
                       </div>
                     </div>
 
-                    {appointment.notes && (
+                    {appointment.customer.notes && (
                       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                         <p className="text-sm text-gray-600">
-                          <strong>Notes:</strong> {appointment.notes}
+                          <strong>Notes:</strong> {appointment.customer.notes}
                         </p>
                       </div>
                     )}
