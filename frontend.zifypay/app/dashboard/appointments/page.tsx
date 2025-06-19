@@ -29,6 +29,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
+import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar"
+import { format } from "date-fns/format"
+import { parse } from "date-fns/parse"
+import { startOfWeek } from "date-fns/startOfWeek"
+import { getDay } from "date-fns/getDay"
+import { enUS } from "date-fns/locale/en-US"
+import "react-big-calendar/lib/css/react-big-calendar.css"
 
 // Types for API response
 interface Customer {
@@ -152,6 +159,15 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const locales = { "en-US": enUS }
+  const localizer = dateFnsLocalizer({
+    format,
+    parse,
+    startOfWeek,
+    getDay,
+    locales,
+  })
+
   // Fetch appointments from API
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -233,6 +249,23 @@ export default function AppointmentsPage() {
     // Handle status change logic here
     console.log(`Changing appointment ${appointmentId} status to ${newStatus}`)
   }
+
+  // Transform appointments and staff for Big Calendar
+  const events = appointments.map((apt) => ({
+    id: apt._id,
+    title: `${apt.customer.name} - ${apt.service?.title ?? "Service"}`,
+    start: new Date(`${apt.date}T${apt.time}`),
+    end: new Date(`${apt.date}T${apt.time}`), // You may want to add duration
+    resourceId: apt.staff._id,
+    ...apt,
+  }))
+
+  const resources = Array.from(
+    new Map(appointments.map((apt) => [apt.staff._id, apt.staff])).values()
+  ).map((staff) => ({
+    resourceId: staff._id,
+    resourceTitle: staff.name,
+  }))
 
   if (loading) {
     return (
@@ -493,15 +526,30 @@ export default function AppointmentsPage() {
             </TabsContent>
 
             <TabsContent value="calendar" className="space-y-4">
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="text-center py-12">
-                    <Calendar className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar View</h3>
-                    <p className="text-gray-600">Calendar integration would be implemented here</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div style={{ height: 600 }}>
+                <BigCalendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  resources={resources}
+                  resourceIdAccessor="resourceId"
+                  resourceTitleAccessor="resourceTitle"
+                  defaultView="day"
+                  views={["day", "week", "work_week", "agenda"]}
+                  style={{ height: "100%" }}
+                  onSelectEvent={(event: any) => {
+                    setSelectedAppointment(event)
+                    setIsEditDialogOpen(true)
+                  }}
+                  onSelectSlot={({ start, end, resourceId }: { start: Date; end: Date; resourceId: string }) => {
+                    // Placeholder: open dialog to create new appointment for this employee and time
+                    // You can implement a dialog for adding new appointments here
+                    alert(`Add new appointment for employee ${resources.find(r => r.resourceId === resourceId)?.resourceTitle || ""} at ${start}`)
+                  }}
+                  selectable
+                />
+              </div>
             </TabsContent>
           </Tabs>
 
