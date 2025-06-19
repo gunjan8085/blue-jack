@@ -28,9 +28,9 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     const fetchAppointments = async () => {
-      const profile = localStorage.getItem("businessProfile");
-      const parsed = profile ? JSON.parse(profile) : null;
-      const userId = parsed?._id;
+      const userDataRaw = localStorage.getItem("userData");
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const userId = userData?._id;
 
       if (!userId) {
         toast({
