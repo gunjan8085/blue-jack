@@ -36,6 +36,7 @@ import {
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
+import { useToast } from "@/components/ui/use-toast"
 // Mock dashboard data
 const dashboardData = {
   stats: {
@@ -177,6 +178,13 @@ export default function BusinessDashboard() {
   const [loadingToday, setLoadingToday] = useState(true)
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [loadingRecent, setLoadingRecent] = useState(true)
+  const { toast } = useToast();
+  const [statusLoading, setStatusLoading] = useState<{[id: string]: boolean}>({});
+  const [todaysRevenue, setTodaysRevenue] = useState<number | null>(null);
+  const [bookingsToday, setBookingsToday] = useState<number | null>(null);
+  const [loadingQuickStats, setLoadingQuickStats] = useState(true);
+  const [totalCustomers, setTotalCustomers] = useState<number | null>(null);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -256,6 +264,60 @@ export default function BusinessDashboard() {
     fetchRecent()
   }, [])
 
+  useEffect(() => {
+    const fetchQuickStats = async () => {
+      setLoadingQuickStats(true);
+      try {
+        let businessId = null;
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile');
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id;
+          }
+        }
+        if (!businessId) return;
+        // Fetch today's revenue
+        const revenueRes = await fetch(`${API_URL}/appointments/${businessId}/today-revenue`);
+        const revenueData = await revenueRes.json();
+        setTodaysRevenue(revenueData.todaysRevenue ?? 0);
+        // Fetch today's bookings count
+        const bookingsRes = await fetch(`${API_URL}/appointments/${businessId}/today-bookings`);
+        const bookingsData = await bookingsRes.json();
+        setBookingsToday(bookingsData.bookingsToday ?? 0);
+      } catch (err) {
+        setTodaysRevenue(0);
+        setBookingsToday(0);
+      } finally {
+        setLoadingQuickStats(false);
+      }
+    };
+    fetchQuickStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchTotalCustomers = async () => {
+      setLoadingCustomers(true);
+      try {
+        let businessId = null;
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile');
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id;
+          }
+        }
+        if (!businessId) return;
+        const res = await fetch(`${API_URL}/appointments/${businessId}/total-customers`);
+        const data = await res.json();
+        setTotalCustomers(data.totalCustomers ?? 0);
+      } catch (err) {
+        setTotalCustomers(0);
+      } finally {
+        setLoadingCustomers(false);
+      }
+    };
+    fetchTotalCustomers();
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -268,6 +330,37 @@ export default function BusinessDashboard() {
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  const updateAppointmentStatus = async (appointmentId: string, status: string) => {
+    setStatusLoading((prev) => ({ ...prev, [appointmentId]: true }));
+    try {
+      const res = await fetch(`${API_URL}/appointments/${appointmentId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update status');
+      toast({ title: 'Status updated', description: `Status changed to ${status}` });
+      // Refresh today's appointments
+      let businessId = null;
+      if (typeof window !== 'undefined') {
+        const businessProfile = localStorage.getItem('businessProfile');
+        if (businessProfile) {
+          businessId = JSON.parse(businessProfile)._id;
+        }
+      }
+      if (businessId) {
+        const res = await fetch(`${API_URL}/appointments/${businessId}/today`);
+        const data = await res.json();
+        setTodaysAppointments(data.data || []);
+      }
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setStatusLoading((prev) => ({ ...prev, [appointmentId]: false }));
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -329,7 +422,7 @@ export default function BusinessDashboard() {
                 <Users className="h-4 w-4 opacity-90" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dashboardData.stats.totalCustomers}</div>
+                <div className="text-2xl font-bold">{loadingCustomers ? '...' : totalCustomers}</div>
                 <p className="text-xs opacity-90">+5 new this week</p>
               </CardContent>
             </Card>
@@ -369,15 +462,27 @@ export default function BusinessDashboard() {
                             <h4 className="font-medium text-gray-900">{appointment.customer?.name}</h4>
                             <p className="text-sm text-gray-600">{appointment.service?.title || '-'}</p>
                             <p className="text-xs text-purple-600">with {appointment.staff?.name || '-'}</p>
+                            <div className="mt-1">
+                              <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 items-center">
                           <Button variant="outline" size="sm">
                             Edit
                           </Button>
-                          <Button size="sm" className="bg-gradient-to-r from-purple-600 to-purple-700">
-                            Complete
-                          </Button>
+                          <select
+                            className="border rounded px-2 py-1 text-sm"
+                            value={appointment.status}
+                            disabled={statusLoading[appointment._id]}
+                            onChange={e => updateAppointmentStatus(appointment._id, e.target.value)}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="completed">Completed</option>
+                          </select>
+                          {statusLoading[appointment._id] && <span className="ml-2 text-xs text-gray-400">Updating...</span>}
                         </div>
                       </div>
                     ))
@@ -398,21 +503,23 @@ export default function BusinessDashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Today's Revenue</span>
-                    <span className="font-medium">$420</span>
+                    <span className="font-medium">
+                      {loadingQuickStats ? '...' : `$${todaysRevenue}`}
+                    </span>
                   </div>
-                  <Progress value={65} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">65% of daily goal</p>
+                  <Progress value={todaysRevenue && todaysRevenue > 0 ? Math.min(100, Math.round((todaysRevenue/650)*100)) : 0} className="h-2" />
+                  <p className="text-xs text-gray-500 mt-1">{todaysRevenue ? `${Math.round((todaysRevenue/650)*100)}% of daily goal` : '0% of daily goal'}</p>
                 </div>
-
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Bookings Today</span>
-                    <span className="font-medium">8/12</span>
+                    <span className="font-medium">
+                      {loadingQuickStats ? '...' : bookingsToday}
+                    </span>
                   </div>
-                  <Progress value={67} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">4 slots remaining</p>
+                  <Progress value={bookingsToday && bookingsToday > 0 ? Math.min(100, Math.round((bookingsToday/12)*100)) : 0} className="h-2" />
+                  <p className="text-xs text-gray-500 mt-1">{bookingsToday ? `${12 - bookingsToday} slots remaining` : '12 slots remaining'}</p>
                 </div>
-
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Customer Satisfaction</span>

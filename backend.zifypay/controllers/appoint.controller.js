@@ -310,6 +310,108 @@ const getAppointmentsForUser = async (req, res, next) => {
   }
 };
 
+// Update appointment status by ID
+const updateAppointmentStatus = async (req, res, next) => {
+  try {
+    const { appointmentId } = req.params;
+    const { status } = req.body;
+    const allowedStatuses = ["pending", "confirmed", "cancelled", "completed"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status value" });
+    }
+    const updated = await Appoint.findByIdAndUpdate(
+      appointmentId,
+      { status },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+    res.status(200).json({ success: true, message: "Status updated", data: updated });
+  } catch (err) {
+    console.error("Error updating appointment status:", err);
+    next(err);
+  }
+};
+
+// Get today's revenue for a business
+const getTodaysRevenue = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ success: false, message: "Business not found" });
+    }
+    // Find all non-cancelled appointments for today
+    const appointments = await Appoint.find({
+      business: businessId,
+      date: todayStr,
+      status: { $ne: "cancelled" },
+    });
+    let revenue = 0;
+    appointments.forEach((appointment) => {
+      let price = 0;
+      if (appointment.service) {
+        // Try to match by index (if stored as index)
+        if (typeof appointment.service === 'number' && business.serviceCategories[appointment.service]) {
+          price = business.serviceCategories[appointment.service].price || 0;
+        } else {
+          // Try to match by ObjectId string (if stored as ObjectId)
+          const serviceObj = business.serviceCategories.find((cat, idx) => {
+            return idx.toString() === appointment.service.toString();
+          });
+          if (serviceObj) price = serviceObj.price || 0;
+        }
+      }
+      revenue += price;
+    });
+    res.status(200).json({ success: true, todaysRevenue: revenue });
+  } catch (err) {
+    console.error("Error calculating today's revenue:", err);
+    next(err);
+  }
+};
+
+// Get today's bookings count for a business
+const getTodaysBookingsCount = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const count = await Appoint.countDocuments({
+      business: businessId,
+      date: todayStr,
+      status: { $ne: "cancelled" },
+    });
+    res.status(200).json({ success: true, bookingsToday: count });
+  } catch (err) {
+    console.error("Error calculating today's bookings count:", err);
+    next(err);
+  }
+};
+
+// Get total unique customers for a business
+const getTotalCustomers = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    // Find all appointments for this business
+    const appointments = await Appoint.find({ business: businessId });
+    // Use a Set to collect unique customer emails
+    const uniqueEmails = new Set();
+    appointments.forEach(app => {
+      if (app.customer && app.customer.email) {
+        uniqueEmails.add(app.customer.email);
+      }
+    });
+    res.status(200).json({ success: true, totalCustomers: uniqueEmails.size });
+  } catch (err) {
+    console.error("Error calculating total customers:", err);
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -319,4 +421,8 @@ module.exports = {
   getRecentBookings,
   getAppointmentsForCustomer,
   getAppointmentsForUser,
+  updateAppointmentStatus,
+  getTodaysRevenue,
+  getTodaysBookingsCount,
+  getTotalCustomers,
 };

@@ -24,6 +24,15 @@ router.get("/:businessId/recent", appointController.getRecentBookings);
 // GET /api/v1/appointments/customer?email=...
 router.get("/customer", appointController.getAppointmentsForCustomer);
 
+// PATCH /api/v1/appointments/:appointmentId/status
+router.patch('/:appointmentId/status', appointController.updateAppointmentStatus);
 
+// GET /api/v1/appointments/:businessId/today-revenue
+router.get('/:businessId/today-revenue', appointController.getTodaysRevenue);
+// GET /api/v1/appointments/:businessId/today-bookings
+router.get('/:businessId/today-bookings', appointController.getTodaysBookingsCount);
+
+// GET /api/v1/appointments/:businessId/total-customers
+router.get('/:businessId/total-customers', appointController.getTotalCustomers);
 
 module.exports = router;
