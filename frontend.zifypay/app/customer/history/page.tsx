@@ -16,10 +16,19 @@ interface Appointment {
   businessId: string
   businessName: string
   service: string
+  staffName: string
   date: string
   time: string
-  price: number
-  status: "completed" | "pending" | "cancelled" | "confirmed"
+  status: string
+  logo: string
+  category: string
+  businessRating: number
+  duration: number
+  location: string
+  paymentAmount: number
+  paymentStatus: string
+  userRating: number
+  userReview: string
   review?: {
     rating: number
     comment: string
@@ -62,7 +71,7 @@ const StarRating = ({
   )
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000/api/v1"
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001/api/v1"
 
 export default function HistoryPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -71,60 +80,29 @@ export default function HistoryPage() {
   const [reviewData, setReviewData] = useState<{ [key: string]: { rating: number; comment: string } }>({})
   const [loading, setLoading] = useState(true)
 
+  // Get email dynamically (replace with your auth/user context as needed)
+  const email = typeof window !== 'undefined' ? localStorage.getItem("email") || "prityush@gmail.com" : ""
+
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      const mockAppointments: Appointment[] = [
-        {
-          id: "1",
-          businessId: "b1",
-          businessName: "Glow Salon",
-          service: "Haircut + Styling",
-          date: "2025-06-10",
-          time: "3:00 PM",
-          price: 800,
-          status: "completed",
-          review: { rating: 4, comment: "Great service! The stylist was very professional and I love my new look." },
-        },
-        {
-          id: "2",
-          businessId: "b2",
-          businessName: "Tranquil Spa",
-          service: "Full Body Massage",
-          date: "2025-06-01",
-          time: "5:00 PM",
-          price: 1500,
-          status: "completed",
-        },
-        {
-          id: "3",
-          businessId: "b3",
-          businessName: "Elite Fitness",
-          service: "Personal Training Session",
-          date: "2025-05-28",
-          time: "7:00 AM",
-          price: 1200,
-          status: "completed",
-          review: { rating: 5, comment: "Excellent trainer! Really pushed me to achieve my goals." },
-        },
-        {
-          id: "4",
-          businessId: "b4",
-          businessName: "Zen Wellness",
-          service: "Yoga Class",
-          date: "2025-05-25",
-          time: "6:00 PM",
-          price: 500,
-          status: "pending",
-        },
-      ]
-      setAppointments(mockAppointments)
-      setLoading(false)
-    }, 1000)
-  }, [])
+    setLoading(true)
+    axios
+      .get(`${API_BASE}/appointments/customer/completed?email=${encodeURIComponent(email)}`)
+      .then((res) => {
+        if (res.data && res.data.success) {
+          setAppointments(res.data.data)
+        } else {
+          setAppointments([])
+        }
+        setLoading(false)
+      })
+      .catch(() => {
+        setAppointments([])
+        setLoading(false)
+      })
+  }, [email])
 
   const handleRebook = (appointment: Appointment) => {
-    const updatedPrice = Math.round(appointment.price * 1.1)
+    const updatedPrice = Math.round(appointment.paymentAmount * 1.1)
     // Add success feedback
     const button = document.activeElement as HTMLButtonElement
     button.textContent = "Booked!"
@@ -278,7 +256,7 @@ export default function HistoryPage() {
                       </div>
                       <div className="text-right space-y-2">
                         <div className="flex items-center gap-1 text-lg font-bold text-gray-800">
-                          <DollarSign className="w-5 h-5" />₹{appointment.price}
+                          <DollarSign className="w-5 h-5" />₹{appointment.paymentAmount}
                         </div>
                         <Badge
                           variant={appointment.status === "completed" ? "default" : "secondary"}

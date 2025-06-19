@@ -300,7 +300,17 @@ const categories = [
         "https://imgs.search.brave.com/UjC0IFo_9q-tDcF1OauqirRLsucBJU9SNqR-03fFDjA/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9qY3Bw/b3J0cmFpdHMuY29t/L3dwLWNvbnRlbnQv/dXBsb2Fkcy8yMDI0/LzA0L0dhbGxlcnkt/SW1hZ2UtMl8xMDgw/eDEwODAuanBn",
     },
   ];
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState(0);
+
+  useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    setWindowWidth(window.innerWidth); // set initial on client
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }
+}, []);
+
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);

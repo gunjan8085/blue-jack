@@ -4,6 +4,7 @@ const Appoint = require("../models/appoint.model");
 const Business = require("../models/business.model");
 const Service = require("../models/services.model");
 const Employee = require("../models/employee.model");
+const { log } = require("console");
 
 const createAppointment = async (req, res, next) => {
   try {
@@ -36,59 +37,63 @@ const getAppointmentsForBusiness = async (req, res, next) => {
   try {
     const { businessId } = req.params;
 
-    // First, get the business to access serviceCategories
+    console.log(`[INFO] Fetching business ${businessId}`);
     const business = await Business.findById(businessId);
     if (!business) {
       return res.status(404).json({ success: false, message: "Business not found" });
     }
 
-    // Create a map of service ObjectIds to service titles
-    const serviceMap = {};
-    business.serviceCategories.forEach((service, index) => {
-      // Use the index as the ObjectId since serviceCategories is an embedded array
-      serviceMap[index] = service.title;
+    console.log(`[INFO] Found ${business.serviceCategories.length} services (stored as categories)`);
+    business.serviceCategories.forEach((s, i) => {
+      console.log(` - [${i + 1}] ${s.title} (${s._id})`);
     });
 
     const appointments = await Appoint.find({ business: businessId })
       .populate("staff", "name")
       .sort({ createdAt: -1 });
 
-    // Map the appointments to include service titles
+    console.log(`[INFO] Fetched ${appointments.length} appointments`);
+
     const appointmentsWithServiceTitles = appointments.map(appointment => {
       const appointmentObj = appointment.toObject();
-      
-      // If service is a number (index), get the title from serviceMap
-      if (typeof appointment.service === 'number' && serviceMap[appointment.service]) {
-        appointmentObj.service = {
-          _id: appointment.service,
-          title: serviceMap[appointment.service]
-        };
-      } else if (appointment.service) {
-        // If service is an ObjectId string, try to find it in serviceCategories
-        const serviceIndex = business.serviceCategories.findIndex(
-          (_, index) => index.toString() === appointment.service.toString()
-        );
-        if (serviceIndex !== -1) {
-          appointmentObj.service = {
-            _id: appointment.service,
-            title: business.serviceCategories[serviceIndex].title
-          };
-        } else {
-          appointmentObj.service = null;
-        }
+      const rawService = appointment.service;
+      const appointmentServiceId = rawService?._id?.toString() || rawService?.toString();
+
+      console.log(`\n[DEBUG] Processing Appointment ID: ${appointment._id}`);
+      console.log(` - Customer: ${appointment.customer?.name}`);
+      console.log(` - Service ID: ${appointmentServiceId}`);
+
+      const matchedService = business.serviceCategories.find(
+        s => s._id?.toString() === appointmentServiceId
+      );
+
+      if (!matchedService && appointmentServiceId) {
+        console.warn(` ❌ No matching service for ${appointmentServiceId}`);
+        console.log(' 🔍 Available service IDs:', business.serviceCategories.map(s => s._id?.toString()));
       } else {
-        appointmentObj.service = null;
+        console.log(` ✅ Matched service: ${matchedService?.title}`);
       }
+
+      appointmentObj.service = matchedService
+        ? {
+            _id: matchedService._id,
+            title: matchedService.title,
+            price: matchedService.price,
+            duration: matchedService.duration
+          }
+        : null;
 
       return appointmentObj;
     });
 
     res.status(200).json({ success: true, data: appointmentsWithServiceTitles });
+
   } catch (err) {
-    console.error("Error fetching appointments:", err);
+    console.error("[FATAL] Error fetching appointments:", err);
     next(err);
   }
 };
+
 
 // Get total bookings for a business
 const getTotalBookings = async (req, res, next) => {
@@ -150,105 +155,137 @@ const getMonthlyRevenue = async (req, res, next) => {
   }
 };
 
-// Get today's appointments for a business
+
 const getTodaysAppointments = async (req, res, next) => {
   try {
     const { businessId } = req.params;
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
+    console.log(`[INFO] Fetching business ${businessId}`);
     const business = await Business.findById(businessId);
     if (!business) {
+      console.error(`[ERROR] Business ${businessId} not found`);
       return res.status(404).json({ success: false, message: "Business not found" });
     }
 
-    const serviceMap = {};
-    business.serviceCategories.forEach((service, index) => {
-      serviceMap[index] = service.title;
+    // Log available service categories (which are services in your case)
+    console.log(`[INFO] Service Categories (acting as services): ${business.serviceCategories.length}`);
+    business.serviceCategories.forEach((s, i) => {
+      console.log(` - [${i + 1}] ${s.title} (${s._id})`);
     });
 
     const appointments = await Appoint.find({ business: businessId, date: todayStr })
       .populate("staff", "name")
       .sort({ time: 1 });
 
+    console.log(`[INFO] Found ${appointments.length} appointments on ${todayStr}`);
+
     const appointmentsWithServiceTitles = appointments.map(appointment => {
       const appointmentObj = appointment.toObject();
-      if (typeof appointment.service === 'number' && serviceMap[appointment.service]) {
-        appointmentObj.service = {
-          _id: appointment.service,
-          title: serviceMap[appointment.service]
-        };
-      } else if (appointment.service) {
-        const serviceIndex = business.serviceCategories.findIndex(
-          (_, index) => index.toString() === appointment.service.toString()
-        );
-        if (serviceIndex !== -1) {
-          appointmentObj.service = {
-            _id: appointment.service,
-            title: business.serviceCategories[serviceIndex].title
-          };
-        } else {
-          appointmentObj.service = null;
-        }
+      const rawService = appointment.service;
+      const appointmentServiceId = rawService?._id?.toString() || rawService?.toString();
+
+      console.log(`\n[DEBUG] Processing Appointment ID: ${appointment._id}`);
+      console.log(` - Customer: ${appointment.customer?.name}`);
+      console.log(` - Service ID in appointment: ${appointmentServiceId}`);
+
+      let matchedService = business.serviceCategories.find(
+        s => s._id?.toString() === appointmentServiceId
+      );
+
+      if (!matchedService && appointmentServiceId) {
+        console.warn(` ❌ No matching service found for ID: ${appointmentServiceId}`);
+        console.log(' 🔍 All available service IDs:', business.serviceCategories.map(s => s._id?.toString()));
       } else {
-        appointmentObj.service = null;
+        console.log(` ✅ Matched service: ${matchedService?.title}`);
       }
+
+      appointmentObj.service = matchedService
+        ? {
+            _id: matchedService._id,
+            title: matchedService.title,
+            price: matchedService.price,
+            duration: matchedService.duration
+          }
+        : null;
+
       return appointmentObj;
     });
 
     res.status(200).json({ success: true, data: appointmentsWithServiceTitles });
+
   } catch (err) {
-    console.error("Error fetching today's appointments:", err);
+    console.error("[FATAL] Error in getTodaysAppointments:", err);
     next(err);
   }
 };
 
+
+// Get recent bookings for a business (last 5)
 // Get recent bookings for a business (last 5)
 const getRecentBookings = async (req, res, next) => {
   try {
     const { businessId } = req.params;
+
+    console.log(`[INFO] Fetching business ${businessId}`);
     const business = await Business.findById(businessId);
     if (!business) {
       return res.status(404).json({ success: false, message: "Business not found" });
     }
-    const serviceMap = {};
-    business.serviceCategories.forEach((service, index) => {
-      serviceMap[index] = service.title;
+
+    console.log(`[INFO] Found ${business.serviceCategories.length} service categories`);
+    business.serviceCategories.forEach((s, i) => {
+      console.log(` - [${i + 1}] ${s.title} (${s._id})`);
     });
+
     const appointments = await Appoint.find({ business: businessId })
       .populate("staff", "name")
       .sort({ createdAt: -1 })
       .limit(5);
+
+    console.log(`[INFO] Fetched ${appointments.length} recent appointments`);
+
     const appointmentsWithServiceTitles = appointments.map(appointment => {
       const appointmentObj = appointment.toObject();
-      if (typeof appointment.service === 'number' && serviceMap[appointment.service]) {
-        appointmentObj.service = {
-          _id: appointment.service,
-          title: serviceMap[appointment.service]
-        };
-      } else if (appointment.service) {
-        const serviceIndex = business.serviceCategories.findIndex(
-          (_, index) => index.toString() === appointment.service.toString()
-        );
-        if (serviceIndex !== -1) {
-          appointmentObj.service = {
-            _id: appointment.service,
-            title: business.serviceCategories[serviceIndex].title
-          };
-        } else {
-          appointmentObj.service = null;
-        }
+      const rawService = appointment.service;
+      const appointmentServiceId = rawService?._id?.toString() || rawService?.toString();
+
+      console.log(`\n[DEBUG] Processing Appointment ID: ${appointment._id}`);
+      console.log(` - Customer: ${appointment.customer?.name}`);
+      console.log(` - Service ID: ${appointmentServiceId}`);
+
+      const matchedService = business.serviceCategories.find(
+        s => s._id?.toString() === appointmentServiceId
+      );
+
+      if (!matchedService && appointmentServiceId) {
+        console.warn(` ❌ No matching service for ${appointmentServiceId}`);
+        console.log(' 🔍 Available service IDs:', business.serviceCategories.map(s => s._id?.toString()));
       } else {
-        appointmentObj.service = null;
+        console.log(` ✅ Matched service: ${matchedService?.title}`);
       }
+
+      appointmentObj.service = matchedService
+        ? {
+            _id: matchedService._id,
+            title: matchedService.title,
+            price: matchedService.price,
+            duration: matchedService.duration
+          }
+        : null;
+
       return appointmentObj;
     });
+
     res.status(200).json({ success: true, data: appointmentsWithServiceTitles });
+
   } catch (err) {
-    console.error("Error fetching recent bookings:", err);
+    console.error("[FATAL] Error fetching recent bookings:", err);
     next(err);
   }
 };
+
 
 // Get appointments for a customer by email
 const getAppointmentsForCustomer = async (req, res, next) => {
