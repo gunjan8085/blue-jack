@@ -5,6 +5,7 @@ const appointSchema = new mongoose.Schema(
     business: { type: mongoose.Schema.Types.ObjectId, ref: "Business", required: true },
     service: { type: mongoose.Schema.Types.ObjectId, ref: "Service", required: true },
     staff: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     customer: {
       name: { type: String, required: true },
       email: { type: String, required: true },

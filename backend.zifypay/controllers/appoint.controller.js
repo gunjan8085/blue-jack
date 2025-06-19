@@ -8,10 +8,10 @@ const Employee = require("../models/employee.model");
 const createAppointment = async (req, res, next) => {
   try {
     const { businessId } = req.params;
-    const { service, staff, date, time, customer } = req.body;
+    const { service, staff, date, time, customer, user } = req.body;
 
     // Basic checks
-    if (!service || !staff || !date || !time || !customer?.name || !customer?.email || !customer?.phone) {
+    if (!service || !staff || !date || !time || !customer?.name || !customer?.email || !customer?.phone || !user) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
@@ -19,6 +19,7 @@ const createAppointment = async (req, res, next) => {
       business: businessId,
       service,
       staff,
+      user,
       date,
       time,
       customer,
@@ -249,6 +250,66 @@ const getRecentBookings = async (req, res, next) => {
   }
 };
 
+// Get appointments for a customer by email
+const getAppointmentsForCustomer = async (req, res, next) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+    const appointments = await Appoint.find({ "customer.email": email })
+      .populate("business", "name")
+      .populate("service", "title")
+      .populate("staff", "name")
+      .sort({ date: -1, time: -1 });
+    res.status(200).json({ success: true, data: appointments });
+  } catch (err) {
+    console.error("Error fetching customer appointments:", err);
+    next(err);
+  }
+};
+
+// Get appointments for a user by userId
+const getAppointmentsForUser = async (req, res, next) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
+    const appointments = await Appoint.find({ user: userId })
+      .populate("business", "brandName thumbnail avgReview address")
+      .populate("service", "name serviceType duration")
+      .populate("staff", "name profilePicUrl")
+      .sort({ date: -1, time: -1 });
+
+    // Map to frontend expected format
+    const mapped = appointments.map((apt) => {
+      return {
+        id: apt._id,
+        businessName: apt.business?.brandName || "",
+        serviceName: apt.service?.name || "",
+        staffName: apt.staff?.name || "",
+        date: apt.date,
+        time: apt.time,
+        status: apt.status,
+        logo: apt.business?.thumbnail || "",
+        category: apt.service?.serviceType || "",
+        businessRating: apt.business?.avgReview || 0,
+        duration: apt.service?.duration || 0,
+        location: apt.business?.address ? `${apt.business.address.addressLine1}, ${apt.business.address.city}` : "",
+        paymentAmount: apt.paymentAmount || 0,
+        paymentStatus: apt.paymentStatus || "pending",
+        userRating: apt.userRating || 0,
+        userReview: apt.userReview || "",
+      };
+    });
+    res.status(200).json({ success: true, data: mapped });
+  } catch (err) {
+    console.error("Error fetching user appointments:", err);
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -256,4 +317,6 @@ module.exports = {
   getMonthlyRevenue,
   getTodaysAppointments,
   getRecentBookings,
+  getAppointmentsForCustomer,
+  getAppointmentsForUser,
 };

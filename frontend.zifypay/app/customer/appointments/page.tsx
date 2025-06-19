@@ -28,118 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-
-// Mock appointment data
-const mockAppointments = [
-  {
-    id: 1,
-    businessName: "Elite Hair Studio",
-    category: "Beauty & Wellness",
-    logo: "/placeholder.svg?height=60&width=60",
-    serviceName: "Premium Hair Cut & Styling",
-    date: "2024-01-15",
-    time: "10:00 AM",
-    duration: 90,
-    location: "123 Fashion Ave, New York, NY",
-    status: "confirmed",
-    paymentAmount: 85,
-    paymentMode: "Credit Card",
-    paymentStatus: "paid",
-    userRating: 5,
-    userReview: "Amazing service! The stylist was very professional and I love my new look.",
-    businessRating: 4.8,
-  },
-  {
-    id: 2,
-    businessName: "TechFix Solutions",
-    category: "Technology",
-    logo: "/placeholder.svg?height=60&width=60",
-    serviceName: "Laptop Screen Repair",
-    date: "2024-01-18",
-    time: "2:30 PM",
-    duration: 120,
-    location: "456 Tech Street, San Francisco, CA",
-    status: "pending",
-    paymentAmount: 150,
-    paymentMode: "PayPal",
-    paymentStatus: "pending",
-    userRating: null,
-    userReview: null,
-    businessRating: 4.6,
-  },
-  {
-    id: 3,
-    businessName: "Wellness Spa Retreat",
-    category: "Health & Wellness",
-    logo: "/placeholder.svg?height=60&width=60",
-    serviceName: "Deep Tissue Massage",
-    date: "2024-01-12",
-    time: "4:00 PM",
-    duration: 60,
-    location: "789 Zen Boulevard, Los Angeles, CA",
-    status: "completed",
-    paymentAmount: 120,
-    paymentMode: "Cash",
-    paymentStatus: "paid",
-    userRating: 4,
-    userReview: "Very relaxing experience. The therapist was skilled and the ambiance was perfect.",
-    businessRating: 4.9,
-  },
-  {
-    id: 4,
-    businessName: "AutoCare Express",
-    category: "Automotive",
-    logo: "/placeholder.svg?height=60&width=60",
-    serviceName: "Full Car Detailing",
-    date: "2024-01-20",
-    time: "9:00 AM",
-    duration: 180,
-    location: "321 Motor Way, Chicago, IL",
-    status: "confirmed",
-    paymentAmount: 200,
-    paymentMode: "Debit Card",
-    paymentStatus: "paid",
-    userRating: null,
-    userReview: null,
-    businessRating: 4.7,
-  },
-  {
-    id: 5,
-    businessName: "Dental Care Plus",
-    category: "Healthcare",
-    logo: "/placeholder.svg?height=60&width=60",
-    serviceName: "Teeth Cleaning & Checkup",
-    date: "2024-01-08",
-    time: "11:30 AM",
-    duration: 45,
-    location: "654 Health Plaza, Miami, FL",
-    status: "cancelled",
-    paymentAmount: 75,
-    paymentMode: "Insurance",
-    paymentStatus: "refunded",
-    userRating: null,
-    userReview: null,
-    businessRating: 4.5,
-  },
-  {
-    id: 6,
-    businessName: "Fitness First Gym",
-    category: "Fitness",
-    logo: "/placeholder.svg?height=60&width=60",
-    serviceName: "Personal Training Session",
-    date: "2024-01-25",
-    time: "6:00 PM",
-    duration: 60,
-    location: "987 Fitness Street, Austin, TX",
-    status: "confirmed",
-    paymentAmount: 60,
-    paymentMode: "Monthly Plan",
-    paymentStatus: "paid",
-    userRating: null,
-    userReview: null,
-    businessRating: 4.4,
-  },
-]
+import { API_URL } from "@/lib/const"
 
 // Star Rating Component
 const StarRating = ({
@@ -435,17 +324,56 @@ const AppointmentSkeleton = () => (
 
 // Main Appointments Component
 export default function AppointmentsPage() {
-  const [appointments, setAppointments] = useState(mockAppointments)
+  const [appointments, setAppointments] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const itemsPerPage = 4
 
-  // Simulate loading
+  // Fetch appointments for the logged-in customer
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000)
-    return () => clearTimeout(timer)
+    const fetchAppointments = async () => {
+      setIsLoading(true)
+      try {
+        const userDataRaw = localStorage.getItem("userData")
+        if (!userDataRaw) throw new Error("User not logged in")
+        const userData = JSON.parse(userDataRaw)
+        const userId = userData._id
+        const res = await fetch(`${API_URL}/appointments/user?userId=${encodeURIComponent(userId)}`)
+        const result = await res.json()
+        if (result.success) {
+          // Map backend data to frontend format if needed
+          const mapped = result.data.map((apt: any) => ({
+            id: apt._id,
+            businessName: apt.business?.name || "",
+            serviceName: apt.service?.title || "",
+            staffName: apt.staff?.name || "",
+            date: apt.date,
+            time: apt.time,
+            status: apt.status,
+            // The following are placeholders or can be extended if backend provides them
+            logo: apt.business?.logo || "",
+            category: apt.service?.category || "",
+            businessRating: apt.business?.rating || 0,
+            duration: apt.service?.duration || 0,
+            location: apt.business?.address || "",
+            paymentAmount: apt.paymentAmount || 0,
+            paymentStatus: apt.paymentStatus || "pending",
+            userRating: apt.userRating || 0,
+            userReview: apt.userReview || "",
+          }))
+          setAppointments(mapped)
+        } else {
+          setAppointments([])
+        }
+      } catch (err) {
+        setAppointments([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchAppointments()
   }, [])
 
   // Filter appointments based on search and tab

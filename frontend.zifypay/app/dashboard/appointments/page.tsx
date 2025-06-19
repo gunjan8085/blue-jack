@@ -36,7 +36,16 @@ import { startOfWeek } from "date-fns/startOfWeek"
 import { getDay } from "date-fns/getDay"
 import { enUS } from "date-fns/locale/en-US"
 import "react-big-calendar/lib/css/react-big-calendar.css"
+import {
 
+  Users,
+  DollarSign,
+  Star,
+  TrendingUp,
+  Settings,
+  BarChart3,
+  CalendarDays,
+} from "lucide-react"
 // Types for API response
 interface Customer {
   name: string
@@ -71,11 +80,11 @@ interface ApiResponse {
   data: Appointment[]
 }
 
-const sidebarItems = [
+const   sidebarItems = [
   {
     title: "Overview",
     url: "/dashboard",
-    icon: Calendar,
+    icon: BarChart3,
   },
   {
     title: "Appointments",
@@ -85,28 +94,37 @@ const sidebarItems = [
   {
     title: "Services",
     url: "/dashboard/services",
-    icon: Calendar,
+    icon: Settings,
   },
   {
     title: "Staff",
     url: "/dashboard/staff",
-    icon: User,
+    icon: Users,
   },
   {
     title: "Customers",
     url: "/dashboard/customers",
-    icon: User,
+    icon: Users,
+  },
+  {
+    title: "Analytics",
+    url: "/dashboard/analytics",
+    icon: TrendingUp,
+  },
+  {
+    title: "Settings",
+    url: "/dashboard/settings",
+    icon: Settings,
   },
 ]
+
 
 function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center space-x-2 px-4 py-2">
-          <div className="h-8 w-8 bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">BB</span>
-          </div>
+        
           <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
             <img src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png" alt="" />
           </span>

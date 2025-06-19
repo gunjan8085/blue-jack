@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const appointController = require("../controllers/appoint.controller");
 
+// GET /api/v1/appointments/user?userId=...
+router.get("/user", appointController.getAppointmentsForUser);
 // POST /api/v1/appointments/:businessId/create
 router.post("/:businessId/create", appointController.createAppointment);
 
@@ -18,5 +20,10 @@ router.get("/:businessId/today", appointController.getTodaysAppointments);
 
 // GET /api/v1/appointments/:businessId/recent
 router.get("/:businessId/recent", appointController.getRecentBookings);
+
+// GET /api/v1/appointments/customer?email=...
+router.get("/customer", appointController.getAppointmentsForCustomer);
+
+
 
 module.exports = router;

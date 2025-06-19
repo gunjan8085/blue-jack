@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { API_URL } from "@/lib/const"
+import { getUserData } from "@/lib/auth"
 
 interface BusinessTiming {
   days: number[]
@@ -189,6 +190,7 @@ export default function BusinessProfilePage() {
       setBookingError(null)
       setBookingSuccess(null)
 
+      const user = getUserData();
       const payload = {
         service: selectedService._id,
         staff: selectedStaff,
@@ -199,7 +201,8 @@ export default function BusinessProfilePage() {
           email: customerInfo.email,
           phone: customerInfo.phone,
           notes: customerInfo.notes || ""
-        }
+        },
+        user: user?._id
       }
 
       const response = await fetch(`${API_URL}/appointments/${params.id}/create`, {
@@ -266,6 +269,21 @@ export default function BusinessProfilePage() {
     }
     return `${minutes}m`
   }
+
+  // Add a useEffect to pre-fill customerInfo when booking dialog opens
+  useEffect(() => {
+    if (isBookingOpen) {
+      const user = getUserData();
+      if (user) {
+        setCustomerInfo((prev) => ({
+          name: prev.name || user.firstName || user.name || "",
+          email: prev.email || user.email || "",
+          phone: prev.phone || user.phoneNumber || user.phone || "",
+          notes: prev.notes || ""
+        }));
+      }
+    }
+  }, [isBookingOpen]);
 
   if (isLoading) {
     return (

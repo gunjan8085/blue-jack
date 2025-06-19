@@ -7,6 +7,37 @@ import { ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Calendar,
+  Users,
+  DollarSign,
+  Star,
+  TrendingUp,
+  Clock,
+  Plus,
+  Settings,
+  BarChart3,
+  CalendarDays,
+} from "lucide-react"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import Link from 'next/link';
+import { Avatar } from '@/components/ui/avatar';
+import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+
 
 interface Service {
   title: string;
@@ -26,6 +57,95 @@ interface CreatedService {
   duration: number;
   imageUrl?: string;
   [key: string]: any;
+}
+
+
+
+const   sidebarItems = [
+  {
+    title: "Overview",
+    url: "/dashboard",
+    icon: BarChart3,
+  },
+  {
+    title: "Appointments",
+    url: "/dashboard/appointments",
+    icon: Calendar,
+  },
+  {
+    title: "Services",
+    url: "/dashboard/services",
+    icon: Settings,
+  },
+  {
+    title: "Staff",
+    url: "/dashboard/staff",
+    icon: Users,
+  },
+  {
+    title: "Customers",
+    url: "/dashboard/customers",
+    icon: Users,
+  },
+  {
+    title: "Analytics",
+    url: "/dashboard/analytics",
+    icon: TrendingUp,
+  },
+  {
+    title: "Settings",
+    url: "/dashboard/settings",
+    icon: Settings,
+  },
+]
+
+
+function AppSidebar() {
+  return (
+    <Sidebar>
+      <SidebarHeader>
+        <div className="flex items-center space-x-2 px-4 py-2">
+        
+          <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+            <img src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png" alt="" />
+          </span>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Business Dashboard</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {sidebarItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={item.title === "Appointments"}>
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        <div className="p-4">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src="/placeholder.svg?height=40&width=40" />
+              {/* <AvatarFallback>GG</AvatarFallback> */}
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium">Glow & Go Salon</p>
+              <p className="text-xs text-gray-500">Premium Plan</p>
+            </div>
+          </div>
+        </div>
+      </SidebarFooter>
+    </Sidebar>
+  )
 }
 
 const ServiceManagerPage = () => {
@@ -120,7 +240,27 @@ const ServiceManagerPage = () => {
     setLoading(false);
   };
 
+  
+  if (loading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading appointments...</p>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
+
   return (
+    <SidebarProvider>
+    <AppSidebar />
+    <SidebarInset>
     <main className="p-8 max-w-6xl mx-auto">
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-3xl font-bold mb-6 text-purple-800">Service Manager</h2>
@@ -196,6 +336,8 @@ const ServiceManagerPage = () => {
         )}
       </div>
     </main>
+    </SidebarInset>
+    </SidebarProvider>
   );
 };
 
