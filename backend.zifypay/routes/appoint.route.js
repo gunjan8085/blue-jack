@@ -35,4 +35,10 @@ router.get('/:businessId/today-bookings', appointController.getTodaysBookingsCou
 // GET /api/v1/appointments/:businessId/total-customers
 router.get('/:businessId/total-customers', appointController.getTotalCustomers);
 
+// GET /api/v1/appointments/user/completed?userId=...
+router.get("/user/completed", appointController.getCompletedAppointmentsForUser);
+
+// GET /api/v1/appointments/customer/completed?email=...
+router.get("/customer/completed", appointController.getCompletedAppointmentsForCustomerByEmail);
+
 module.exports = router;

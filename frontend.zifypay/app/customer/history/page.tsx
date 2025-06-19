@@ -9,15 +9,17 @@ import { Star, Search, Calendar, Clock, DollarSign, CheckCircle, Edit3, RotateCc
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import axios from "axios"
 
 interface Appointment {
   id: string
+  businessId: string
   businessName: string
   service: string
   date: string
   time: string
   price: number
-  status: "Paid" | "Pending"
+  status: "completed" | "pending" | "cancelled" | "confirmed"
   review?: {
     rating: number
     comment: string
@@ -60,6 +62,8 @@ const StarRating = ({
   )
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000/api/v1"
+
 export default function HistoryPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [search, setSearch] = useState("")
@@ -73,41 +77,45 @@ export default function HistoryPage() {
       const mockAppointments: Appointment[] = [
         {
           id: "1",
+          businessId: "b1",
           businessName: "Glow Salon",
           service: "Haircut + Styling",
           date: "2025-06-10",
           time: "3:00 PM",
           price: 800,
-          status: "Paid",
+          status: "completed",
           review: { rating: 4, comment: "Great service! The stylist was very professional and I love my new look." },
         },
         {
           id: "2",
+          businessId: "b2",
           businessName: "Tranquil Spa",
           service: "Full Body Massage",
           date: "2025-06-01",
           time: "5:00 PM",
           price: 1500,
-          status: "Paid",
+          status: "completed",
         },
         {
           id: "3",
+          businessId: "b3",
           businessName: "Elite Fitness",
           service: "Personal Training Session",
           date: "2025-05-28",
           time: "7:00 AM",
           price: 1200,
-          status: "Paid",
+          status: "completed",
           review: { rating: 5, comment: "Excellent trainer! Really pushed me to achieve my goals." },
         },
         {
           id: "4",
+          businessId: "b4",
           businessName: "Zen Wellness",
           service: "Yoga Class",
           date: "2025-05-25",
           time: "6:00 PM",
           price: 500,
-          status: "Pending",
+          status: "pending",
         },
       ]
       setAppointments(mockAppointments)
@@ -125,15 +133,38 @@ export default function HistoryPage() {
     }, 2000)
   }
 
-  const handleReviewSubmit = (id: string) => {
+  const handleReviewSubmit = async (id: string) => {
     const data = reviewData[id]
     if (!data) return
 
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, review: { rating: data.rating, comment: data.comment } } : a)),
-    )
-    setEditReview((prev) => ({ ...prev, [id]: false }))
-    setReviewData((prev) => ({ ...prev, [id]: { rating: 5, comment: "" } }))
+    // Find the appointment to get businessId
+    const appointment = appointments.find((a) => a.id === id)
+    if (!appointment) return
+
+    try {
+      // Replace with actual token logic
+      const token = localStorage.getItem("token") || ""
+      await axios.post(
+        `${API_BASE}/reviews`,
+        {
+          businessId: appointment.businessId || "", // You may need to add businessId to Appointment type
+          text: data.comment,
+          stars: data.rating,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, review: { rating: data.rating, comment: data.comment } } : a)),
+      )
+      setEditReview((prev) => ({ ...prev, [id]: false }))
+      setReviewData((prev) => ({ ...prev, [id]: { rating: 5, comment: "" } }))
+    } catch (err) {
+      alert("Failed to submit review. Please try again.")
+    }
   }
 
   const startEditReview = (appointment: Appointment) => {
@@ -159,8 +190,9 @@ export default function HistoryPage() {
 
   const filtered = appointments.filter(
     (a) =>
-      a.businessName.toLowerCase().includes(search.toLowerCase()) ||
-      a.service.toLowerCase().includes(search.toLowerCase()),
+      a.status === "completed" &&
+      (a.businessName.toLowerCase().includes(search.toLowerCase()) ||
+        a.service.toLowerCase().includes(search.toLowerCase())),
   )
 
   if (loading) {
@@ -249,14 +281,14 @@ export default function HistoryPage() {
                           <DollarSign className="w-5 h-5" />₹{appointment.price}
                         </div>
                         <Badge
-                          variant={appointment.status === "Paid" ? "default" : "secondary"}
+                          variant={appointment.status === "completed" ? "default" : "secondary"}
                           className={`${
-                            appointment.status === "Paid"
+                            appointment.status === "completed"
                               ? "bg-green-100 text-green-800 hover:bg-green-200"
                               : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                           }`}
                         >
-                          {appointment.status === "Paid" && <CheckCircle className="w-3 h-3 mr-1" />}
+                          {appointment.status === "completed" && <CheckCircle className="w-3 h-3 mr-1" />}
                           {appointment.status}
                         </Badge>
                       </div>

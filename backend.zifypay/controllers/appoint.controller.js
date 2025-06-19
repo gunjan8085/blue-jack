@@ -116,11 +116,11 @@ const getMonthlyRevenue = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Business not found" });
     }
 
-    // Find all appointments for this business in the current month
+    // Find all appointments for this business in the current month with status 'completed'
     const appointments = await Appoint.find({
       business: businessId,
       createdAt: { $gte: firstDay, $lte: lastDay },
-      status: { $ne: "cancelled" },
+      status: "completed",
     });
 
     // Calculate revenue by summing the price of each appointment's service
@@ -412,6 +412,90 @@ const getTotalCustomers = async (req, res, next) => {
   }
 };
 
+// Get completed appointments for a user by userId
+const getCompletedAppointmentsForUser = async (req, res, next) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
+    const appointments = await Appoint.find({ user: userId, status: "completed" })
+      .populate("business", "brandName thumbnail avgReview address")
+      .populate("service", "name serviceType duration")
+      .populate("staff", "name profilePicUrl")
+      .sort({ date: -1, time: -1 });
+
+    // Map to frontend expected format
+    const mapped = appointments.map((apt) => {
+      return {
+        id: apt._id,
+        businessId: apt.business?._id?.toString() || "",
+        businessName: apt.business?.brandName || "",
+        service: apt.service?.name || "",
+        staffName: apt.staff?.name || "",
+        date: apt.date,
+        time: apt.time,
+        status: apt.status,
+        logo: apt.business?.thumbnail || "",
+        category: apt.service?.serviceType || "",
+        businessRating: apt.business?.avgReview || 0,
+        duration: apt.service?.duration || 0,
+        location: apt.business?.address ? `${apt.business.address.addressLine1}, ${apt.business.address.city}` : "",
+        paymentAmount: apt.paymentAmount || 0,
+        paymentStatus: apt.paymentStatus || "pending",
+        userRating: apt.userRating || 0,
+        userReview: apt.userReview || "",
+      };
+    });
+    res.status(200).json({ success: true, data: mapped });
+  } catch (err) {
+    console.error("Error fetching completed user appointments:", err);
+    next(err);
+  }
+};
+
+// Get completed appointments for a customer by email
+const getCompletedAppointmentsForCustomerByEmail = async (req, res, next) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+    const appointments = await Appoint.find({ "customer.email": email, status: "completed" })
+      .populate("business", "brandName thumbnail avgReview address")
+      .populate("service", "name serviceType duration")
+      .populate("staff", "name profilePicUrl")
+      .sort({ date: -1, time: -1 });
+
+    // Map to frontend expected format
+    const mapped = appointments.map((apt) => {
+      return {
+        id: apt._id,
+        businessId: apt.business?._id?.toString() || "",
+        businessName: apt.business?.brandName || "",
+        service: apt.service?.name || "",
+        staffName: apt.staff?.name || "",
+        date: apt.date,
+        time: apt.time,
+        status: apt.status,
+        logo: apt.business?.thumbnail || "",
+        category: apt.service?.serviceType || "",
+        businessRating: apt.business?.avgReview || 0,
+        duration: apt.service?.duration || 0,
+        location: apt.business?.address ? `${apt.business.address.addressLine1}, ${apt.business.address.city}` : "",
+        paymentAmount: apt.paymentAmount || 0,
+        paymentStatus: apt.paymentStatus || "pending",
+        userRating: apt.userRating || 0,
+        userReview: apt.userReview || "",
+      };
+    });
+    res.status(200).json({ success: true, data: mapped });
+  } catch (err) {
+    console.error("Error fetching completed customer appointments:", err);
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -425,4 +509,6 @@ module.exports = {
   getTodaysRevenue,
   getTodaysBookingsCount,
   getTotalCustomers,
+  getCompletedAppointmentsForUser,
+  getCompletedAppointmentsForCustomerByEmail,
 };
