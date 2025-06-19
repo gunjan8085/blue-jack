@@ -89,7 +89,171 @@ const getAppointmentsForBusiness = async (req, res, next) => {
   }
 };
 
+// Get total bookings for a business
+const getTotalBookings = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const total = await Appoint.countDocuments({ business: businessId });
+    res.status(200).json({ success: true, totalBookings: total });
+  } catch (err) {
+    console.error("Error fetching total bookings:", err);
+    next(err);
+  }
+};
+
+// Get monthly revenue for a business
+const getMonthlyRevenue = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    // Fetch business to get serviceCategories (for price lookup)
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ success: false, message: "Business not found" });
+    }
+
+    // Find all appointments for this business in the current month
+    const appointments = await Appoint.find({
+      business: businessId,
+      createdAt: { $gte: firstDay, $lte: lastDay },
+      status: { $ne: "cancelled" },
+    });
+
+    // Calculate revenue by summing the price of each appointment's service
+    let revenue = 0;
+    appointments.forEach((appointment) => {
+      // Find the service in business.serviceCategories
+      let price = 0;
+      if (appointment.service) {
+        // Try to match by index (if stored as index)
+        if (typeof appointment.service === 'number' && business.serviceCategories[appointment.service]) {
+          price = business.serviceCategories[appointment.service].price || 0;
+        } else {
+          // Try to match by ObjectId string (if stored as ObjectId)
+          const serviceObj = business.serviceCategories.find((cat, idx) => {
+            return idx.toString() === appointment.service.toString();
+          });
+          if (serviceObj) price = serviceObj.price || 0;
+        }
+      }
+      revenue += price;
+    });
+
+    res.status(200).json({ success: true, monthlyRevenue: revenue });
+  } catch (err) {
+    console.error("Error calculating monthly revenue:", err);
+    next(err);
+  }
+};
+
+// Get today's appointments for a business
+const getTodaysAppointments = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ success: false, message: "Business not found" });
+    }
+
+    const serviceMap = {};
+    business.serviceCategories.forEach((service, index) => {
+      serviceMap[index] = service.title;
+    });
+
+    const appointments = await Appoint.find({ business: businessId, date: todayStr })
+      .populate("staff", "name")
+      .sort({ time: 1 });
+
+    const appointmentsWithServiceTitles = appointments.map(appointment => {
+      const appointmentObj = appointment.toObject();
+      if (typeof appointment.service === 'number' && serviceMap[appointment.service]) {
+        appointmentObj.service = {
+          _id: appointment.service,
+          title: serviceMap[appointment.service]
+        };
+      } else if (appointment.service) {
+        const serviceIndex = business.serviceCategories.findIndex(
+          (_, index) => index.toString() === appointment.service.toString()
+        );
+        if (serviceIndex !== -1) {
+          appointmentObj.service = {
+            _id: appointment.service,
+            title: business.serviceCategories[serviceIndex].title
+          };
+        } else {
+          appointmentObj.service = null;
+        }
+      } else {
+        appointmentObj.service = null;
+      }
+      return appointmentObj;
+    });
+
+    res.status(200).json({ success: true, data: appointmentsWithServiceTitles });
+  } catch (err) {
+    console.error("Error fetching today's appointments:", err);
+    next(err);
+  }
+};
+
+// Get recent bookings for a business (last 5)
+const getRecentBookings = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ success: false, message: "Business not found" });
+    }
+    const serviceMap = {};
+    business.serviceCategories.forEach((service, index) => {
+      serviceMap[index] = service.title;
+    });
+    const appointments = await Appoint.find({ business: businessId })
+      .populate("staff", "name")
+      .sort({ createdAt: -1 })
+      .limit(5);
+    const appointmentsWithServiceTitles = appointments.map(appointment => {
+      const appointmentObj = appointment.toObject();
+      if (typeof appointment.service === 'number' && serviceMap[appointment.service]) {
+        appointmentObj.service = {
+          _id: appointment.service,
+          title: serviceMap[appointment.service]
+        };
+      } else if (appointment.service) {
+        const serviceIndex = business.serviceCategories.findIndex(
+          (_, index) => index.toString() === appointment.service.toString()
+        );
+        if (serviceIndex !== -1) {
+          appointmentObj.service = {
+            _id: appointment.service,
+            title: business.serviceCategories[serviceIndex].title
+          };
+        } else {
+          appointmentObj.service = null;
+        }
+      } else {
+        appointmentObj.service = null;
+      }
+      return appointmentObj;
+    });
+    res.status(200).json({ success: true, data: appointmentsWithServiceTitles });
+  } catch (err) {
+    console.error("Error fetching recent bookings:", err);
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
+  getTotalBookings,
+  getMonthlyRevenue,
+  getTodaysAppointments,
+  getRecentBookings,
 };

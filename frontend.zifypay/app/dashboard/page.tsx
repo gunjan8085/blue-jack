@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Calendar,
   Users,
@@ -34,6 +34,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
+import { API_URL } from "@/lib/const"
 
 // Mock dashboard data
 const dashboardData = {
@@ -217,6 +218,91 @@ function AppSidebar() {
 
 export default function BusinessDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
+  const [totalBookings, setTotalBookings] = useState<number | null>(null)
+  const [monthlyRevenue, setMonthlyRevenue] = useState<number | null>(null)
+  const [loadingStats, setLoadingStats] = useState(true)
+  const [todaysAppointments, setTodaysAppointments] = useState<any[]>([])
+  const [loadingToday, setLoadingToday] = useState(true)
+  const [recentBookings, setRecentBookings] = useState<any[]>([])
+  const [loadingRecent, setLoadingRecent] = useState(true)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoadingStats(true)
+      try {
+        let businessId = null
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile')
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id
+          }
+        }
+        if (!businessId) return
+        // Fetch total bookings
+        const bookingsRes = await fetch(`${API_URL}/appointments/${businessId}/total-bookings`)
+        const bookingsData = await bookingsRes.json()
+        setTotalBookings(bookingsData.totalBookings ?? 0)
+        // Fetch monthly revenue
+        const revenueRes = await fetch(`${API_URL}/appointments/${businessId}/monthly-revenue`)
+        const revenueData = await revenueRes.json()
+        setMonthlyRevenue(revenueData.monthlyRevenue ?? 0)
+      } catch (err) {
+        setTotalBookings(0)
+        setMonthlyRevenue(0)
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+    fetchStats()
+  }, [])
+
+  useEffect(() => {
+    const fetchToday = async () => {
+      setLoadingToday(true)
+      try {
+        let businessId = null
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile')
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id
+          }
+        }
+        if (!businessId) return
+        const res = await fetch(`${API_URL}/appointments/${businessId}/today`)
+        const data = await res.json()
+        setTodaysAppointments(data.data || [])
+      } catch (err) {
+        setTodaysAppointments([])
+      } finally {
+        setLoadingToday(false)
+      }
+    }
+    fetchToday()
+  }, [])
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      setLoadingRecent(true)
+      try {
+        let businessId = null
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile')
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id
+          }
+        }
+        if (!businessId) return
+        const res = await fetch(`${API_URL}/appointments/${businessId}/recent`)
+        const data = await res.json()
+        setRecentBookings(data.data || [])
+      } catch (err) {
+        setRecentBookings([])
+      } finally {
+        setLoadingRecent(false)
+      }
+    }
+    fetchRecent()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -258,7 +344,7 @@ export default function BusinessDashboard() {
                 <Calendar className="h-4 w-4 opacity-90" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dashboardData.stats.totalBookings}</div>
+                <div className="text-2xl font-bold">{loadingStats ? '...' : totalBookings}</div>
                 <p className="text-xs opacity-90">+12% from last month</p>
               </CardContent>
             </Card>
@@ -269,7 +355,7 @@ export default function BusinessDashboard() {
                 <DollarSign className="h-4 w-4 opacity-90" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${dashboardData.stats.monthlyRevenue}</div>
+                <div className="text-2xl font-bold">{loadingStats ? '...' : `$${monthlyRevenue}`}</div>
                 <p className="text-xs opacity-90">+8% from last month</p>
               </CardContent>
             </Card>
@@ -313,31 +399,37 @@ export default function BusinessDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData.upcomingAppointments.map((appointment) => (
-                    <div
-                      key={appointment.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-purple-50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-purple-600">{appointment.time}</div>
+                  {loadingToday ? (
+                    <div>Loading...</div>
+                  ) : todaysAppointments.length === 0 ? (
+                    <div className="text-gray-500">No appointments for today.</div>
+                  ) : (
+                    todaysAppointments.map((appointment, idx) => (
+                      <div
+                        key={appointment._id || idx}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-purple-50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="text-center">
+                            <div className="text-lg font-semibold text-purple-600">{appointment.time}</div>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">{appointment.customer?.name}</h4>
+                            <p className="text-sm text-gray-600">{appointment.service?.title || '-'}</p>
+                            <p className="text-xs text-purple-600">with {appointment.staff?.name || '-'}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900">{appointment.customer}</h4>
-                          <p className="text-sm text-gray-600">{appointment.service}</p>
-                          <p className="text-xs text-purple-600">with {appointment.staff}</p>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
+                          <Button size="sm" className="bg-gradient-to-r from-purple-600 to-purple-700">
+                            Complete
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                        <Button size="sm" className="bg-gradient-to-r from-purple-600 to-purple-700">
-                          Complete
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -393,21 +485,27 @@ export default function BusinessDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData.recentBookings.slice(0, 4).map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{booking.customer}</h4>
-                        <p className="text-sm text-gray-600">{booking.service}</p>
-                        <p className="text-xs text-gray-500">
-                          {booking.date} at {booking.time}
-                        </p>
+                  {loadingRecent ? (
+                    <div>Loading...</div>
+                  ) : recentBookings.length === 0 ? (
+                    <div className="text-gray-500">No recent bookings.</div>
+                  ) : (
+                    recentBookings.map((booking, idx) => (
+                      <div key={booking._id || idx} className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{booking.customer?.name}</h4>
+                          <p className="text-sm text-gray-600">{booking.service?.title || '-'}</p>
+                          <p className="text-xs text-gray-500">
+                            {booking.date} at {booking.time}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
+                          {/* Price is not available in appoint model, so skip */}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
-                        <p className="text-sm font-medium text-gray-900 mt-1">${booking.price}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
