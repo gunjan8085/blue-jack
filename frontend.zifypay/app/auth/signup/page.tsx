@@ -45,7 +45,7 @@ export default function SignupPage() {
       setUserData(data.user);
 
       // Redirect to dashboard
-      router.push('/dashboard');
+      router.push('/auth/login');
     } catch (err: any) {
       setError(err.message);
     } finally {
