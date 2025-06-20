@@ -45,15 +45,11 @@ router.patch(
 
 router.post(
   "/:businessId/create",
-  authenticateBusinessToken,
-  checkIsOwner,
   employeeController.createEmployeeForBusiness
 );
 
 router.get(
   "/business/:businessId/all",
-  authenticateBusinessToken,
-  checkIsOwner,
   employeeController.getEmployeesForBusiness
 );
 
