@@ -46,6 +46,7 @@ import {
   BarChart3,
   CalendarDays,
 } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
 // Types for API response
 interface Customer {
   name: string
@@ -80,7 +81,7 @@ interface ApiResponse {
   data: Appointment[]
 }
 
-const   sidebarItems = [
+const sidebarItems = [
   {
     title: "Overview",
     url: "/dashboard",
@@ -124,7 +125,7 @@ function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center space-x-2 px-4 py-2">
-        
+
           <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
             <img src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png" alt="" />
           </span>
@@ -192,16 +193,16 @@ export default function AppointmentsPage() {
       try {
         setLoading(true)
         setError(null)
-        
+
         // Get business ID from localStorage
         const businessProfile = localStorage.getItem('businessProfile')
         if (!businessProfile) {
           throw new Error('Business profile not found')
         }
-        
+
         const business = JSON.parse(businessProfile)
         const businessId = business._id
-        
+
         // Get auth token
         const token = localStorage.getItem('token')
         if (!token) {
@@ -220,7 +221,7 @@ export default function AppointmentsPage() {
         }
 
         const data: ApiResponse = await response.json()
-        
+
         if (data.success) {
           setAppointments(data.data)
         } else {
@@ -263,10 +264,37 @@ export default function AppointmentsPage() {
     return matchesSearch && matchesStatus && matchesDate
   })
 
-  const handleStatusChange = (appointmentId: string, newStatus: string) => {
-    // Handle status change logic here
-    console.log(`Changing appointment ${appointmentId} status to ${newStatus}`)
+const handleStatusChange = async (appointmentId: string, newStatus: string) => {
+  try {
+    const token = localStorage.getItem("token")
+    if (!token) throw new Error("Auth token not found")
+
+    const res = await fetch(`${API_URL}/appointments/${appointmentId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status: newStatus })
+    })
+
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message || "Failed to update status")
+    toast({ title: "Status updated", description: `Status changed to ${newStatus}` })
+    setAppointments((prev: Appointment[]) =>
+      prev.map((apt) =>
+        apt._id === appointmentId
+          ? { ...apt, status: newStatus as Appointment["status"] }
+          : apt
+      )
+    )
+    
+  } catch (err: any) {
+    console.error("Error updating appointment status:", err.message)
+    alert("Failed to update status: " + err.message)
   }
+}
+
 
   // Transform appointments and staff for Big Calendar
   const events = appointments.map((apt) => ({
@@ -313,8 +341,8 @@ export default function AppointmentsPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error loading appointments</h3>
               <p className="text-gray-600 mb-4">{error}</p>
-              <Button 
-                onClick={() => window.location.reload()} 
+              <Button
+                onClick={() => window.location.reload()}
                 className="bg-gradient-to-r from-purple-600 to-purple-700"
               >
                 Try Again

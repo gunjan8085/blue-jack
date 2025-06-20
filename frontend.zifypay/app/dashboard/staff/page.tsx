@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Sidebar,
-  SidebarContent,
+  SidebarContent, 
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
@@ -30,6 +30,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 // Employee interface
 interface Employee {
@@ -70,6 +71,7 @@ export default function StaffPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [creatingEmployee, setCreatingEmployee] = useState(false)
+  const router = useRouter()
 
   // Get business ID from localStorage
   const getBusinessId = () => {
@@ -187,6 +189,16 @@ export default function StaffPage() {
         }),
       })
 
+      if (response.status === 401 || response.status === 403) {
+        toast({
+          title: "Unauthorized",
+          description: "You are not authorized to create staff. Please log in as a business owner.",
+          variant: "destructive",
+        })
+        router.push('/auth/login')
+        return
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -225,6 +237,14 @@ export default function StaffPage() {
       setCreatingEmployee(false)
     }
   }
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const businessProfile = localStorage.getItem('businessProfile');
+    if (!token || !businessProfile) {
+      router.push('/auth/login');
+    }
+  }, []);
 
   useEffect(() => {
     fetchEmployees()

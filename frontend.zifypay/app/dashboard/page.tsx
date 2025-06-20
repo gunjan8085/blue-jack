@@ -130,7 +130,7 @@ const dashboardData = {
   ],
 }
 
-const   sidebarItems = [
+const sidebarItems = [
   {
     title: "Overview",
     url: "/dashboard",
