@@ -262,7 +262,7 @@ export default function AppointmentsPage() {
     const matchesDate = dateFilter === "all" || appointment.date === dateFilter
 
     return matchesSearch && matchesStatus && matchesDate
-  })
+  })  
 
 const handleStatusChange = async (appointmentId: string, newStatus: string) => {
   try {
