@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/use-toast";
 import Image from "next/image";
+import { API_URL } from "@/lib/const";
 
 interface Appointment {
   id: string;
@@ -21,6 +22,21 @@ interface Appointment {
   userRating: number;
   paymentStatus: string;
 }
+
+const getStatusBadgeColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "confirmed":
+      return "bg-green-100 text-green-700 border border-green-300";
+    case "pending":
+      return "bg-yellow-100 text-yellow-700 border border-yellow-300";
+    case "cancelled":
+      return "bg-red-100 text-red-600 border border-red-300";
+    case "completed":
+      return "bg-blue-100 text-blue-700 border border-blue-300";
+    default:
+      return "bg-gray-100 text-gray-700 border border-gray-300";
+  }
+};
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -44,7 +60,7 @@ export default function AppointmentsPage() {
 
       try {
         const res = await fetch(
-          `http://localhost:5001/api/v1/appointments/user?userId=${userId}`
+          `${API_URL}/api/v1/appointments/user?userId=${userId}`
         );
         const data = await res.json();
 
@@ -72,13 +88,15 @@ export default function AppointmentsPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">My Appointments</h1>
+    <div className="max-w-5xl mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+        My Appointments
+      </h1>
 
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-md" />
+            <Skeleton key={i} className="h-28 w-full rounded-lg" />
           ))}
         </div>
       ) : appointments.length === 0 ? (
@@ -88,45 +106,66 @@ export default function AppointmentsPage() {
           {appointments.map((appt) => (
             <Card
               key={appt.id}
-              className="p-5 shadow-md border border-gray-200 flex flex-col sm:flex-row items-start gap-4"
+              className="p-5 shadow-md border border-gray-200 rounded-xl flex flex-col sm:flex-row items-start gap-6 hover:shadow-lg transition"
             >
-              {appt.logo && (
+              {appt.logo ? (
                 <Image
                   src={appt.logo}
                   alt="Business logo"
-                  width={100}
-                  height={100}
-                  className="rounded-lg object-cover"
+                  width={90}
+                  height={90}
+                  className="rounded-md object-cover border border-gray-200"
                 />
+              ) : (
+                <div className="w-[90px] h-[90px] bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-sm">
+                  No Logo
+                </div>
               )}
 
               <div className="flex-1 w-full">
-                <div className="flex justify-between items-center mb-1">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
                   <h2 className="text-xl font-semibold text-gray-800">
                     {appt.businessName}
                   </h2>
-                  <Badge variant="outline" className="capitalize">
+                  <span
+                    className={`text-sm px-2 py-1 rounded-md capitalize ${getStatusBadgeColor(
+                      appt.status
+                    )}`}
+                  >
                     {appt.status}
-                  </Badge>
+                  </span>
                 </div>
 
-                <p className="text-sm text-gray-600">
-                  <strong>Staff:</strong> {appt.staffName || "N/A"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Service:</strong>{" "}
-                  {appt.serviceName?.trim() || "N/A"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Date:</strong> {appt.date} at {appt.time}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Location:</strong> {appt.location || "N/A"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Payment:</strong>{" "}
-                  <span className="capitalize">{appt.paymentStatus}</span>
-                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700">
+                  <p>
+                    <strong>Staff:</strong> {appt.staffName || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Service:</strong>{" "}
+                    {appt.serviceName?.trim() || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Date:</strong> {appt.date}
+                  </p>
+                  <p>
+                    <strong>Time:</strong> {appt.time}
+                  </p>
+                  <p>
+                    <strong>Location:</strong> {appt.location || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Payment:</strong>{" "}
+                    <span className="capitalize">{appt.paymentStatus}</span>
+                  </p>
+                </div>
+
+                {appt.userReview && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600">
+                      <strong>Review:</strong> {appt.userReview}
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
           ))}
