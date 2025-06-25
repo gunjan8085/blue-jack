@@ -1,67 +1,97 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export default function HeroSection() {
+// Register ScrollTrigger plugin
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+export default function VideoSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Optional: re-play video on mount for Safari quirks
     const video = videoRef.current;
     if (video && video.paused) {
       video.play().catch(() => {});
     }
   }, []);
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.set(containerRef.current, {
+        opacity: 0,
+        y: 20,
+      });
+
+      gsap.to(containerRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+          toggleActions: "play none none reverse",
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-300 py-6">
-      {/* Hero Section with Video Background */}
-      <div className="relative h-screen overflow-hidden rounded-4xl mx-4">
-        {/* Video Background */}
-        <div className="absolute inset-0 h-full rounded-2xl overflow-hidden">
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            className="w-full h-full object-cover rounded-2xl"
+    <section
+      ref={sectionRef}
+      className="min-h-screen relative flex items-center"
+    >
+      {/* Split Background */}
+      <div className="absolute inset-0">
+        <div className="h-1/2 "></div>
+        <div className="h-1/2 bg-white"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 w-full py-20 px-6 lg:px-12">
+        <div className="max-w-5xl mx-auto">
+          <div
+            ref={containerRef}
+            className="bg-gray-200 rounded-2xl p-6 shadow-xl"
           >
-            <source src="/bg.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+            <div className="aspect-video w-full bg-gray-300 rounded-xl overflow-hidden relative">
+              {/* Video Element */}
+             <video
+                ref={videoRef}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+                preload="auto"
+                poster="/placeholder.svg?height=600&width=1000"
+              >
+                <source src="/bg.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              {/* Simple Play Button - Only shows when video is paused */}
+            </div>
 
-          {/* Video Overlay */}
-          <div className="absolute inset-0 bg-black/30 rounded-2xl" />
-        </div>
-
-        {/* Hero Content */}
-        <div className="absolute inset-0 flex items-center justify-start">
-          <div className="container mx-auto px-6 lg:px-12">
-            <div className="max-w-2xl">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-light text-white leading-tight tracking-wide">
-                CRAFTING
-                <br />
-                THE FUTURE
-              </h1>
+            {/* Video Title */}
+            <div className="mt-8 text-center">
+              <h3 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-3">
+                See ZifyPay in Action
+              </h3>
+              <p className="text-gray-600 text-lg">
+                Watch how our platform simplifies your business operations
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Right Bottom Corner Text Div */}
-        <div className="absolute bottom-0 right-0 max-w-sm">
-          <div className="bg-gray-300 p-6 rounded-tl-4xl">
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Modern Architecture
-            </h3>
-            <p className="text-gray-700 text-sm leading-relaxed mb-4">
-              We design and build innovative spaces that shape the future of
-              living and working environments.
-            </p>
-          </div>
-        </div>
       </div>
-    </div>
+    </section>
   );
 }
