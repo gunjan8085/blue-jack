@@ -7,7 +7,7 @@ const Navbar = () => {
         {/* Logo / Brand */}
         {/* <div className="text-2xl font-bold text-indigo-700">ZifyPay</div> */}
         <img
-          src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png"
+          src="https://res.cloudinary.com/dhehfjptn/image/upload/v1750750580/footerlog_pkjggc.svg"
           alt=""
           className="h-8 md:h-8 object-contain"
         />
