@@ -12,16 +12,22 @@ if (typeof window !== "undefined") {
 export default function VideoSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && video.paused) {
+      video.play().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Initial state - simple fade in only
       gsap.set(containerRef.current, {
         opacity: 0,
         y: 20,
       });
 
-      // Simple scroll-triggered animation
       gsap.to(containerRef.current, {
         opacity: 1,
         y: 0,
@@ -58,21 +64,19 @@ export default function VideoSection() {
           >
             <div className="aspect-video w-full bg-gray-300 rounded-xl overflow-hidden relative">
               {/* Video Element */}
-              <video
-                className="w-full h-full object-cover"
-                poster="/placeholder.svg?height=600&width=1000"
+             <video
+                ref={videoRef}
                 autoPlay
                 muted
                 loop
                 playsInline
+                className="w-full h-full object-cover"
+                preload="auto"
+                poster="/placeholder.svg?height=600&width=1000"
               >
-                <source
-                  src="https://res.cloudinary.com/dfcbjgt3w/video/upload/v1750748518/landing_page_kttiri.mp4"
-                  type="video/mp4"
-                />
+                <source src="/bg.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-
               {/* Simple Play Button - Only shows when video is paused */}
             </div>
 
