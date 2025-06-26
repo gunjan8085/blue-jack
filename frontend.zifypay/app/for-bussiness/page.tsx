@@ -469,7 +469,16 @@ const categories = [
 
 
 const FeatureCards = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+const [isMobile, setIsMobile] = useState(false); // default false
+
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }
+}, []);
 const features = [
   {
     title: "Manage",
@@ -715,7 +724,5 @@ const BusinessLandingPage = () => {
 };
 
 export default BusinessLandingPage;
-
-
 
 
