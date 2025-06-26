@@ -26,7 +26,7 @@ const Dropdown = ({ title, items }: { title: string; items: any[] }) => {
         <ChevronDown className="w-4 h-4 mt-0.5" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-56 bg-white border rounded-md shadow-lg z-50 transition-all duration-300 ease-in-out animate-fadeIn">
+        <div className="absolute top-full left-0 mt-2 w-64 bg-white border rounded-md shadow-lg z-50 transition-all duration-300 ease-in-out animate-fadeIn">
           <div className="py-2">
             {items.map((item, index) => (
               <a
@@ -46,34 +46,34 @@ const Dropdown = ({ title, items }: { title: string; items: any[] }) => {
 
 export const Navbar5 = () => {
   const features = [
-    { title: "Fuel Integration", href: "#" },
+    { title: "Fuel Pump Integration", href: "#" },
     { title: "Retail Store POS", href: "#" },
-    { title: "Payments", href: "#" },
+    { title: "Payments & Wallets", href: "#" },
     { title: "Compliance & Reporting", href: "#" },
   ];
 
   const dashboard = [
     { title: "Sales Analytics", href: "#" },
-    { title: "Inventory Tools", href: "#" },
-    { title: "User Management", href: "#" },
+    { title: "Inventory Control", href: "#" },
+    { title: "Role-Based Access", href: "#" },
   ];
 
   const solutions = [
-    { title: "Gas Stations", href: "#" },
-    { title: "Franchises", href: "#" },
-    { title: "Highway Retail", href: "#" },
+    { title: "Fuel Stations", href: "#" },
+    { title: "C-Stores & Franchises", href: "#" },
+    { title: "Highway Retail Chains", href: "#" },
   ];
 
   const resources = [
-    { title: "Docs", href: "#" },
-    { title: "FAQ", href: "#" },
+    { title: "Documentation", href: "#" },
+    { title: "FAQs", href: "#" },
     { title: "Changelog", href: "#" },
   ];
 
   const company = [
-    { title: "About", href: "#" },
+    { title: "About ZifyPay", href: "#" },
     { title: "Careers", href: "#" },
-    { title: "Contact", href: "#" },
+    { title: "Contact Us", href: "#" },
   ];
 
   return (
@@ -85,9 +85,8 @@ export const Navbar5 = () => {
             <img
               src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png"
               className="max-h-8"
-              alt="Logo"
+              alt="ZifyPay Logo"
             />
-           
           </a>
 
           {/* Desktop Menu */}
@@ -108,7 +107,7 @@ export const Navbar5 = () => {
           {/* Auth Buttons */}
           <div className="hidden lg:flex items-center gap-4">
             <Link href="/auth/login">
-            <Button variant="outline">Sign in</Button>
+              <Button variant="outline">Sign in</Button>
             </Link>
             <Button>Start for free</Button>
           </div>
@@ -125,12 +124,12 @@ export const Navbar5 = () => {
                 <SheetTitle>
                   <a href="#" className="flex items-center gap-2">
                     <img
-                      src="https://shadcnblocks.com/images/block/logos/shadcnblockscom-icon.svg"
+                      src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png"
                       className="max-h-8"
-                      alt="Logo"
+                      alt="ZifyPay Logo"
                     />
                     <span className="text-lg font-semibold tracking-tighter">
-                      zifypay POS
+                      ZifyPay POS
                     </span>
                   </a>
                 </SheetTitle>

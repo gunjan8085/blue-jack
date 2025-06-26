@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function CTASection() {
   return (
@@ -20,12 +21,17 @@ export default function CTASection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/book-a-demo">
               <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
                 Get started
               </button>
-              <button className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
-                Contact us
-              </button>
+              </Link>
+              <a href="tel:+19802560131">
+  <button className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
+    Contact us 📞 (980) 256-0131
+  </button>
+</a>
+
             </div>
           </div>
 

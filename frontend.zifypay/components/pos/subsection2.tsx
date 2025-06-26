@@ -10,23 +10,23 @@ export default function Subsection2() {
           <div className="space-y-8">
             <div className="space-y-6">
               <h1 className="text-4xl font-bold leading-tight text-black md:text-5xl lg:text-6xl">
-                Building Homes
+                Powering Fuel Retail
                 <br />
-                with Frame Technology
+                with Cloud Precision
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Cottages and houses built using frame technology receive wide
-                distribution due to the fact that many people have been serving
-                for decades.
+                ZifyPay delivers an all-in-one platform to run your fuel station
+                and convenience store — from pump control to retail billing,
+                compliance, and real-time analytics.
               </p>
             </div>
 
-            {/* House Frame Illustration */}
+            {/* Fuel Station Illustration */}
             <div className="flex justify-center lg:justify-start">
               <div className="relative">
                 <Image
                   src="https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/cstore-h-e1665871653429.png"
-                  alt="House frame construction illustration"
+                  alt="Fuel station integration illustration"
                   width={500}
                   height={300}
                   className="h-auto w-full max-w-md object-contain"
@@ -35,23 +35,23 @@ export default function Subsection2() {
             </div>
           </div>
 
-          {/* Right Side - Feature Cards (with image replacing icon) */}
+          {/* Right Side - ZifyPay Feature Cards */}
           <div className="space-y-4">
             {[
               {
-                title: "High Strength",
+                title: "Pump + POS Control",
                 description:
-                  "Frame construction provides exceptional structural integrity and durability for long-term use.",
+                  "Start, stop, and log transactions from Gilbarco or Wayne pumps directly from your POS — fully synchronized with billing and inventory.",
               },
               {
-                title: "Thermal Insulation",
+                title: "Real-Time Cloud Dashboard",
                 description:
-                  "Advanced insulation systems ensure optimal temperature control and energy efficiency.",
+                  "Access live sales, tank levels, compliance alerts, and more — all from one secure cloud panel with role-based access.",
               },
               {
-                title: "No Shrinkage",
+                title: "Zero-Fee Payment Processing",
                 description:
-                  "Frame technology eliminates structural settling and maintains dimensional stability over time.",
+                  "Accept cards, mobile wallets, and cash with ZifyPay’s zero-fee model. Fully PCI-DSS compliant with age verification support.",
               },
             ].map((item, index) => (
               <Card
@@ -59,11 +59,11 @@ export default function Subsection2() {
                 className="rounded-2xl bg-gray-800 p-6 text-white"
               >
                 <div className="flex items-start space-x-4">
-                  {/* Image instead of icon */}
+                  {/* Feature Image */}
                   <div className="w-24 h-24 flex-shrink-0">
                     <Image
                       src="https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17440.png"
-                      alt="Feature image"
+                      alt="Feature icon"
                       width={68}
                       height={68}
                       className="h-full w-full rounded-md object-contain bg-white p-1"

@@ -6,7 +6,6 @@ export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Optional: re-play video on mount for Safari quirks
     const video = videoRef.current;
     if (video && video.paused) {
       video.play().catch(() => {});
@@ -41,9 +40,9 @@ export default function HeroSection() {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="max-w-2xl">
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-light text-white leading-tight tracking-wide">
-                CRAFTING
+                Powering
                 <br />
-                THE FUTURE
+                Fuel + Retail + Payments
               </h1>
             </div>
           </div>
@@ -53,11 +52,11 @@ export default function HeroSection() {
         <div className="absolute bottom-0 right-0 max-w-sm">
           <div className="bg-gray-300 p-6 rounded-tl-4xl">
             <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Modern Architecture
+              Built for Petro Convenience
             </h3>
             <p className="text-gray-700 text-sm leading-relaxed mb-4">
-              We design and build innovative spaces that shape the future of
-              living and working environments.
+              ZifyPay streamlines your pumps, POS, and payment systems into one
+              powerful, compliant, and cloud-connected platform.
             </p>
           </div>
         </div>
