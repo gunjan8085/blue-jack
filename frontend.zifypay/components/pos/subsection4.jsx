@@ -3,47 +3,46 @@
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-
 const properties = [
   {
     id: 1,
-    title: "business analytics dashboard",
-    price: "hello",
+    title: "Real-Time Business Insights",
+    price: "Make smarter decisions with live dashboards and KPIs.",
     image:
       "https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17445-1.png",
   },
   {
     id: 2,
-    title: "Speed up data entry and reconciliation",
-    price: "hello",
+    title: "Faster Data Entry & Reconciliation",
+    price: "Eliminate manual errors and reduce reconciliation time.",
     image:
       "https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17445-1.png",
   },
   {
     id: 3,
-    title: "Improve merchandise forecasting",
-    price: "hello",
+    title: "Predictive Inventory Planning",
+    price: "Improve restocking accuracy with data-driven forecasting.",
     image:
       "https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17445-1.png",
   },
   {
     id: 4,
-    title: "Improve pricing consistency and employee efficiency",
-    price: "hello",
+    title: "Consistent Pricing & Staff Efficiency",
+    price: "Automate price updates and streamline staff operations.",
     image:
       "https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17445-1.png",
   },
   {
     id: 5,
-    title: "Centralize management of item-level inventory",
-    price: "hello",
+    title: "Centralized Inventory Control",
+    price: "Manage all items and SKUs across branches from one hub.",
     image:
       "https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17445-1.png",
   },
   {
     id: 6,
-    title: "Reduce travel time to different locations",
-    price: "hello",
+    title: "Multi-Location Monitoring",
+    price: "Track sales and performance without visiting each site.",
     image:
       "https://cdn-hhhjh.nitrocdn.com/ABYHEVzZQBqbfVtPnSAxaYVboWidAoVM/assets/images/optimized/rev-aa9dff5/petrosoftinc.com/wp-content/uploads/2022/09/Group-17445-1.png",
   },
@@ -51,30 +50,30 @@ const properties = [
 
 const paymentMethods = [
   {
-    title: "Home Loan",
+    title: "Zero-Fee Card Payments",
     description:
-      "We work with reliable partner banks that provide loans at 5.5% annual interest rate for home construction.",
+      "Process all card payments at 0% transaction cost using ZifyPay’s integrated payment gateway.",
     bgColor: "bg-gray-100",
     textColor: "text-gray-900",
   },
   {
-    title: "Government Subsidy",
+    title: "Cash & Wallet Compatibility",
     description:
-      "If you have received a government certificate, you can use it for home construction financing.",
+      "Accept payments via UPI, mobile wallets, and cash—fully tracked and compliant.",
     bgColor: "bg-gray-800",
     textColor: "text-white",
   },
   {
-    title: "State Benefits",
+    title: "Split & Partial Payments",
     description:
-      "We work with government programs to help you get preferential mortgages for construction projects.",
+      "Let customers split bills or pay in parts — ideal for group or retail purchases.",
     bgColor: "bg-gray-100",
     textColor: "text-gray-900",
   },
   {
-    title: "Cashless Payment",
+    title: "Hardware Integrated Payments",
     description:
-      "You can sign a contract and make payments through bank transfers and cashless transactions.",
+      "Seamlessly works with terminals, barcode scanners, and printers for fast checkout.",
     bgColor: "bg-gray-800",
     textColor: "text-white",
   },
@@ -83,21 +82,21 @@ const paymentMethods = [
 const steps = [
   {
     number: "01",
-    title: "Consultation & Design",
+    title: "Connect Fuel & Retail Hardware",
     description:
-      "We discuss your requirements and preferences for the house, determine the budget and create the project design.",
+      "Install ZifyPay POS and integrate with your pumps, terminals, and inventory systems.",
   },
   {
     number: "02",
-    title: "Construction",
+    title: "Customize Your Dashboard",
     description:
-      "Our team of specialists performs frame house construction taking into account all technical requirements.",
+      "Configure products, pricing, user roles, and loyalty programs with ease.",
   },
   {
     number: "03",
-    title: "Completion & Handover",
+    title: "Start Selling & Monitoring",
     description:
-      "We complete all types of work and deliver the finished house, conducting final inspection and handover.",
+      "Go live with real-time sales tracking, compliance reports, and multi-location control.",
   },
 ];
 

@@ -1,37 +1,36 @@
 "use client";
 import React, { useState } from "react";
 import { Plus, Minus } from "lucide-react";
-
 const faqs = [
   {
-    question: "How do I register my fuel station on zifypay?",
+    question: "How can I register my fuel station with ZifyPay?",
     answer:
-      "You can register your station by signing up and following the onboarding process in the admin dashboard.",
+      "Getting started is simple. Just sign up on our platform and follow the guided onboarding steps to register your fuel station and connect your pumps.",
   },
   {
-    question: "Is my data secure on zifypay?",
+    question: "Is my business data safe with ZifyPay?",
     answer:
-      "Yes, we use industry-standard encryption and security practices to keep your data safe.",
+      "Absolutely. We prioritize your security using advanced encryption, PCI-DSS compliance, and regular system audits to ensure your data is fully protected.",
   },
   {
-    question: "Can I manage multiple stations from one account?",
+    question: "Can I manage multiple outlets from a single account?",
     answer:
-      "Absolutely! zifypay allows you to manage multiple stations and pumps from a single dashboard.",
+      "Yes. ZifyPay's centralized dashboard lets you manage multiple fuel stations, C-stores, and terminals from one powerful interface.",
   },
   {
-    question: "How do I add or remove staff members?",
+    question: "How do I add or manage staff access?",
     answer:
-      "You can add or remove staff members in the Users section of the admin dashboard.",
+      "You can easily add, remove, or assign role-based permissions to staff under the 'User Management' section in your admin dashboard.",
   },
   {
-    question: "What payment methods are supported?",
+    question: "What payment options does ZifyPay support?",
     answer:
-      "zifypay supports cash, credit/debit cards, and digital wallets for customer transactions.",
+      "ZifyPay supports cash, card payments, UPI, and popular mobile wallets—all integrated with our zero-fee processing engine.",
   },
   {
-    question: "Is there customer support available?",
+    question: "Is customer support available if I need help?",
     answer:
-      "Yes, our support team is available 24/7 to assist you with any issues or questions.",
+      "Yes, our dedicated support team is available 24/7 via chat, email, and phone to help you resolve issues and keep operations smooth.",
   },
 ];
 
