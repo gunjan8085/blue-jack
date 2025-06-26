@@ -1,311 +1,273 @@
-import React from 'react';
-import Head from 'next/head';
+"use client"
 
-const ZifypayPage = () => {
+import { useState } from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { ChevronRight, Star, Users, TrendingUp, Shield } from "lucide-react"
+import Navbar, {  } from "@/components/landingPage/Navbar"
+import  Footer  from "@/components/Footer"
+import { PageNavigation } from "@/components/page-navigations"
+
+export default function GeneralStorePage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
-    <>
-      <Head>
-        <title>Zifypay - Point of Sale Solutions</title>
-        <meta name="description" content="General store point of sale solutions" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <Navbar />
 
-      <div className="min-h-screen bg-white">
-        {/* Header */}
-        <header className="bg-gray-900 text-white">
-          <div className="container mx-auto px-4 py-3">
-            <nav className="flex items-center justify-between">
-              <div className="flex items-center space-x-8">
-                <div className="text-2xl font-bold">Zifypay</div>
-                <div className="hidden md:flex space-x-6">
-                  <div className="relative group">
-                    <button className="flex items-center space-x-1 hover:text-blue-400">
-                      <span>Solutions</span>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="relative group">
-                    <button className="flex items-center space-x-1 hover:text-blue-400">
-                      <span>Products we serve</span>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="relative group">
-                    <button className="flex items-center space-x-1 hover:text-blue-400">
-                      <span>Customers</span>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                  <a href="#" className="hover:text-blue-400">Pricing</a>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
-                  Request a demo
-                </button>
-                <button className="border border-gray-600 hover:border-gray-400 px-4 py-2 rounded text-sm">
-                  Build a Price
-                </button>
-              </div>
-            </nav>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-50 to-white py-16">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row items-center">
-              <div className="lg:w-1/2 mb-8 lg:mb-0">
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                  General store<br />
-                  point of sale
+      {/* Hero Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8 animate-fade-in-up">
+              <div className="space-y-4">
+                <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                  General store point of sale
                 </h1>
-                <p className="text-gray-600 text-lg mb-8 max-w-md">
-                  Zifypay systems are perfectly suited for individuals and commercials POS for selling goods at superstores.
-                </p>
-                <div className="flex space-x-4">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
-                    Request a demo
-                  </button>
-                  <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-6 py-3 rounded-lg">
-                    Build a Price
-                  </button>
-                </div>
-              </div>
-              <div className="lg:w-1/2">
-                {/* POS System Image Placeholder */}
-                <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">POS System Image</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* How IT Retail helps Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row items-center">
-              <div className="lg:w-1/2 mb-8 lg:mb-0 lg:pr-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  How IT Retail helps<br />
-                  your store
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  A typical general store carries 5,000+ products across multiple categories. Our POS system manages complex inventory and product catalog, department, maintain the right stock levels, and serve customers faster — all while giving you the critical insights you need to grow your business.
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  The complete POS solution for general stores. Manage inventory, process payments, and grow your
+                  business with our all-in-one platform.
                 </p>
               </div>
-              <div className="lg:w-1/2">
-                {/* Store Image Placeholder */}
-                <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Store Image</span>
-                </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                >
+                  Start Free Trial
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                >
+                  Schedule Demo
+                </Button>
+              </div>
+            </div>
+            <div className="relative animate-fade-in-right">
+              <div className="relative transform hover:scale-105 transition-transform duration-500">
+                <Image
+                  src="/placeholder.svg?height=400&width=600"
+                  alt="POS Terminal"
+                  width={600}
+                  height={400}
+                  className="rounded-lg shadow-2xl"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-lg"></div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Take it anywhere Section */}
-        <section className="bg-blue-600 text-white py-16">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-6">Take it anywhere</h2>
-            <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-              Keep track of your store wherever you go. All of your data is securely backed up to the cloud so that you can see sales, inventory, employee performance, and more from anywhere. So, you can use any device like your laptop, tablet, or phone to check in.
-            </p>
-            
-            {/* Global Commerce Image Placeholder */}
-            <div className="w-full h-64 bg-blue-500 rounded-lg flex items-center justify-center mb-8">
-              <span className="text-blue-200">Global Commerce Image</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="border-2 border-dashed border-blue-300 rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">
-                Keep checkout convenient
-              </h3>
-              <p className="text-center text-gray-600 mb-12">
-                IT Retail supports the fastest 1D payment technology, including Apple Pay, Google Pay, IC, 
-                Second EMV, EBT, and swipe. The faster your customers can check out, the happier they'll be.
+      {/* How It Helps Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+            <div className="space-y-6 animate-fade-in-left">
+              <h2 className="text-3xl font-bold text-gray-900">How IT Retail helps your business grow</h2>
+              <p className="text-gray-600 leading-relaxed">
+                Our comprehensive retail solution streamlines your operations, reduces costs, and helps you make
+                data-driven decisions to grow your business.
               </p>
-
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600">💳</span>
+              <ul className="space-y-4">
+                <li className="flex items-start space-x-3">
+                  <TrendingUp className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Increase Sales</h4>
+                    <p className="text-gray-600">Advanced analytics and customer insights to boost revenue</p>
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">New payment tech</h4>
-                  <p className="text-gray-600 text-sm">
-                    Full support for Apple Pay, Google Pay, EMV, and more. 
-                    Add to the mix QR, credit transactions even when offline internet is down.
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600">🛒</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Users className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Better Customer Service</h4>
+                    <p className="text-gray-600">Faster checkouts and personalized customer experiences</p>
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Sell age-restricted items</h4>
-                  <p className="text-gray-600 text-sm">
-                    Sell almost cigarettes and other restricted items. Let the 
-                    cashiers check by the bar by enforcing the date of birth to be 
-                    confirmed by manager app and a very age-out limit.
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600">⚡</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Shield className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Secure Transactions</h4>
+                    <p className="text-gray-600">End-to-end encryption and PCI compliance</p>
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Always fast</h4>
-                  <p className="text-gray-600 text-sm">
-                    We understand that checkout lines need to be fast and 
-                    check out customers at lightning speed. That's what we did.
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-center mt-12">
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
-                  Talk with an expert
-                </button>
-              </div>
+                </li>
+              </ul>
+            </div>
+            <div className="animate-fade-in-right">
+              <Image
+                src="/placeholder.svg?height=400&width=500"
+                alt="Business Growth"
+                width={500}
+                height={400}
+                className="rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Inventory Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row items-center">
-              <div className="lg:w-1/2 mb-8 lg:mb-0">
-                {/* Inventory Management Image Placeholder */}
-                <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Inventory Management Image</span>
-                </div>
-              </div>
-              <div className="lg:w-1/2 lg:pl-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Inventory made easy
-                </h2>
-                <p className="text-gray-600">
-                  Keeping track of your products is essential for maximizing profits. Our general store inventory management solution makes it easy to keep track of a diverse inventory.
-                </p>
-              </div>
+      {/* Blue CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-white animate-fade-in-left">
+              <h2 className="text-3xl font-bold mb-4">Ready to take a chance on your business?</h2>
+              <p className="text-xl text-blue-100 mb-6">
+                Join thousands of successful retailers who have transformed their business with our platform.
+              </p>
+              <Button
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+              >
+                Get Started Today
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+            <div className="animate-fade-in-right">
+              <Image
+                src="/placeholder.svg?height=300&width=400"
+                alt="Success Story"
+                width={400}
+                height={300}
+                className="rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Manage Employees Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row items-center">
-              <div className="lg:w-1/2 mb-8 lg:mb-0 lg:pr-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Manage employees
-                </h2>
-                <p className="text-gray-600">
-                  We know keeping track of employees is difficult, especially when your store is always open. Our personal store planning system combines inventory management and employee performance to provide intelligent insights on every transaction.
-                </p>
-              </div>
-              <div className="lg:w-1/2">
-                {/* Employee Management Image Placeholder */}
-                <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Employee Management Image</span>
-                </div>
-              </div>
+      {/* Features Grid */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+            <div className="animate-fade-in-left">
+              <Image
+                src="/placeholder.svg?height=300&width=500"
+                alt="Inventory Management"
+                width={500}
+                height={300}
+                className="rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <div className="space-y-6 animate-fade-in-right">
+              <h3 className="text-2xl font-bold text-gray-900">Inventory made easy</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Keep track of your stock levels, set up automatic reorder points, and never run out of your best-selling
+                items again.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-gray-700">Real-time stock tracking</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-gray-700">Low stock alerts</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-gray-700">Supplier management</span>
+                </li>
+              </ul>
             </div>
           </div>
-        </section>
 
-        {/* We Work Hard Section */}
-        <section className="py-16 bg-blue-600 text-white">
-          <div className="container mx-auto px-4">
-            <div className="border-2 border-dashed border-blue-300 rounded-lg p-8">
-              <div className="flex flex-col lg:flex-row items-center">
-                <div className="lg:w-1/2 mb-8 lg:mb-0">
-                  {/* Team Image Placeholder */}
-                  <div className="w-full h-80 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-200">Team Working Image</span>
-                  </div>
-                </div>
-                <div className="lg:w-1/2 lg:pl-8 text-center lg:text-left">
-                  <h2 className="text-3xl font-bold mb-6">We work hard, just like you</h2>
-                  <p className="text-blue-100 mb-8">
-                    IT Retail is built and supported by the team at IT Retail. We spend 1000's of hours every month working to deliver better solutions for our customers every day. We are always available to help you with practical, that fit the scene and problems.
-                  </p>
-                  <button className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold">
-                    Get a quote
-                  </button>
-                </div>
-              </div>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-6 animate-fade-in-left">
+              <h3 className="text-2xl font-bold text-gray-900">All-in-one business management</h3>
+              <p className="text-gray-600 leading-relaxed">
+                From sales and inventory to customer management and reporting, everything you need is in one integrated
+                platform.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-gray-700">Integrated payment processing</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-gray-700">Customer relationship management</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-gray-700">Advanced reporting and analytics</span>
+                </li>
+              </ul>
+            </div>
+            <div className="animate-fade-in-right">
+              <Image
+                src="/placeholder.svg?height=300&width=500"
+                alt="Business Management"
+                width={500}
+                height={300}
+                className="rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Footer */}
-        <footer className="bg-blue-600 text-white py-12">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row justify-between">
-              <div className="mb-8 lg:mb-0">
-                <div className="text-2xl font-bold mb-6">Zifypay</div>
-                <div>
-                  <h4 className="font-semibold mb-4">Quick Links:</h4>
-                  <ul className="space-y-2">
-                    <li><a href="#" className="text-blue-200 hover:text-white">Features</a></li>
-                    <li><a href="#" className="text-blue-200 hover:text-white">Pricing</a></li>
-                    <li><a href="#" className="text-blue-200 hover:text-white">Contact</a></li>
-                    <li><a href="#" className="text-blue-200 hover:text-white">Blog</a></li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-4">Contact Info:</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <span>📞</span>
-                    <span className="text-blue-200">+91-91043-XXXX</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span>✉️</span>
-                    <span className="text-blue-200">support@zifypay.com</span>
-                  </div>
-                </div>
-                
-                <div className="flex space-x-4 mt-6">
-                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                    <span className="text-xs">in</span>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                    <span className="text-xs">ig</span>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                    <span className="text-xs">wa</span>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                    <span className="text-xs">tw</span>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                    <span className="text-xs">fb</span>
-                  </div>
-                </div>
-              </div>
+      {/* Blue Infrastructure Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-fade-in-up">
+            <h2 className="text-4xl font-bold text-white mb-6">Take it anywhere</h2>
+            <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto">
+              Our cloud-based infrastructure ensures your business runs smoothly whether you're in-store, at a market,
+              or managing remotely.
+            </p>
+            <div className="relative">
+              <Image
+                src="/placeholder.svg?height=300&width=800"
+                alt="Cloud Infrastructure"
+                width={800}
+                height={300}
+                className="rounded-lg shadow-2xl mx-auto transform hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent rounded-lg"></div>
             </div>
           </div>
-        </footer>
-      </div>
-    </>
-  );
-};
+        </div>
+      </section>
 
-export default ZifypayPage;
+      {/* Final CTA */}
+      <section className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-fade-in-up">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Easy omnichannel experiences</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              Seamlessly connect your online and offline sales channels for a unified customer experience.
+            </p>
+            <div className="space-y-4 mb-8">
+              <div className="flex items-center justify-center space-x-2">
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <span className="text-gray-600 ml-2">Trusted by 10,000+ businesses</span>
+              </div>
+            </div>
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
+              Start Your Journey Today
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <PageNavigation />
+
+      {/* Footer */}
+      <Footer />
+    </div>
+  )
+}

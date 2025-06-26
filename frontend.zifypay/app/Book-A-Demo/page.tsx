@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/landingPage/Navbar";
 export default function Home() {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -189,14 +190,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
 
   return (
     <>
-      {" "}
-      <div className="bg-blue-600 flex items-center justify-center">
-        <img
-          src="/image.png"
-          alt="Description"
-          className=" h-12 object-cover mt-12"
-        />
-      </div>
+<Navbar/>
       <div className="min-h-screen bg-blue-600 flex items-center justify-center p-4">
         <div className="w-full max-w-6xl mx-auto">
           <div className="text-center mb-8 mt-28">

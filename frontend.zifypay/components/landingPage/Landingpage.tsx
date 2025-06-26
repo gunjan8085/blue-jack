@@ -4,7 +4,7 @@ import VideoSection from "./video-section-simple";
 import FeaturesSection from "./features-section";
 import ModulesSection from "./modules-section";
 import CtaSection from "./cta-section";
-import Footer from "./footer";
+import {Footer} from "./footer";
 import BenefitsSection from "./benefits-section"
 
 export default function Home() {
