@@ -23,12 +23,12 @@ export default function VideoSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.set(containerRef.current, {
-        opacity: 0,
-        y: 20,
-      });
+      const container = containerRef.current;
 
-      gsap.to(containerRef.current, {
+      // Initial fade in
+      gsap.set(container, { opacity: 0, y: 20, scale: 1 });
+
+      gsap.to(container, {
         opacity: 1,
         y: 0,
         duration: 0.6,
@@ -39,6 +39,19 @@ export default function VideoSection() {
           toggleActions: "play none none reverse",
         },
       });
+
+      // Scroll-based scale effect
+     gsap.to(container, {
+  scale: 1.3,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: sectionRef.current,
+    start: "top 80%",     // starts early
+    end: "center center", // max scale by mid-scroll
+    scrub: true,
+  },
+});
+
     }, sectionRef);
 
     return () => ctx.revert();
@@ -51,7 +64,7 @@ export default function VideoSection() {
     >
       {/* Split Background */}
       <div className="absolute inset-0">
-        <div className="h-1/2 "></div>
+        <div className="h-1/2"></div>
         <div className="h-1/2 bg-white"></div>
       </div>
 
@@ -60,11 +73,10 @@ export default function VideoSection() {
         <div className="max-w-5xl mx-auto">
           <div
             ref={containerRef}
-            className="bg-gray-200 rounded-2xl p-6 shadow-xl"
+            className="bg-gray-200 rounded-2xl p-6 shadow-xl will-change-transform"
           >
             <div className="aspect-video w-full bg-gray-300 rounded-xl overflow-hidden relative">
-              {/* Video Element */}
-             <video
+              <video
                 ref={videoRef}
                 autoPlay
                 muted
@@ -77,7 +89,6 @@ export default function VideoSection() {
                 <source src="/bg.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-              {/* Simple Play Button - Only shows when video is paused */}
             </div>
 
             {/* Video Title */}
