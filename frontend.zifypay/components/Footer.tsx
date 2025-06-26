@@ -1,5 +1,13 @@
 import Link from 'next/link'
 import React from 'react'
+import { FacebookIcon, InstagramIcon, YoutubeIcon, LinkedinIcon } from 'lucide-react'
+
+const socialLinks = [
+  { title: "Facebook", href: "https://www.facebook.com/profile.php?id=61573019611246", icon: FacebookIcon },
+  { title: "Instagram", href: "https://www.instagram.com/zifypay?igsh=MTFkZmM0M20zYjV2Zw==", icon: InstagramIcon },
+  { title: "Youtube", href: "https://www.youtube.com/watch?v=qjCH13g3wqY", icon: YoutubeIcon },
+  { title: "LinkedIn", href: "https://www.linkedin.com/company/zifypay/posts/?feedView=all", icon: LinkedinIcon },
+]
 
 function Footer() {
   return (
@@ -79,7 +87,14 @@ function Footer() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <div className="flex justify-center space-x-6 mt-8 mb-4">
+            {socialLinks.map(({ title, href, icon: Icon }, idx) => (
+              <Link key={title} href={href} target="_blank" rel="noopener noreferrer" aria-label={title} className="hover:text-blue-400 transition-colors">
+                <Icon className="h-6 w-6" />
+              </Link>
+            ))}
+          </div>
+          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
             <p>&copy; 2025 zifypay.com. All rights reserved.</p>
           </div>
         </div>
