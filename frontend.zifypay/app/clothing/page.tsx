@@ -8,6 +8,112 @@ import Navbar from "@/components/landingPage/Navbar"
 import Footer from "@/components/Footer"
 import SquareSection from "@/components/square-section"
 
+// --- Section Data ---
+const heroSection = {
+  title: "Square for Plant\n& Garden",
+  subtitle: "Tech that helps your business bloom",
+  image: "/clothing/image.png",
+  cta: [
+    { label: "Get started", variant: "primary" },
+    { label: "Contact sales", variant: "secondary" },
+  ],
+}
+
+const experienceSection = {
+  title: "Give your customers the best experience",
+  features: [
+    {
+      heading: "Take payments seamlessly",
+      points: [
+        "Take payments from the counter on the floor, or anywhere else that makes sense.",
+        "Fast tap, dip, swipe that lets customers pay how they want.",
+        "Quickly check out customers with a POS and that you can customize to fit your workflow.",
+        "Expand your offerings by hosting events, workshops, or pop-ups with Square Appointments.",
+      ],
+      image: "/placeholder.svg?height=400&width=500",
+      imageAlt: "Woman using tablet for payments",
+      imageLeft: false,
+    },
+    {
+      heading: "Stay on top of stock",
+      points: [
+        "Automatically sync inventory across locations and devices.",
+        "Stay stocked and ready with automatic alerts that let you know when it's time to restock.",
+        "Send purchase orders and easily receive stock with bulk inventory intake.",
+        "Use insights on sales trends, profit margins, and top-performing plants and items to make informed decisions.",
+      ],
+      image: "/placeholder.svg?height=400&width=500",
+      imageAlt: "Man in business attire working with plants",
+      imageLeft: true,
+    },
+  ],
+}
+
+const loyaltySection = {
+  features: [
+    {
+      heading: "Keep customers coming back",
+      points: [
+        "Build profiles for your customers and track their preferences with every purchase.",
+        "Reward customers with loyalty programs and discounts that keep them coming back.",
+        "Share how customers can place or reserve pick-up orders.",
+        "Encourage repeat visits with Square Loyalty and keep customers engaged with Square Marketing.",
+      ],
+      image: "/placeholder.svg?height=300&width=400",
+      imageAlt: "Person in cap working in garden center",
+      imageLeft: false,
+    },
+    {
+      heading: "Lead your team",
+      points: [
+        "Give your team the tools they need to be successful.",
+        "Track different roles, schedules, hours, and more with one type of employee.",
+        "Motivate staff to upsell and cross-sell with availability.",
+        "Pay your employees based on tracked hours and automatically track overtime.",
+      ],
+      image: "/placeholder.svg?height=200&width=400",
+      imageAlt: "Silhouettes of people walking",
+      imageLeft: true,
+    },
+  ],
+  testimonial: {
+    leftImg: "/clothing/testimonial-left.jpg",
+    rightImg: "/clothing/testimonial-right.jpg",
+    name: "Hank Gregg",
+    location: "Market at Grelen Somerset, VA",
+    quote:
+      "Because we're such a large company, having Square organize all the items behind the scenes gives us the freedom to interact with our clients, help the local community, and continue to grow in the ways that we really want to.",
+    link: { href: "#", label: "See all Stories ↗" },
+  },
+}
+
+const moreWaysSection = [
+  {
+    title: "Square Loans*",
+    description:
+      "Get funding to make your next move with Square Capital. Repay as a percentage of your daily sales, so payments based on your daily sales.",
+    link: "Explore Square Loans →",
+  },
+  {
+    title: "Square Checking",
+    description:
+      "Your Square sales are automatically (and instantly) deposited into your checking account. Spend with the Square debit card, digitally, or in person.",
+    link: "Explore Square Checking →",
+  },
+  {
+    title: "Square Savings*",
+    description:
+      "Set aside a percentage of your sales to plan for slower seasons, big purchases, or anything else you need with Square Savings.",
+    link: "Explore Square Savings →",
+  },
+  {
+    title: "Square Online",
+    description:
+      "Reach customers where they shop by getting online with Square Online or by integrating your existing website. Sync your in-store and online inventory data and sync in real time, and you can offer in-store pickup.",
+    link: "Explore Square Online →",
+  },
+]
+
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false)
 
@@ -23,25 +129,35 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-purple-400/10 animate-pulse"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative"> {/* Increased py-20 to py-24 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div
               className={`transform transition-all duration-1000 ${isVisible ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`}
             >
-              <h1 className="text-5xl font-bold text-gray-900 mb-6 animate-fade-in-up">
-                Square for Plant
-                <br />& Garden
+              <h1 className="text-6xl font-extrabold text-gray-900 mb-8 animate-fade-in-up"> {/* text-5xl to text-6xl, font-bold to font-extrabold, mb-6 to mb-8 */}
+                {heroSection.title.split("\n").map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
               </h1>
-              <p className="text-xl text-gray-600 mb-8 animate-fade-in-up animation-delay-200">
-                Tech that helps your business bloom
+              <p className="text-2xl text-gray-700 mb-10 animate-fade-in-up animation-delay-200"> {/* text-xl to text-2xl, mb-8 to mb-10, text-gray-600 to text-gray-700 */}
+                {heroSection.subtitle}
               </p>
-              <div className="flex space-x-4 animate-fade-in-up animation-delay-400">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  Get started
-                </Button>
-                <Button className="bg-white text-gray-700 border-gray-300 px-8 py-3 rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:border-blue-300">
-                  Contact sales
-                </Button>
+              <div className="flex space-x-6 animate-fade-in-up animation-delay-400"> {/* space-x-4 to space-x-6 */}
+                {heroSection.cta.map((btn, i) => (
+                  <Button
+                    key={btn.label}
+                    className={
+                      btn.variant === "primary"
+                        ? "bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" // px-8 py-3 to px-10 py-4, text-lg
+                        : "bg-white text-gray-700 border-gray-300 px-10 py-4 text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:border-blue-300"
+                    }
+                  >
+                    {btn.label}
+                  </Button>
+                ))}
               </div>
             </div>
             <div
@@ -49,8 +165,8 @@ export default function Home() {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-green-400/20 rounded-lg blur-xl animate-pulse"></div>
               <Image
-                src="/clothing/image.png"
-                alt="Yellow pansy flower in garden setting"
+                src={heroSection.image}
+                alt="Hero image"
                 width={600}
                 height={400}
                 className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
@@ -61,165 +177,127 @@ export default function Home() {
       </section>
 
       {/* Give customers best experience */}
-      <section className="py-20 relative">
+      <section className="py-24 relative"> {/* py-20 to py-24 */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16 animate-fade-in-up">
-            Give your customers the best experience
+          <h2 className="text-5xl font-extrabold text-center text-gray-900 mb-20 animate-fade-in-up"> {/* text-4xl to text-5xl, font-bold to font-extrabold, mb-16 to mb-20 */}
+            {experienceSection.title}
           </h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="animate-slide-in-left">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Take payments seamlessly</h3>
-              <div className="space-y-4">
-                {[
-                  "Take payments from the counter on the floor, or anywhere else that makes sense.",
-                  "Fast tap, dip, swipe that lets customers pay how they want.",
-                  "Quickly check out customers with a POS and that you can customize to fit your workflow.",
-                  "Expand your offerings by hosting events, workshops, or pop-ups with Square Appointments.",
-                ].map((text, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 animate-fade-in-up"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 animate-pulse"></div>
-                    <p className="text-gray-700">{text}</p>
+          {experienceSection.features.map((feature, idx) => (
+            <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24"> {/* mb-20 to mb-24 */}
+              {feature.imageLeft && (
+                <div className="animate-slide-in-left">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <Image
+                      src={feature.image}
+                      alt={feature.imageAlt}
+                      width={500}
+                      height={400}
+                      className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
-                ))}
+                </div>
+              )}
+              <div className={feature.imageLeft ? "animate-slide-in-right" : "animate-slide-in-left"}>
+                <h3 className="text-3xl font-bold text-gray-900 mb-8"> {/* text-2xl to text-3xl, mb-6 to mb-8 */}
+                  {feature.heading}
+                </h3>
+                <div className="space-y-6"> {/* space-y-4 to space-y-6 */}
+                  {feature.points.map((text, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start space-x-4 animate-fade-in-up" /* space-x-3 to space-x-4 */
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <div className="w-3 h-3 bg-blue-600 rounded-full mt-2 animate-pulse"></div> {/* w-2 h-2 to w-3 h-3 */}
+                      <p className="text-lg text-gray-700"> {/* text-gray-700, text-lg */}
+                        {text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="animate-slide-in-right">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                <Image
-                  src="/placeholder.svg?height=400&width=500"
-                  alt="Woman using tablet for payments"
-                  width={500}
-                  height={400}
-                  className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-slide-in-left">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-blue-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                <Image
-                  src="/placeholder.svg?height=400&width=500"
-                  alt="Man in business attire working with plants"
-                  width={500}
-                  height={400}
-                  className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            </div>
-            <div className="animate-slide-in-right">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Stay on top of stock</h3>
-              <div className="space-y-4">
-                {[
-                  "Automatically sync inventory across locations and devices.",
-                  "Stay stocked and ready with automatic alerts that let you know when it's time to restock.",
-                  "Send purchase orders and easily receive stock with bulk inventory intake.",
-                  "Use insights on sales trends, profit margins, and top-performing plants and items to make informed decisions.",
-                ].map((text, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 animate-fade-in-up"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 animate-pulse"></div>
-                    <p className="text-gray-700">{text}</p>
+              {!feature.imageLeft && (
+                <div className="animate-slide-in-right">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <Image
+                      src={feature.image}
+                      alt={feature.imageAlt}
+                      width={500}
+                      height={400}
+                      className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* Keep customers coming back */}
-      <section className="bg-gradient-to-br from-gray-50 to-blue-50 py-20 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-gray-50 to-blue-50 py-24 relative overflow-hidden"> {/* py-20 to py-24 */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400/5 to-purple-400/5 animate-pulse"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="animate-slide-in-left">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Keep customers coming back</h3>
-              <div className="space-y-4">
-                {[
-                  "Build profiles for your customers and track their preferences with every purchase.",
-                  "Reward customers with loyalty programs and discounts that keep them coming back.",
-                  "Share how customers can place or reserve pick-up orders.",
-                  "Encourage repeat visits with Square Loyalty and keep customers engaged with Square Marketing.",
-                ].map((text, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 animate-fade-in-up"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 animate-pulse"></div>
-                    <p className="text-gray-700">{text}</p>
+          {loyaltySection.features.map((feature, idx) => (
+            <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24"> {/* mb-20 to mb-24 */}
+              {feature.imageLeft && (
+                <div className="animate-slide-in-left">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <Image
+                      src={feature.image}
+                      alt={feature.imageAlt}
+                      width={400}
+                      height={300}
+                      className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
-                ))}
+                </div>
+              )}
+              <div className={feature.imageLeft ? "animate-slide-in-right" : "animate-slide-in-left"}>
+                <h3 className="text-3xl font-bold text-gray-900 mb-8"> {/* text-2xl to text-3xl, mb-6 to mb-8 */}
+                  {feature.heading}
+                </h3>
+                <div className="space-y-6"> {/* space-y-4 to space-y-6 */}
+                  {feature.points.map((text, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start space-x-4 animate-fade-in-up"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <div className="w-3 h-3 bg-blue-600 rounded-full mt-2 animate-pulse"></div>
+                      <p className="text-lg text-gray-700">{text}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="animate-slide-in-right">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                <Image
-                  src="/placeholder.svg?height=300&width=400"
-                  alt="Person in cap working in garden center"
-                  width={400}
-                  height={300}
-                  className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="animate-slide-in-left">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                <Image
-                  src="/placeholder.svg?height=200&width=400"
-                  alt="Silhouettes of people walking"
-                  width={400}
-                  height={200}
-                  className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            </div>
-            <div className="animate-slide-in-right">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Lead your team</h3>
-              <div className="space-y-4">
-                {[
-                  "Give your team the tools they need to be successful.",
-                  "Track different roles, schedules, hours, and more with one type of employee.",
-                  "Motivate staff to upsell and cross-sell with availability.",
-                  "Pay your employees based on tracked hours and automatically track overtime.",
-                ].map((text, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 animate-fade-in-up"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 animate-pulse"></div>
-                    <p className="text-gray-700">{text}</p>
+              {!feature.imageLeft && (
+                <div className="animate-slide-in-right">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-lg blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <Image
+                      src={feature.image}
+                      alt={feature.imageAlt}
+                      width={400}
+                      height={300}
+                      className="rounded-lg relative z-10 hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          </div>
+          ))}
 
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-0 text-white shadow-2xl hover:shadow-3xl transition-all duration-500 animate-fade-in-up mt-12">
+          {/* Testimonial Section */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-0 text-white shadow-2xl hover:shadow-3xl transition-all duration-500 animate-fade-in-up mt-16"> {/* mt-12 to mt-16 */}
             <div className="grid grid-cols-1 md:grid-cols-3 items-stretch">
               {/* Left Image */}
               <div className="hidden md:block h-full">
                 <Image
-                  src="/clothing/testimonial-left.jpg"
+                  src={loyaltySection.testimonial.leftImg}
                   alt="Testimonial left"
                   width={260}
                   height={260}
@@ -227,23 +305,23 @@ export default function Home() {
                 />
               </div>
               {/* Center Testimonial */}
-              <div className="flex flex-col justify-center items-center text-center px-6 py-10 md:py-0 bg-blue-700">
-                <h3 className="text-2xl font-bold mb-2">Hank Gregg</h3>
-                <h4 className="text-lg font-semibold mb-4">Market at Grelen Somerset, VA</h4>
-                <p className="mb-6 text-blue-100 max-w-xl">
-                  “Because we're such a large company, having Square organize all the items behind the scenes gives us the freedom to interact with our clients, help the local community, and continue to grow in the ways that we really want to.”
+              <div className="flex flex-col justify-center items-center text-center px-8 py-14 md:py-0 bg-blue-700"> {/* px-6 to px-8, py-10 to py-14 */}
+                <h3 className="text-3xl font-extrabold mb-2">{loyaltySection.testimonial.name}</h3> {/* text-2xl to text-3xl, font-bold to font-extrabold */}
+                <h4 className="text-xl font-semibold mb-4">{loyaltySection.testimonial.location}</h4> {/* text-lg to text-xl */}
+                <p className="mb-8 text-blue-100 max-w-2xl text-lg"> {/* mb-6 to mb-8, max-w-xl to max-w-2xl, text-lg */}
+                  “{loyaltySection.testimonial.quote}”
                 </p>
                 <a
-                  href="#"
-                  className="text-white font-semibold underline hover:text-blue-200 transition-colors duration-200"
+                  href={loyaltySection.testimonial.link.href}
+                  className="text-white font-semibold underline hover:text-blue-200 transition-colors duration-200 text-lg"
                 >
-                  See all Stories ↗
+                  {loyaltySection.testimonial.link.label}
                 </a>
               </div>
               {/* Right Image */}
               <div className="hidden md:block h-full">
                 <Image
-                  src="/clothing/testimonial-right.jpg"
+                  src={loyaltySection.testimonial.rightImg}
                   alt="Testimonial right"
                   width={260}
                   height={260}
@@ -256,54 +334,30 @@ export default function Home() {
       </section>
 
       {/* More ways to grow */}
-      <section className="py-20 relative">
+      <section className="py-24 relative"> {/* py-20 to py-24 */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-50/20 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16 animate-fade-in-up">More ways to grow</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-            {[
-              {
-                title: "Square Loans*",
-                description:
-                  "Get funding to make your next move with Square Capital. Repay as a percentage of your daily sales, so payments based on your daily sales.",
-                link: "Explore Square Loans →",
-              },
-              {
-                title: "Square Checking",
-                description:
-                  "Your Square sales are automatically (and instantly) deposited into your checking account. Spend with the Square debit card, digitally, or in person.",
-                link: "Explore Square Checking →",
-              },
-              {
-                title: "Square Savings*",
-                description:
-                  "Set aside a percentage of your sales to plan for slower seasons, big purchases, or anything else you need with Square Savings.",
-                link: "Explore Square Savings →",
-              },
-              {
-                title: "Square Online",
-                description:
-                  "Reach customers where they shop by getting online with Square Online or by integrating your existing website. Sync your in-store and online inventory data and sync in real time, and you can offer in-store pickup.",
-                link: "Explore Square Online →",
-              },
-            ].map((item, index) => (
+          <h2 className="text-5xl font-extrabold text-center text-gray-900 mb-20 animate-fade-in-up"> {/* text-4xl to text-5xl, font-bold to font-extrabold, mb-16 to mb-20 */}
+            More ways to grow
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20"> {/* gap-8 to gap-12 */}
+            {moreWaysSection.map((item, index) => (
               <Card
                 key={index}
                 className="hover:shadow-xl transition-all duration-500 hover:scale-105 animate-fade-in-up border-0 shadow-lg"
                 style={{ animationDelay: `${index * 200}ms` }}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <div className="w-8 h-8 bg-white rounded-lg"></div>
+                <CardContent className="p-8"> {/* p-6 to p-8 */}
+                  <div className="flex items-start space-x-6"> {/* space-x-4 to space-x-6 */}
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"> 
+                      <div className="w-10 h-10 bg-white rounded-lg"></div> 
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-gray-700 mb-4">{item.description}</p>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">{item.title}</h3> {/* text-xl to text-2xl, mb-2 to mb-4 */}
+                      <p className="text-lg text-gray-700 mb-6">{item.description}</p> {/* text-gray-700, text-lg, mb-4 to mb-6 */}
                       <Button
                         variant="link"
-                        className="text-blue-600 p-0 hover:text-blue-800 transition-colors duration-300"
+                        className="text-blue-600 p-0 hover:text-blue-800 transition-colors duration-300 text-lg"
                       >
                         {item.link}
                       </Button>
