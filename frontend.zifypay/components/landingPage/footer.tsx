@@ -1,150 +1,197 @@
-"use client";
+"use client"
 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Link from "next/link";
-import {
-  Phone,
-  Mail,
-  Linkedin,
-  Instagram,
-  MessageCircle,
-  Twitter,
-  Facebook,
-} from "lucide-react";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { ArrowRight, Mail, Phone, MapPin } from "lucide-react"
 
-// Register ScrollTrigger plugin
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+// Easy to configure footer data
+const footerConfig = {
+  company: {
+    name: "⚡ Pyxis",
+    description: "The complete commerce platform for modern businesses.",
+    contact: {
+      email: "hello@pyxis.com",
+      phone: "+1 (555) 123-4567",
+      address: "123 Business Ave, Suite 100, San Francisco, CA 94105",
+    },
+  },
+  sections: [
+    {
+      title: "Solutions",
+      links: [
+        { label: "Point of Sale", href: "/pos" },
+        { label: "Payments", href: "/payments" },
+        { label: "Inventory", href: "/inventory" },
+        { label: "Analytics", href: "/analytics" },
+        { label: "Customer Management", href: "/customers" },
+      ],
+    },
+    {
+      title: "Products",
+      links: [
+        { label: "Starter Plan", href: "/pricing/starter" },
+        { label: "Professional", href: "/pricing/pro" },
+        { label: "Enterprise", href: "/pricing/enterprise" },
+        { label: "Compare Plans", href: "/pricing/compare" },
+        { label: "Request Demo", href: "/demo" },
+      ],
+    },
+    {
+      title: "Resources",
+      links: [
+        { label: "Documentation", href: "/docs" },
+        { label: "API Reference", href: "/api" },
+        { label: "Help Center", href: "/help" },
+        { label: "Blog", href: "/blog" },
+        { label: "Case Studies", href: "/case-studies" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About Us", href: "/about" },
+        { label: "Careers", href: "/careers" },
+        { label: "Press", href: "/press" },
+        { label: "Partners", href: "/partners" },
+        { label: "Contact", href: "/contact" },
+      ],
+    },
+  ],
+  newsletter: {
+    title: "Stay updated",
+    description: "Get the latest product updates and business insights delivered to your inbox.",
+    placeholder: "Enter your email",
+    buttonText: "Subscribe",
+  },
+  social: [
+    { name: "Twitter", href: "#", icon: "🐦" },
+    { name: "LinkedIn", href: "#", icon: "💼" },
+    { name: "Facebook", href: "#", icon: "📘" },
+    { name: "Instagram", href: "#", icon: "📷" },
+  ],
+  legal: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Cookie Policy", href: "/cookies" },
+    { label: "Security", href: "/security" },
+  ],
+  copyright: "© 2024 Pyxis. All rights reserved.",
 }
 
-export default function Footer() {
-  const footerRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Initial state
-      gsap.set(contentRef.current, {
-        opacity: 0,
-        y: 30,
-      });
-
-      // Animation
-      gsap.to(contentRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: "top 90%",
-          toggleActions: "play none none reverse",
-        },
-      });
-    }, footerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  const quickLinks = [
-    { name: "Features", href: "#features" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "Contact", href: "#contact" },
-    { name: "Blog", href: "#blog" },
-  ];
-
-  const socialLinks = [
-    { name: "LinkedIn", icon: Linkedin, href: "#", color: "hover:bg-blue-600" },
-    {
-      name: "Instagram",
-      icon: Instagram,
-      href: "#",
-      color: "hover:bg-pink-600",
-    },
-    {
-      name: "WhatsApp",
-      icon: MessageCircle,
-      href: "#",
-      color: "hover:bg-green-600",
-    },
-    { name: "Twitter", icon: Twitter, href: "#", color: "hover:bg-blue-400" },
-    { name: "Facebook", icon: Facebook, href: "#", color: "hover:bg-blue-700" },
-  ];
-
+export function Footer() {
   return (
-    <footer
-      ref={footerRef}
-      className="bg-slate-900 text-white py-16 px-6 lg:px-12"
-    >
-      <div ref={contentRef} className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-12">
-          {/* Logo Section */}
-         <img src="https://res.cloudinary.com/dhehfjptn/image/upload/v1750750580/footerlog_pkjggc.svg" alt="" />
+    <footer className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-y-1"></div>
+      </div>
 
-          {/* Quick Links */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white">Quick Links:</h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="py-16">
+          <div className="grid lg:grid-cols-6 gap-8">
+            {/* Company Info */}
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <Link href="/" className="text-2xl font-bold hover:text-blue-200 transition-colors duration-200">
+                  {footerConfig.company.name}
+                </Link>
+                <p className="text-blue-200 mt-4 leading-relaxed">{footerConfig.company.description}</p>
+              </div>
+
+              {/* Contact Info */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 text-blue-200 hover:text-white transition-colors duration-200">
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <a href={`mailto:${footerConfig.company.contact.email}`} className="hover:underline">
+                    {footerConfig.company.contact.email}
+                  </a>
+                </div>
+                <div className="flex items-center space-x-3 text-blue-200 hover:text-white transition-colors duration-200">
+                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <a href={`tel:${footerConfig.company.contact.phone}`} className="hover:underline">
+                    {footerConfig.company.contact.phone}
+                  </a>
+                </div>
+                <div className="flex items-start space-x-3 text-blue-200">
+                  <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm leading-relaxed">{footerConfig.company.contact.address}</span>
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div className="flex space-x-4">
+                {footerConfig.social.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    className="w-10 h-10 bg-blue-800/50 rounded-full flex items-center justify-center hover:bg-blue-700 transition-all duration-300 transform hover:scale-110 hover:shadow-lg"
+                    aria-label={social.name}
                   >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white">Contact Info:</h3>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-blue-400" />
-                <span className="text-gray-300">+1(980) 256-0131</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-blue-400" />
-                <span className="text-gray-300">Support@ZifyPay.com</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-5 h-5 text-blue-400" />
-                <span className="text-gray-300">Address: 1309 Coffeen Avenue, Ste 1200, Sheridan, WY 82801
-</span>
+                    <span className="text-lg">{social.icon}</span>
+                  </a>
+                ))}
               </div>
             </div>
 
-            {/* Social Media Icons */}
-            <div className="flex space-x-3 pt-4">
-              {socialLinks.map((social, index) => {
-                const IconComponent = social.icon;
-                return (
-                  <Link
-                    key={index}
-                    href={social.href}
-                    className={`w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center transition-all duration-300 ${social.color}`}
-                    aria-label={social.name}
-                  >
-                    <IconComponent className="w-5 h-5" />
-                  </Link>
-                );
-              })}
+            {/* Links Sections */}
+            {footerConfig.sections.map((section, index) => (
+              <div key={section.title} className="space-y-4">
+                <h4 className="font-semibold text-lg">{section.title}</h4>
+                <ul className="space-y-3">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-blue-200 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Newsletter Section */}
+        <div className="border-t border-blue-800 py-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <h3 className="text-2xl font-bold mb-4">{footerConfig.newsletter.title}</h3>
+            <p className="text-blue-200 mb-8">{footerConfig.newsletter.description}</p>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder={footerConfig.newsletter.placeholder}
+                className="flex-1 px-4 py-3 rounded-lg bg-blue-800/50 border border-blue-700 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+              <Button className="bg-white text-blue-600 hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 hover:shadow-lg px-6">
+                {footerConfig.newsletter.buttonText}
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Border */}
-        <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-          <p className="text-gray-400 text-sm">
-            © 2024 ZifyPay. All rights reserved.
-          </p>
+        {/* Bottom Bar */}
+        <div className="border-t border-blue-800 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-blue-200 text-center md:text-left">{footerConfig.copyright}</p>
+            <div className="flex flex-wrap justify-center md:justify-end gap-6">
+              {footerConfig.legal.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="text-blue-200 hover:text-white transition-colors duration-200 text-sm"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </footer>
-  );
+  )
 }
