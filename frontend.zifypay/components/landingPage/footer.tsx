@@ -106,11 +106,16 @@ export default function Footer() {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-blue-400" />
-                <span className="text-gray-300">+91-91043-XXXX</span>
+                <span className="text-gray-300">+1(980) 256-0131</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-blue-400" />
-                <span className="text-gray-300">support@zifypay.com</span>
+                <span className="text-gray-300">Support@ZifyPay.com</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-5 h-5 text-blue-400" />
+                <span className="text-gray-300">Address: 1309 Coffeen Avenue, Ste 1200, Sheridan, WY 82801
+</span>
               </div>
             </div>
 

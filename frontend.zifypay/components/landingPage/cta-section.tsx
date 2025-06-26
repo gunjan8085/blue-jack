@@ -86,7 +86,7 @@ export default function CtaSection() {
           ref={titleRef}
           className="text-3xl md:text-4xl font-bold text-gray-900 mb-16"
         >
-          Join 100+ Smart Businesses Across India
+          Join 100+ Smart Businesses Across The Globe
         </h2>
 
         {/* Cards */}
