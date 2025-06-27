@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Check } from "lucide-react";
+import Link from "next/link";
 
 // Register plugin
 if (typeof window !== "undefined") {
@@ -123,10 +124,11 @@ export default function FeaturesSection() {
                 </div>
               ))}
             </div>
-
+              <Link href="/booking-engine">
             <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300">
               Explore Booking Solutions
             </button>
+              </Link>
           </div>
 
           {/* C-Stores & Fuel Stations Card */}
@@ -148,10 +150,11 @@ export default function FeaturesSection() {
                 </div>
               ))}
             </div>
-
+              <Link href={"/pos"}>
             <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300">
               Explore Retail & Fuel Features
             </button>
+              </Link>
           </div>
         </div>
 
