@@ -50,7 +50,7 @@ function Footer() {
                 <li>
                   <Link 
                   // onClick={()=> router.push('/auth/login')}
-                  href="/for-Business" className="hover:text-white transition-colors">
+                  href="/for-bussiness" className="hover:text-white transition-colors">
                     List Your Business
                   </Link>
                 </li>

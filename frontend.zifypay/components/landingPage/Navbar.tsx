@@ -89,39 +89,38 @@ export default function Navbar() {
 
   return (
     <header className="bg-gray-900 text-white sticky top-0 z-50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+        <div className="flex flex-row items-center justify-between h-28 gap-8"> {/* gap-8 for consistent spacing */}
           {/* Logo */}
-         <div className="flex items-center">
-  <a
-    href={navigationConfig.logo.href}
-    className="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors duration-200"
-  >
-    <Image
-      src={navigationConfig.logo.image}
-      alt="Logo"
-      width={80}
-      height={80}
-      className="rounded-md"
-    />
-    {/* Optional: Add text next to logo */}
-    {/* <span className="text-xl font-semibold">ZifyPay</span> */}
-  </a>
-</div>
+          <div className="flex items-center min-w-[140px]">
+            <a
+              href={navigationConfig.logo.href}
+              className="flex items-center space-x-3 text-white hover:text-blue-400 transition-colors duration-200"
+            >
+              <Image
+                src={navigationConfig.logo.image}
+                alt="Logo"
+                width={100}
+                height={100}
+                className="rounded-md"
+              />
+              {/* <span className="text-2xl font-semibold">ZifyPay</span> */}
+            </a>
+          </div>
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden lg:flex flex-row items-center gap-10 xl:gap-14">
             {navigationConfig.mainLinks.map((link) => (
               <div
                 key={link.label}
-                className="relative"
+                className="relative flex items-center"
                 onMouseEnter={() => handleMouseEnter(link.label)}
                 onMouseLeave={handleMouseLeave}
               >
-                <button className="flex items-center space-x-1 text-gray-300 hover:text-white transition-all duration-200 py-2 px-3 rounded-lg hover:bg-gray-800">
-                  <span className="font-medium">{link.label}</span>
+                <button className="flex items-center gap-2 text-lg text-gray-200 hover:text-white transition-all duration-200 py-3 px-5 rounded-xl hover:bg-gray-800 font-semibold">
+                  <span>{link.label}</span>
                   {link.dropdown && (
                     <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${
+                      className={`w-5 h-5 transition-transform duration-300 ${
                         activeDropdown === link.label ? "rotate-180" : ""
                       }`}
                     />
@@ -164,28 +163,26 @@ export default function Navbar() {
               </div>
             ))}
           </nav>
-
           {/* Right Side Links & Buttons */}
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden lg:flex flex-row items-center gap-8 min-w-[420px] justify-end"> {/* gap-8, min-w for spacing, justify-end for right alignment */}
             {navigationConfig.rightLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="text-gray-300 hover:text-white font-medium transition-colors duration-200"
+                className="text-lg text-gray-200 hover:text-white font-semibold transition-colors duration-200 "
               >
                 {link.label}
               </a>
             ))}
-            
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-row items-center gap-4">
               {navigationConfig.ctaButtons.map((button) => (
                 <a
                   key={button.label}
                   href={button.href}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
+                  className={`px-4 py-2 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
                     button.variant === 'primary'
                       ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:shadow-blue-500/25'
-                      : 'border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 hover:bg-gray-800'
+                      : 'border border-gray-600 text-gray-200 hover:text-white hover:border-gray-400 hover:bg-gray-800'
                   }`}
                 >
                   {button.label}
@@ -193,7 +190,6 @@ export default function Navbar() {
               ))}
             </div>
           </div>
-
           {/* Mobile Menu Button */}
           <button
             className="lg:hidden p-2 rounded-md hover:bg-gray-800 transition-colors duration-200"

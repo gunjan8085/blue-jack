@@ -1,84 +1,75 @@
-import React from "react";
-import Navbar from "@/components/landingPage/Navbar";
-import Footer from "@/components/Footer";
-const plans = [
+import Navbar from '@/components/landingPage/Navbar';
+import Footer from '@/components/Footer';
+
+const pricingTiers = [
   {
-    name: "Basic",
-    price: "$0",
+    title: 'Fuel & Retail POS',
+    price: '₹0/mo',
+    description: 'No monthly software fees. Pay only for hardware or add-ons you choose.',
     features: [
-      "Free processing",
-      "Daily payouts",
-      "Dashboard access"
-    ],
+      'Unlimited transactions',
+      'All POS features included',
+      'Free updates & support',
+      'No hidden charges'
+    ]
   },
   {
-    name: "Business",
-    price: "$29",
+    title: 'Payment Processing',
+    price: '0%',
+    description: 'Zero transaction fees for all card, wallet, and UPI payments processed via ZifyPay.',
     features: [
-      "POS app",
-      "Loyalty programs",
-      "Detailed reports"
-    ],
+      'No MDR or per-transaction fees',
+      'Instant settlement',
+      'PCI DSS compliance',
+      '24/7 support'
+    ]
   },
   {
-    name: "Growth",
-    price: "$79",
+    title: 'Add-ons',
+    price: 'Custom',
+    description: 'Optional hardware, integrations, and advanced analytics available as add-ons.',
     features: [
-      "Chargeblast feature",
-      "Same-day deposits",
-      "All Business features"
-    ],
-  },
-  {
-    name: "Premium",
-    price: "$149",
-    features: [
-      "Dedicated account rep",
-      "Advanced integrations",
-      "Full API access"
-    ],
-  },
+      'Pump controller hardware',
+      'E-commerce integration',
+      'Custom analytics & dashboards',
+      'API access'
+    ]
+  }
 ];
 
-export  function PricingPage() {
+export default function Pricing() {
   return (
-
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white py-20 px-6 lg:px-24">
-      <h1 className="text-4xl font-bold text-center mb-12">ZifyPay Pricing</h1>
-      <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        {plans.map((plan) => (
-          <div
-            key={plan.name}
-            className="bg-white text-slate-900 rounded-2xl shadow-xl p-8 flex flex-col justify-between hover:scale-105 transition-transform duration-300"
-          >
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">{plan.name}</h2>
-              <p className="text-3xl font-bold mb-6">{plan.price}/mo</p>
-              <ul className="space-y-2">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="text-green-600 font-bold">✓</span> {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <button className="mt-6 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium">
-              Get Started
-            </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar />
+      <main className="flex-1 flex flex-col items-center justify-center py-20 px-4">
+        <section className="max-w-4xl w-full text-center">
+          <h1 className="text-4xl font-bold mb-6 text-gray-900">Simple, Transparent Pricing</h1>
+          <p className="text-lg text-gray-600 mb-12">
+            ZifyPay believes in fair, transparent pricing. No hidden fees, no surprises—just powerful tools to grow your business.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {pricingTiers.map((tier, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow p-8 flex flex-col items-center">
+                <h2 className="text-2xl font-semibold mb-2 text-gray-900">{tier.title}</h2>
+                <div className="text-3xl font-bold mb-2 text-blue-700">{tier.price}</div>
+                <div className="text-gray-600 mb-4">{tier.description}</div>
+                <ul className="text-left space-y-2 mb-6">
+                  {tier.features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a href="/demo" className="mt-auto bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Request Demo</a>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default function Page() {
-  return (
-    <div>
-      <Navbar />  
-      <PricingPage />
+        </section>
+      </main>
       <Footer />
     </div>
   );
 }
+
 
