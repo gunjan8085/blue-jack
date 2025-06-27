@@ -14,50 +14,110 @@ const navigationConfig = {
       label: "Solutions",
       href: "#",
       dropdown: [
-        { label: "Payment Gateway", href: "/payment-gateway", description: "Secure online payment processing" },
-        { label: "Mobile Payments", href: "/mobile-payments", description: "Accept payments on the go" },
-        { label: "E-commerce Integration", href: "/ecommerce", description: "Seamless shopping cart integration" },
-        { label: "Recurring Billing", href: "/recurring", description: "Automated subscription management" },
-        { label: "Multi-currency", href: "/multi-currency", description: "Global payment acceptance" },
+        {
+          label: "Payment Gateway",
+          href: "/payment-gateway",
+          description: "Secure online payment processing",
+        },
+        {
+          label: "Mobile Payments",
+          href: "/mobile-payments",
+          description: "Accept payments on the go",
+        },
+        {
+          label: "E-commerce Integration",
+          href: "/ecommerce",
+          description: "Seamless shopping cart integration",
+        },
+        {
+          label: "Recurring Billing",
+          href: "/recurring",
+          description: "Automated subscription management",
+        },
+        {
+          label: "Multi-currency",
+          href: "/multi-currency",
+          description: "Global payment acceptance",
+        },
       ],
     },
     {
-      label: "Problems we solve",
+      label: "Use Cases",
       href: "#",
       dropdown: [
-        { label: "High Transaction Fees", href: "/low-fees", description: "Reduce payment processing costs" },
-        { label: "Payment Delays", href: "/instant-settlement", description: "Get paid faster with instant settlement" },
-        { label: "Security Concerns", href: "/security", description: "Bank-grade security and compliance" },
-        { label: "Integration Complexity", href: "/easy-integration", description: "Simple APIs and plugins" },
-        { label: "Poor User Experience", href: "/user-experience", description: "Smooth checkout experience" },
+        {
+          label: " 1. Fuel Pump Integration ",
+          href: "/Fuel",
+          description:
+            "Slash your payment costs with zero processing fee options",
+        },
+        {
+          label: "Retail (C Store) POS (/retail-pos)",
+          href: "/Cstore",
+          description: "Receive your funds instantly, no waiting, no stress",
+        },
+        {
+          label: " 3. Cloud Dashboard & Analytics (/dashboard-analytics)",
+          href: "/dash",
+          description:
+            "End-to-end encryption, PCI compliance, and fraud prevention",
+        },
+        {
+          label: " Payments & Compliance",
+          href: "/coming-soon",
+          description: "Plug-and-play APIs, SDKs, and platform extensions",
+        },
+        {
+          label: " Offline & Hardware Support",
+          href: "/coming-soon",
+          description: "Frictionless payments across web, mobile, and POS",
+        },
       ],
     },
     {
       label: "Customers",
       href: "#",
       dropdown: [
-        { label: "Small Business", href: "/small-business", description: "Perfect for growing businesses" },
-        { label: "E-commerce", href: "/ecommerce-customers", description: "Online store solutions" },
-        { label: "Enterprise", href: "/enterprise", description: "Large-scale payment processing" },
-        { label: "Startups", href: "/startups", description: "Get started with minimal setup" },
-        { label: "Non-profits", href: "/nonprofits", description: "Special rates for good causes" },
+        {
+          label: "Small Business",
+          href: "/coming-soon",
+          description: "Perfect for growing businesses",
+        },
+        {
+          label: "E-commerce",
+          href: "/coming-soon",
+          description: "Online store solutions",
+        },
+        {
+          label: "Enterprise",
+          href: "/coming-soon",
+          description: "Large-scale payment processing",
+        },
+        {
+          label: "Startups",
+          href: "/coming-soon",
+          description: "Get started with minimal setup",
+        },
+        {
+          label: "Non-profits",
+          href: "/coming-soon",
+          description: "Special rates for good causes",
+        },
       ],
     },
   ],
-  rightLinks: [
-    { label: "Pricing", href: "/pricing" },
-  ],
+  rightLinks: [{ label: "Pricing", href: "coming-soon" }],
   ctaButtons: [
     {
       label: "Request a demo",
       href: "/demo",
-      variant: "primary"
+      variant: "primary",
     },
     {
       label: "Build & Price",
       href: "/build-price",
-      variant: "secondary"
-    }
+      variant: "secondary",
+    },
   ],
 };
 
@@ -89,7 +149,7 @@ export default function Navbar() {
 
   return (
     <header className="bg-gray-900 text-white sticky top-0 z-50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+      <div className="w-full  px-24">
         <div className="flex flex-row items-center justify-between h-28 gap-8"> {/* gap-8 for consistent spacing */}
           {/* Logo */}
           <div className="flex items-center min-w-[140px]">
