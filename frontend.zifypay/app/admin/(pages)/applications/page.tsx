@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Eye, Search, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import ApplicationDetailsModal from '@/components/admin/ApplicationDetailsModal';
+import { API_URL } from '@/lib/const';
 
 type Application = {
   _id: string;
@@ -56,7 +57,7 @@ const ApplicationsPage = () => {
       ...options.headers
     };
 
-    const response = await fetch(`http://localhost:5001/api/v1${endpoint}`, {
+    const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers
     });

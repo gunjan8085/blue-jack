@@ -6,6 +6,7 @@ import JobCard from '@/components/careers/JobCard';
 import JobFilters from '@/components/careers/JobFilters';
 import { JobApplicationModal } from '@/components/careers/JobApplicationModal';
 import Navbar from '@/components/landingPage/Navbar';
+import { API_URL } from '@/lib/const';
 
 export type Job = {
   _id: string;
@@ -40,12 +41,23 @@ export type ApplicationForm = {
 
 const CareersPage = () => {
   const router = useRouter();
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState<ApplicationForm>({
+    name: '',
+    email: '',
+    phone: '',
+    linkedin: '',
+    website: '',
+    coverLetter: '',
+    resume: null,
+  });
+  const [formErrors, setFormErrors] = useState<Partial<ApplicationForm>>({});
   const [filters, setFilters] = useState({
     location: '',
     type: '',
@@ -53,10 +65,76 @@ const CareersPage = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
 
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, resume: file }));
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors: Partial<ApplicationForm> = {};
+    if (!formData.name) errors.name = 'Name is required';
+    if (!formData.email) errors.email = 'Email is required';
+    if (!formData.resume) console.error('Resume is required');
+
+    if (Object.keys(errors).length > 0 || !selectedJob) {
+      setFormErrors(errors);
+      if (!selectedJob) console.error("❌ No job selected.");
+      return;
+    }
+
+    try {
+      const form = new FormData();
+      form.append('name', formData.name);
+      form.append('email', formData.email);
+      form.append('phone', formData.phone);
+      form.append('linkedin', formData.linkedin);
+      form.append('website', formData.website);
+      form.append('coverLetter', formData.coverLetter);
+      form.append('jobId', selectedJob._id);
+      if (formData.resume) {
+        form.append('resume', formData.resume);
+      }
+
+      const res = await fetch(`${API_URL}/applications`, {
+        method: 'POST',
+        body: form,
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        alert("✅ Application submitted successfully!");
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          linkedin: '',
+          website: '',
+          coverLetter: '',
+          resume: null,
+        });
+        setFormErrors({});
+        setShowApplyModal(false);
+      } else {
+        alert("❌ Failed to submit application: " + (result.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("❌ Network or server error. Please try again later.");
+    }
+  };
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/v1/jobs');
+        const res = await fetch(`${API_URL}/jobs`);
         const data = await res.json();
         if (res.ok) {
           setJobs(data.data || []);
@@ -82,14 +160,15 @@ const CareersPage = () => {
     router.push(`/careers/${jobId}`);
   };
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         job.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredJobs = jobs.filter((job) => {
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = !filters.location || job.location.toLowerCase().includes(filters.location.toLowerCase());
     const matchesType = !filters.type || job.type === filters.type;
-    const matchesDepartment = !filters.department || 
-                             (job.department && job.department.toLowerCase().includes(filters.department.toLowerCase()));
-    
+    const matchesDepartment =
+      !filters.department || job.department?.toLowerCase().includes(filters.department.toLowerCase());
+
     return matchesSearch && matchesLocation && matchesType && matchesDepartment;
   });
 
@@ -109,7 +188,7 @@ const CareersPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         <div className="text-center max-w-md p-6 bg-slate-800 rounded-lg shadow-lg">
           <p className="text-lg text-red-400 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -122,7 +201,7 @@ const CareersPage = () => {
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 min-h-screen">
-      <Navbar/>
+      <Navbar />
       <div className="min-h-screen">
         {/* Hero Section */}
         <div className="text-white py-20 rounded-br-4xl">
@@ -168,11 +247,7 @@ const CareersPage = () => {
             </div>
 
             {showFilters && (
-              <JobFilters 
-                jobs={jobs}
-                filters={filters}
-                setFilters={setFilters}
-              />
+              <JobFilters jobs={jobs} filters={filters} setFilters={setFilters} />
             )}
 
             <div className="flex justify-between items-center mt-4">
@@ -194,7 +269,7 @@ const CareersPage = () => {
           {filteredJobs.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredJobs.map((job) => (
-                <JobCard 
+                <JobCard
                   key={job._id}
                   job={job}
                   onApply={() => handleApply(job)}
@@ -229,6 +304,12 @@ const CareersPage = () => {
             job={selectedJob}
             onClose={() => setShowApplyModal(false)}
             darkMode={true}
+            show={showApplyModal}
+            formData={formData}
+            formErrors={formErrors}
+            onInputChange={onInputChange}
+            onFileChange={onFileChange}
+            onSubmit={onSubmit}
           />
         )}
       </div>

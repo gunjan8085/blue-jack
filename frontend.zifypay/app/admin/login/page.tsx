@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { API_URL } from "@/lib/const";
 
 const ADMIN_EMAIL = "Kenneth@lodgezify.com";
 const ADMIN_PASSWORD = "GreenJack@$^E^%123456";
@@ -20,7 +21,7 @@ export default function AdminLogin() {
 
     try {
       if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        const res = await fetch("http://localhost:5001/api/v1/admin/admin-token", {
+        const res = await fetch(`${API_URL}/admin/admin-token`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),

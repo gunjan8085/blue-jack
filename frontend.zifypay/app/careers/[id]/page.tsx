@@ -1,9 +1,12 @@
 "use client";
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { use } from 'react';
 import { Briefcase, MapPin, Clock, DollarSign, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/landingPage/Navbar';
 import { JobApplicationModal } from '@/components/careers/JobApplicationModal';
+import { API_URL } from '@/lib/const';
 
 type Job = {
   _id: string;
@@ -26,17 +29,106 @@ type Job = {
   createdAt: string;
 };
 
-export default function JobDetailsPage({ params }: { params: { id: string } }) {
+type ApplicationForm = {
+  name: string;
+  email: string;
+  phone: string;
+  linkedin: string;
+  website: string;
+  coverLetter: string;
+  resume: File | null;
+};
+
+export default function JobDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
+
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showApplyForm, setShowApplyForm] = useState(false);
 
+  const [formData, setFormData] = useState<ApplicationForm>({
+    name: '',
+    email: '',
+    phone: '',
+    linkedin: '',
+    website: '',
+    coverLetter: '',
+    resume: null,
+  });
+  const [formErrors, setFormErrors] = useState<Partial<ApplicationForm>>({});
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, resume: file }));
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors: Partial<ApplicationForm> = {};
+    if (!formData.name) errors.name = 'Name is required';
+    if (!formData.email) errors.email = 'Email is required';
+    if (!formData.resume) console.error('Resume is required');
+
+    if (Object.keys(errors).length > 0 || !job) {
+      setFormErrors(errors);
+      if (!job) console.error("❌ No job available for submission.");
+      return;
+    }
+
+    try {
+      const form = new FormData();
+      form.append('name', formData.name);
+      form.append('email', formData.email);
+      form.append('phone', formData.phone);
+      form.append('linkedin', formData.linkedin);
+      form.append('website', formData.website);
+      form.append('coverLetter', formData.coverLetter);
+      form.append('jobId', job._id);
+      if (formData.resume) {
+        form.append('resume', formData.resume);
+      }
+
+      const res = await fetch(`${API_URL}/applications`, {
+        method: 'POST',
+        body: form,
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        alert("✅ Application submitted successfully!");
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          linkedin: '',
+          website: '',
+          coverLetter: '',
+          resume: null,
+        });
+        setFormErrors({});
+        setShowApplyForm(false);
+      } else {
+        alert("❌ Failed to submit application: " + (result.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("❌ Network or server error. Please try again later.");
+    }
+  };
+
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await fetch(`http://localhost:5001/api/v1/jobs/${params.id}`);
+        const res = await fetch(`${API_URL}/jobs/${id}`);
         const data = await res.json();
         if (res.ok) {
           setJob(data.data);
@@ -51,7 +143,7 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
     };
 
     fetchJob();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -94,7 +186,6 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
           </button>
 
           <div className="bg-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-700">
-            {/* Header */}
             <div className="bg-gradient-to-r from-blue-800 via-slate-800 to-blue-900 p-6 md:p-8 border-b border-blue-700">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
@@ -126,17 +217,15 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-blue-400" />
                   <span>
-                    {job.salaryRange.currency === 'INR' ? '' : '$'}
+                    {job.salaryRange.currency === 'INR' ? '₹' : '$'}
                     {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Job Body */}
             <div className="p-6 md:p-8 text-gray-200">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Details */}
                 <div className="lg:col-span-2 space-y-8">
                   <section>
                     <h2 className="text-xl font-semibold mb-3">Job Description</h2>
@@ -173,7 +262,6 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
                   )}
                 </div>
 
-                {/* Sidebar */}
                 <aside className="lg:col-span-1">
                   <div className="bg-slate-700 p-6 rounded-xl border border-slate-600 sticky top-6">
                     <h3 className="text-lg font-semibold mb-4 text-white">Job Overview</h3>
@@ -218,9 +306,18 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Modal */}
-        {showApplyForm && (
-          <JobApplicationModal job={job} onClose={() => setShowApplyForm(false)} />
+        {showApplyForm && job && (
+          <JobApplicationModal
+            job={job}
+            onClose={() => setShowApplyForm(false)}
+            darkMode={true}
+            show={showApplyForm}
+            formData={formData}
+            formErrors={formErrors}
+            onInputChange={onInputChange}
+            onFileChange={onFileChange}
+            onSubmit={onSubmit}
+          />
         )}
       </div>
     </>

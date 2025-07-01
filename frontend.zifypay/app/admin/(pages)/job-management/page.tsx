@@ -26,7 +26,7 @@ type Job = {
   isActive: boolean;
 };
 
-const API_BASE = 'http://localhost:5001/api/v1';
+import { API_URL } from '@/lib/const';
 
 const JobManagementPage = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -47,7 +47,7 @@ const JobManagementPage = () => {
       ...options.headers
     };
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers
     });

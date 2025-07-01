@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { X, Plus as PlusIcon, Trash2 } from 'lucide-react';
+import { API_URL } from '@/lib/const';
 
 type JobForm = {
   _id?: string;
@@ -64,7 +65,7 @@ const JobModal = ({ selectedJob, setShowJobModal, fetchJobs, setError }: JobModa
       ...options.headers
     };
 
-    const response = await fetch(`http://localhost:5001/api/v1${endpoint}`, {
+    const response = await fetch(`${API_URL}/${endpoint}`, {
       ...options,
       headers
     });
