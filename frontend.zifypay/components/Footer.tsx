@@ -1,26 +1,47 @@
-import Link from 'next/link'
-import React from 'react'
-import { FacebookIcon, InstagramIcon, YoutubeIcon, LinkedinIcon } from 'lucide-react'
+import Link from "next/link";
+import React from "react";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  YoutubeIcon,
+  LinkedinIcon,
+} from "lucide-react";
 
 const socialLinks = [
-  { title: "Facebook", href: "https://www.facebook.com/profile.php?id=61573019611246", icon: FacebookIcon },
-  { title: "Instagram", href: "https://www.instagram.com/zifypay?igsh=MTFkZmM0M20zYjV2Zw==", icon: InstagramIcon },
-  { title: "Youtube", href: "https://www.youtube.com/watch?v=qjCH13g3wqY", icon: YoutubeIcon },
-  { title: "LinkedIn", href: "https://www.linkedin.com/company/zifypay/posts/?feedView=all", icon: LinkedinIcon },
-]
+  {
+    title: "Facebook",
+    href: "https://www.facebook.com/profile.php?id=61573019611246",
+    icon: FacebookIcon,
+  },
+  {
+    title: "Instagram",
+    href: "https://www.instagram.com/zifypay?igsh=MTFkZmM0M20zYjV2Zw==",
+    icon: InstagramIcon,
+  },
+  {
+    title: "Youtube",
+    href: "https://www.youtube.com/watch?v=qjCH13g3wqY",
+    icon: YoutubeIcon,
+  },
+  {
+    title: "LinkedIn",
+    href: "https://www.linkedin.com/company/zifypay/posts/?feedView=all",
+    icon: LinkedinIcon,
+  },
+];
 
 function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Logo and Description */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              {/* <Sparkles className="h-6 w-6 text-blue-400" /> */}
               <span className="text-xl font-bold">
                 <img
                   src="/logo.png"
-                  alt=""
+                  alt="ZifyPay logo"
                   className="min-w-min h-10"
                 />
               </span>
@@ -29,12 +50,11 @@ function Footer() {
               Your trusted platform for beauty and wellness bookings.
             </p>
           </div>
+
+          {/* Customers Section */}
           <div>
             <h4 className="font-semibold mb-4">For Customers</h4>
             <ul className="space-y-2 text-gray-400">
-              <li>
-                
-              </li>
               <li>
                 <Link
                   href="/businesses"
@@ -43,17 +63,15 @@ function Footer() {
                   Book Appointment
                 </Link>
               </li>
-              <li>
-               
-              </li>
             </ul>
           </div>
+
+          {/* Business Section */}
           <div>
             <h4 className="font-semibold mb-4">For Business</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
                 <Link
-                  // onClick={()=> router.push('/auth/login')}
                   href="/for-bussiness"
                   className="hover:text-white transition-colors"
                 >
@@ -70,7 +88,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="analytics"
+                  href="/analytics"
                   className="hover:text-white transition-colors"
                 >
                   Analytics
@@ -78,16 +96,14 @@ function Footer() {
               </li>
             </ul>
           </div>
+
+          {/* Support Section */}
           <div>
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                
-              </li>
-              <li>
                 <Link
-                  href="/contact-us
-"
+                  href="/contact-us"
                   className="hover:text-white transition-colors"
                 >
                   Contact Us
@@ -101,11 +117,21 @@ function Footer() {
                   Privacy Policy
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/careers"
+                  className="hover:text-white transition-colors"
+                >
+                  Careers
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
+
+        {/* Social Links */}
         <div className="flex justify-center space-x-6 mt-8 mb-4">
-          {socialLinks.map(({ title, href, icon: Icon }, idx) => (
+          {socialLinks.map(({ title, href, icon: Icon }) => (
             <Link
               key={title}
               href={href}
@@ -118,6 +144,8 @@ function Footer() {
             </Link>
           ))}
         </div>
+
+        {/* Footer Bottom */}
         <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
           <p>&copy; 2025 zifypay.com. All rights reserved.</p>
         </div>
@@ -126,4 +154,4 @@ function Footer() {
   );
 }
 
-export default Footer
+export default Footer;
