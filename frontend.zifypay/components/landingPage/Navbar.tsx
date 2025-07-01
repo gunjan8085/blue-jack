@@ -64,14 +64,14 @@ const navigationConfig = {
         },
         {
           label: " Payments & Compliance",
-          href: "/coming-soon",
+          href: "/payment",
           description: "Plug-and-play APIs, SDKs, and platform extensions",
         },
-        {
-          label: " Offline & Hardware Support",
-          href: "/coming-soon",
-          description: "Frictionless payments across web, mobile, and POS",
-        },
+        // {
+        //   label: " Offline & Hardware Support",
+        //   href: "/coming-soon",
+        //   description: "Frictionless payments across web, mobile, and POS",
+        // },
       ],
     },
     {

@@ -12,9 +12,10 @@ import { FeaturesShowcase } from "@/components/features-showcase";
 
 // --- Section Data ---
 const heroSection = {
-  title: "ZifyPay Cloud Dashboard.",
-  subtitle: "Your business, centralized. Anywhere. Anytime.",
-  image: "/desh.png",
+  title: "Payments & Compliance | ZifyPay.",
+  subtitle:
+    "At ZifyPay, we ensure your fuel and retail operations run smoothly—not just at the counter, but across every transaction, regulation, and security checkpoint. Our systems are designed for seamless operations, full accountability, and peace of mind.",
+  image: "/pay1.png",
   cta: [
     { label: "Get started", variant: "primary" },
     { label: "Contact sales", variant: "secondary" },
@@ -213,7 +214,7 @@ export default function Home() {
           </div>
           <div className="lg:w-1/2">
             <img
-              src="/desh2.png"
+              src="/pay2.png"
               alt="Team analyzing sales data on screen"
               className="rounded-lg shadow-md"
             />
@@ -234,7 +235,7 @@ export default function Home() {
           </div>
           <div className="lg:w-1/2">
             <img
-              src="/desh3.png"
+              src="/pay3.png"
               alt="Tablet showing inventory dashboard"
               className="rounded-lg shadow-md"
             />
@@ -257,7 +258,7 @@ export default function Home() {
           </div>
           <div className="lg:w-1/2">
             <img
-              src="/desh4.png"
+              src="/pay5.png"
               alt="Digital identity and access control"
               className="rounded-lg shadow-md"
             />
@@ -277,7 +278,7 @@ export default function Home() {
           </div>
           <div className="lg:w-1/2">
             <img
-              src="/desh5.png"
+              src="pay6.png"
               alt="Woman using tablet remotely"
               className="rounded-lg shadow-md"
             />
@@ -298,7 +299,7 @@ export default function Home() {
           </div>
           <div className="lg:w-1/2">
             <img
-              src="/desh6.png"
+              src="desh.png"
               alt="Man analyzing report graphs"
               className="rounded-lg shadow-md"
             />
