@@ -22,7 +22,7 @@ interface ContentMarqueeProps {
 }
 
 export function ContentMarquee({
-  title = "Hardware that's ready for the rush",
+  title = "Insights for Enterprise Growth",
   items,
   autoPlay = false,
   autoPlayInterval = 5000,
@@ -30,25 +30,41 @@ export function ContentMarquee({
   const marqueeRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const defaultItems = [
+  const defaultItems: MarqueeItem[] = [
     {
-      title: "The Future of Retail Report",
-      image: "/placeholder.svg?height=200&width=300",
-      alt: "Person with digital interface",
+      title: "The Future of Retail Tech",
+      image: "/mar.png",
+      alt: "Retail tech",
     },
     {
-      title: "How Technology Can Increase Revenue for Grocery Stores",
-      image: "/placeholder.svg?height=200&width=300",
-      alt: "Hands using tablet device",
+      title: "Scaling Omnichannel Operations",
+      image: "/mar2.png",
+      alt: "Omnichannel",
     },
     {
-      title: "12 Tips for Optimizing the Checkout Experience",
-      image: "/placeholder.svg?height=200&width=300",
-      alt: "Person in retail environment",
+      title: "12 Checkout Optimization Strategies",
+      image: "/mar3.png",
+      alt: "Checkout tips",
+    },
+    {
+      title: "Enterprise Analytics Blueprint",
+      image: "/mar44.png",
+      alt: "Data dashboard",
+    },
+    {
+      title: "Workforce Automation at Scale",
+      image: "/mar5.png",
+      alt: "Automation",
+    },
+    {
+      title: "Secure Payments at Enterprise Speed",
+      image: "/mar6.png",
+      alt: "Secure payments",
     },
   ];
 
   const marqueeItems = items || defaultItems;
+  const slidesPerView = 3;
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -75,12 +91,11 @@ export function ContentMarquee({
   useEffect(() => {
     if (autoPlay) {
       const interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % marqueeItems.length);
+        nextSlide();
       }, autoPlayInterval);
-
       return () => clearInterval(interval);
     }
-  }, [autoPlay, autoPlayInterval, marqueeItems.length]);
+  }, [autoPlay, autoPlayInterval, currentSlide]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % marqueeItems.length);
@@ -92,10 +107,21 @@ export function ContentMarquee({
     );
   };
 
+  const visibleSlides = marqueeItems
+    .slice(currentSlide, currentSlide + slidesPerView)
+    .concat(
+      currentSlide + slidesPerView > marqueeItems.length
+        ? marqueeItems.slice(
+            0,
+            (currentSlide + slidesPerView) % marqueeItems.length
+          )
+        : []
+    );
+
   return (
-    <section ref={marqueeRef} className="container mx-auto px-4 py-16">
+    <section ref={marqueeRef} className="container mx-auto px-4 py-20">
       <div className="relative">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-10">
           <button
             onClick={prevSlide}
             className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -103,7 +129,7 @@ export function ContentMarquee({
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900 text-center flex-1">
             {title}
           </h2>
           <button
@@ -115,25 +141,22 @@ export function ContentMarquee({
           </button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {marqueeItems.map((item, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-500">
+          {visibleSlides.map((item, index) => (
             <div
               key={index}
-              className={`transition-all duration-500 ${
-                index === currentSlide
-                  ? "opacity-100 scale-105"
-                  : "opacity-70 scale-100"
-              }`}
+              className="transform hover:scale-[1.02] transition duration-300"
             >
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-xl shadow-lg ">
                 <Image
-                  src={item.image || "/placeholder.svg"}
+                  src={item.image}
                   alt={item.alt}
                   width={300}
-                  height={200}
+                  height={700}
                   className="w-full h-48 object-cover"
                 />
-                <div className="p-6">
+
+                <div className="p-5">
                   <h3 className="text-lg font-semibold text-gray-900">
                     {item.title}
                   </h3>

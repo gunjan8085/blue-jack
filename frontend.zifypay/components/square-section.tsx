@@ -152,14 +152,19 @@ export default function SquareSection({ className = "" }: SquareSectionProps) {
       <div className="bg-white py-8 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <h2 className="text-3xl font-bold text-gray-900">Try Square</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Try Zifypay</h2>
             <div className="flex gap-4">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2">
-                Request a demo
-              </Button>
-              <Button variant="outline" className="px-6 py-2">
-                Build a Price
-              </Button>
+              <a href="Book-A-Drmo">
+                {" "}
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2">
+                  Request a demo
+                </Button>
+              </a>
+              <a href="pricing">
+                <Button variant="outline" className="px-6 py-2">
+                  Build a Price
+                </Button>
+              </a>
             </div>
           </div>
         </div>

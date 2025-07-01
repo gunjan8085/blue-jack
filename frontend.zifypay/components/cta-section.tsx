@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,9 +17,9 @@ interface CTASectionProps {
 }
 
 export function CTASection({
-  title = "Try Square",
-  primaryButtonText = "Contact Sales",
-  secondaryButtonText = "Get Pricing",
+  title = "Try ZifyPay for free",
+  primaryButtonText = "Book a Demo",
+  secondaryButtonText = "Sign Up",
   onPrimaryClick,
   onSecondaryClick,
   backgroundColor = "bg-gray-50",
@@ -55,22 +55,27 @@ export function CTASection({
         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-8">
           {title}
         </h2>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-            onClick={onPrimaryClick}
-          >
-            {primaryButtonText}
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="px-8 bg-transparent"
-            onClick={onSecondaryClick}
-          >
-            {secondaryButtonText}
-          </Button>
+
+        <div className="flex flex-wrap justify-center gap-4">
+          <Link href="/Book-A-Demo">
+            <button
+              type="button"
+              onClick={onPrimaryClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium text-lg shadow transition duration-300"
+            >
+              {primaryButtonText}
+            </button>
+          </Link>
+
+          <Link href="/auth/signup">
+            <button
+              type="button"
+              onClick={onSecondaryClick}
+              className="bg-white border border-gray-300 text-gray-800 px-6 py-3 rounded-full font-medium text-lg shadow hover:border-blue-500 hover:text-blue-600 transition duration-300"
+            >
+              {secondaryButtonText}
+            </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import { FeaturesShowcase } from "@/components/features-showcase";
 const heroSection = {
   title: "Payments & Compliance | ZifyPay.",
   subtitle:
-    "At ZifyPay, we ensure your fuel and retail operations run smoothly—not just at the counter, but across every transaction, regulation, and security checkpoint. Our systems are designed for seamless operations, full accountability, and peace of mind.",
+    "At ZifyPay, we ensure your fuel and retail operations run  just at the counter, but across every transaction, regulation",
   image: "/pay1.png",
   cta: [
     { label: "Get started", variant: "primary" },
@@ -157,21 +158,24 @@ export default function Home() {
                 {/* text-xl to text-2xl, mb-8 to mb-10, text-gray-600 to text-gray-700 */}
                 {heroSection.subtitle}
               </p>
-              <div className="flex space-x-6 animate-fade-in-up animation-delay-400">
-                {" "}
-                {/* space-x-4 to space-x-6 */}
-                {heroSection.cta.map((btn, i) => (
-                  <Button
-                    key={btn.label}
-                    className={
-                      btn.variant === "primary"
-                        ? "bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" // px-8 py-3 to px-10 py-4, text-lg
-                        : "bg-white text-gray-700 border-gray-300 px-10 py-4 text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:border-blue-300"
-                    }
+              <div className="flex flex-wrap justify-start gap-4">
+                <Link href="/Book-A-Demo">
+                  <button
+                    type="button"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium text-lg shadow transition duration-300"
                   >
-                    {btn.label}
-                  </Button>
-                ))}
+                    Book A Demo
+                  </button>
+                </Link>
+
+                <Link href="/auth/signup">
+                  <button
+                    type="button"
+                    className="bg-white border border-gray-300 text-gray-800 px-6 py-3 rounded-full font-medium text-lg shadow hover:border-blue-500 hover:text-blue-600 transition duration-300"
+                  >
+                    get started
+                  </button>
+                </Link>
               </div>
             </div>
             <div

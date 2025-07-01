@@ -14,11 +14,7 @@ const navigationConfig = {
       label: "Solutions",
       href: "#",
       dropdown: [
-        {
-          label: "Payment Gateway",
-          href: "/payment-gateway",
-          description: "Secure online payment processing",
-        },
+     
         {
           label: "Mobile Payments",
           href: "/mobile-payments",
@@ -46,7 +42,7 @@ const navigationConfig = {
       href: "#",
       dropdown: [
         {
-          label: " 1. Fuel Pump Integration ",
+          label: "  Fuel Pump Integration ",
           href: "/Fuel",
           description:
             "Slash your payment costs with zero processing fee options",
@@ -57,7 +53,7 @@ const navigationConfig = {
           description: "Receive your funds instantly, no waiting, no stress",
         },
         {
-          label: " 3. Cloud Dashboard & Analytics (/dashboard-analytics)",
+          label: "  Cloud Dashboard & Analytics (/dashboard-analytics)",
           href: "/dash",
           description:
             "End-to-end encryption, PCI compliance, and fraud prevention",
@@ -80,37 +76,32 @@ const navigationConfig = {
       dropdown: [
         {
           label: "Small Business",
-          href: "/coming-soon",
+          href: "/businesses",
           description: "Perfect for growing businesses",
         },
         {
           label: "E-commerce",
-          href: "/coming-soon",
+          href: "/ecommerce",
           description: "Online store solutions",
         },
         {
           label: "Enterprise",
-          href: "/coming-soon",
+          href: "/Enterpris",
           description: "Large-scale payment processing",
         },
         {
-          label: "Startups",
-          href: "/coming-soon",
+          label: "general store",
+          href: "/general-store",
           description: "Get started with minimal setup",
-        },
-        {
-          label: "Non-profits",
-          href: "/coming-soon",
-          description: "Special rates for good causes",
         },
       ],
     },
   ],
-  rightLinks: [{ label: "Pricing", href: "coming-soon" }],
+  rightLinks: [{ label: "Pricing", href: "pricing" }],
   ctaButtons: [
     {
       label: "Request a demo",
-      href: "/demo",
+      href: "/Book-A-Demo",
       variant: "primary",
     },
     {

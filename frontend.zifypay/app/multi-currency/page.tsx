@@ -7,6 +7,7 @@ import { FeaturesList } from "@/components/features-list";
 import { ContentMarquee } from "@/components/content-marquee";
 import { HardwareSection } from "@/components/hardware-section";
 import { FAQSection } from "@/components/faq-section";
+import Link from "next/link";
 export default function MobilePayments() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -20,12 +21,25 @@ export default function MobilePayments() {
               Integration
             </h1>
             <div className="flex gap-4 mt-4">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition">
-                Get started
-              </button>
-              <button className="border border-gray-300 text-black font-semibold py-3 px-6 rounded-md transition hover:bg-gray-100">
-                Contact sales
-              </button>
+              <div className="flex flex-wrap justify-start gap-4">
+                <Link href="/Book-A-Demo">
+                  <button
+                    type="button"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium text-lg shadow transition duration-300"
+                  >
+                    Book A Demo
+                  </button>
+                </Link>
+
+                <Link href="/auth/signup">
+                  <button
+                    type="button"
+                    className="bg-white border border-gray-300 text-gray-800 px-6 py-3 rounded-full font-medium text-lg shadow hover:border-blue-500 hover:text-blue-600 transition duration-300"
+                  >
+                    get started
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
 

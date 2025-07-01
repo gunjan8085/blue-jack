@@ -33,13 +33,7 @@ function Footer() {
             <h4 className="font-semibold mb-4">For Customers</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link
-                  href="/find-services
-"
-                  className="hover:text-white transition-colors"
-                >
-                  Find Services
-                </Link>
+                
               </li>
               <li>
                 <Link
@@ -50,13 +44,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/reviews
-"
-                  className="hover:text-white transition-colors"
-                >
-                  Reviews
-                </Link>
+               
               </li>
             </ul>
           </div>
@@ -74,7 +62,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/businesses"
+                  href="/dash"
                   className="hover:text-white transition-colors"
                 >
                   Dashboard
@@ -94,12 +82,7 @@ function Footer() {
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link
-                  href="/help-center"
-                  className="hover:text-white transition-colors"
-                >
-                  Help Center
-                </Link>
+                
               </li>
               <li>
                 <Link

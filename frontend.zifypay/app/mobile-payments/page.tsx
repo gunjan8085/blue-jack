@@ -20,12 +20,16 @@ export default function MobilePayments() {
               Payments
             </h1>
             <div className="flex gap-4 mt-4">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition">
-                Get started
-              </button>
-              <button className="border border-gray-300 text-black font-semibold py-3 px-6 rounded-md transition hover:bg-gray-100">
-                Contact sales
-              </button>
+              <a href="Book-A-Demo">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition">
+                  Get demo
+                </button>
+              </a>
+              <a href="auth/signup">
+                <button className="border border-gray-300 text-black font-semibold py-3 px-6 rounded-md transition hover:bg-gray-100">
+                  Get started
+                </button>
+              </a>
             </div>
           </div>
 
@@ -39,14 +43,14 @@ export default function MobilePayments() {
           </div>
         </div>
       </section>
-      
+
       <FeaturesShowcase />
       <FeaturesList />
       <HardwareSection />
       <ContentMarquee autoPlay={true} autoPlayInterval={4000} />
       <CTASection />
       <FAQSection />
-     
+
       <Footer />
     </div>
   );

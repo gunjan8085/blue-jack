@@ -20,12 +20,17 @@ export default function MobilePayments() {
               Integration
             </h1>
             <div className="flex gap-4 mt-4">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition">
-                Get started
-              </button>
-              <button className="border border-gray-300 text-black font-semibold py-3 px-6 rounded-md transition hover:bg-gray-100">
-                Contact sales
-              </button>
+              <a href="Book-A-Demo">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition">
+                  Get demo
+                </button>
+              </a>
+              <a href="auth/signup">
+               
+                <button className="border border-gray-300 text-black font-semibold py-3 px-6 rounded-md transition hover:bg-gray-100">
+                  Get started
+                </button>
+              </a>
             </div>
           </div>
 
@@ -46,19 +51,19 @@ export default function MobilePayments() {
           {/* Feature List */}
           <div className="space-y-6 text-gray-800 text-lg">
             <div className="flex items-start gap-3">
-              <span className="text-xl">🌀</span>
+              <span className="text-xl"></span>
               <span>Sync products, prices, and promotions automatically</span>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-xl">🖥️</span>
+              <span className="text-xl"></span>
               <span>Unified dashboard for online and offline sales</span>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-xl">📦</span>
+              <span className="text-xl"></span>
               <span>Real-time inventory and order management</span>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-xl">🔌</span>
+              <span className="text-xl"></span>
               <span>Easy integration with Shopify, WooCommerce, and more</span>
             </div>
           </div>
