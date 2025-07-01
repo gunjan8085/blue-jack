@@ -3,19 +3,21 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
-  // const isBusinessPage = request.nextUrl.pathname.startsWith('/for-business');
   const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard');
-  
-  // Get token from cookies
-  const token = request.cookies.get('auth_token')?.value;
+  const isAdminPage = request.nextUrl.pathname.startsWith('/admin');
 
-  // If trying to access business or dashboard pages without auth, redirect to login
-  if (( isDashboardPage) && !token) {
+  const userToken = request.cookies.get('auth_token')?.value;
+  const adminToken = request.cookies.get('admin_token')?.value;
+
+  if (isDashboardPage && !userToken) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  // If already logged in and trying to access auth pages, redirect to dashboard
-  if (isAuthPage && token) {
+  if (isAdminPage && !adminToken && !request.nextUrl.pathname.includes('/admin/login')) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
+
+  if (isAuthPage && userToken) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
@@ -23,5 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/auth/:path*', '/for-business/:path*', '/dashboard/:path*'],
-}; 
+  matcher: ['/auth/:path*', '/dashboard/:path*', '/admin/:path*'],
+};

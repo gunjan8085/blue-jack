@@ -12,6 +12,9 @@ const employeeRoutes = require("./routes/employee.route");
 // const serviceRoutes = require("./routes/services.route")
 const appointRoutes = require("./routes/appoint.route");
 const platformReviewRoutes = require("./routes/platformReview.route");
+const jobRoutes = require("./routes/job.route");
+const applicationRoutes = require("./routes/application.route");
+const adminRoutes = require("./routes/admin.route");
 
 
 // Base Routes
@@ -29,6 +32,9 @@ router.use("/api/v1/services", serviceRoutes);
 router.use("/api/v1/service-categories", serviceCategoriesRoutes);
 router.use("/api/v1/appointments", appointRoutes);
 router.use("/api/v1/platform-reviews", platformReviewRoutes);
+router.use("/api/v1/jobs", jobRoutes);
+router.use("/api/v1/applications", applicationRoutes);
+router.use("/api/v1/admin", adminRoutes);
 
 module.exports = router;
 
