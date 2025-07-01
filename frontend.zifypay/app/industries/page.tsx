@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Navbar from "@/components/landingPage/Navbar";
-import Footer from "@/components/landingPage/footer";
-
+import { Footer } from "@/components/landingPage/footer";
+//import Footer from "@/components/landingPage/footer";
+Footer
 const industries = [
   {
     title: "Salon",

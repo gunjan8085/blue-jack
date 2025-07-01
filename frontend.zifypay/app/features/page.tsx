@@ -5,7 +5,9 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Navbar from "@/components/landingPage/Navbar";
-import Footer from "@/components/landingPage/footer";
+import { Footer } from "@/components/landingPage/footer";
+// import Footer from "@/components/landingPage/footer";
+
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }

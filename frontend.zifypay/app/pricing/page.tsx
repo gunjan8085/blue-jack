@@ -146,7 +146,7 @@ export default function Pricing() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-1">
                       Centralized Business Control
-                    </h3>
+                    </h3> 
                     <p className="text-gray-600 text-sm">
                       Manage payments, inventory, staff, and insights—all from
                       one intuitive dashboard.
