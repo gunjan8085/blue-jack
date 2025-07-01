@@ -24,6 +24,7 @@ export default function ContactUs() {
             </div>
 
             <ul className="space-y-6 text-gray-700 text-base">
+              
               <li>
                 <div className="font-semibold text-gray-800 mb-1">Email</div>
                 <a
@@ -35,20 +36,22 @@ export default function ContactUs() {
               </li>
               <li>
                 <div className="font-semibold text-gray-800 mb-1">Phone</div>
-                <a href="tel:+911234567890" className="text-blue-600 underline">
-                  +91 12345 67890
+                <a href="tel:+19802560131" className="text-blue-600 underline">
+                  (980) 256-0131
                 </a>
+              </li>
+              <li>
+                <div className="font-semibold text-gray-800 mb-1">Address</div>
+                1309 Coffeen Avenue, Ste 1200,
+                <br />
+                Sheridan, WY 82801
               </li>
               <li>
                 <div className="font-semibold text-gray-800 mb-1">
                   Live Chat
                 </div>
                 Available from{" "}
-                <span className="font-medium">9:00 AM – 9:00 PM IST</span>
-              </li>
-              <li>
-                <div className="font-semibold text-gray-800 mb-1">Address</div>
-                ZifyPay HQ, Sector 62, Noida, UP, India
+                <span className="font-medium"> 24/7</span>
               </li>
             </ul>
           </div>

@@ -35,7 +35,7 @@ function Footer() {
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo and Description */}
+          {/* Logo and Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <span className="text-xl font-bold">
@@ -46,9 +46,28 @@ function Footer() {
                 />
               </span>
             </div>
-            <p className="text-gray-400">
-              Your trusted platform for beauty and wellness bookings.
-            </p>
+           
+            <ul className="text-sm space-y-2 text-gray-400">
+              <li>
+                <span className="font-medium text-white">Email:</span>{" "}
+                <a
+                  href="mailto:support@zifypay.com"
+                  className="hover:text-blue-400"
+                >
+                  support@zifypay.com
+                </a>
+              </li>
+              <li>
+                <span className="font-medium text-white">Phone:</span>{" "}
+                <a href="tel:+19802560131" className="hover:text-blue-400">
+                  (980) 256-0131
+                </a>
+              </li>
+              <li>
+                <span className="font-medium text-white">Address:</span> 1309
+                Coffeen Avenue, Ste 1200, Sheridan, WY 82801
+              </li>
+            </ul>
           </div>
 
           {/* Customers Section */}
