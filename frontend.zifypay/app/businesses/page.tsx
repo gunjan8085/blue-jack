@@ -189,7 +189,7 @@ export default function BusinessListingPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block w-80">
+          {/* <div className="hidden lg:block w-80">
             <Card className="sticky top-24">
               <div className="p-6">
                 <div className="flex items-center space-x-2 mb-6">
@@ -199,7 +199,7 @@ export default function BusinessListingPage() {
                 <FilterContent />
               </div>
             </Card>
-          </div>
+          </div> */}
 
           {/* Main Content */}
           <div className="flex-1">
