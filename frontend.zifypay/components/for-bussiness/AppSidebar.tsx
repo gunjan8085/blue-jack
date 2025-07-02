@@ -132,16 +132,6 @@ export default function AppSidebar() {
 
       <SidebarFooter>
         <div className="p-4 flex flex-col space-y-3">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" />
-              <AvatarFallback>GG</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">Glow & Go Salon</p>
-              <p className="text-xs text-gray-500">Premium Plan</p>
-            </div>
-          </div>
 
           {/* 🔓 Logout Button */}
           <Button
