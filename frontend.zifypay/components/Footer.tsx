@@ -28,7 +28,7 @@ function Footer() {
               <h4 className="font-semibold mb-4">For Customers</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="#" className="hover:text-white transition-colors">
+                  <Link href="for-bussiness" className="hover:text-white transition-colors">
                     Find Services
                   </Link>
                 </li>
