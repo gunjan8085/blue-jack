@@ -12,7 +12,9 @@ import {
   Settings,
   BarChart3,
   CalendarDays,
+  LogOut,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -36,8 +38,7 @@ import {
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
 
-
-const   sidebarItems = [
+const sidebarItems = [
   {
     title: "Overview",
     url: "/dashboard",
@@ -76,17 +77,39 @@ const   sidebarItems = [
 ]
 
 export default function AppSidebar() {
+  const router = useRouter()
+
+  const handleLogout = () => {
+    // Clear local storage
+    localStorage.removeItem("jwt")
+    localStorage.removeItem("twilio_identity")
+    localStorage.clear()
+
+    // Clear cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/")
+    })
+
+    // Redirect to login
+    router.push("/")
+  }
+
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center space-x-2 px-4 py-2">
-          {/* <div className="h-8 w-8 bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-          </div> */}
           <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-            <img src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png" alt="" />
+            <img
+              src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png"
+              alt="ZifyPay Logo"
+              className="h-8"
+            />
           </span>
         </div>
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Business Dashboard</SidebarGroupLabel>
@@ -106,8 +129,9 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter>
-        <div className="p-4">
+        <div className="p-4 flex flex-col space-y-3">
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src="/placeholder.svg?height=40&width=40" />
@@ -118,9 +142,19 @@ export default function AppSidebar() {
               <p className="text-xs text-gray-500">Premium Plan</p>
             </div>
           </div>
+
+          {/* 🔓 Logout Button */}
+          <Button
+            variant="destructive"
+            size="sm"
+            className="mt-3 w-full"
+            onClick={handleLogout}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>
   )
 }
-
