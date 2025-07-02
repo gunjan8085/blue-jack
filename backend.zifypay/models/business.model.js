@@ -13,44 +13,51 @@ const businessSchema = new mongoose.Schema(
     website: String,
     thumbnail: String,
     about: String,
-   serviceCategories: [
-  {
-    title: {
+    businessType: {
       type: String,
-      required: true,
+      enum: ["SALON", "SPA", "CLINIC", "STUDIO", "OTHER"],
+      required: true
     },
-    description: {
-      type: String,
-    },
-    hashtags: {
-      type: [String], // example: ["#spa", "#relax"]
-      default: [],
-    },
-    imageUrl: {
-      type: String,
-    },
-    tags: {
-      type: [String], // example: ["facial", "massage"]
-      default: [],
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
-    duration: {
-      type: Number, // in minutes
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-],
+    contactEmail: { type: String, required: true },
+    contactPhone: { type: String, required: true },
+    serviceCategories: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+        description: {
+          type: String,
+        },
+        hashtags: {
+          type: [String], // example: ["#spa", "#relax"]
+          default: [],
+        },
+        imageUrl: {
+          type: String,
+        },
+        tags: {
+          type: [String], // example: ["facial", "massage"]
+          default: [],
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+        duration: {
+          type: Number, // in minutes
+          required: true,
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
 
 
     teamSize: {

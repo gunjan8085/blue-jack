@@ -1,5 +1,9 @@
 const businessService = require("../services/business.service");
 const logger = require("../utils/logger.util");
+const multer = require('multer');
+const s3Service = require('../services/s3.service');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 module.exports = {
   registerNewBusiness: async (req, res) => {
@@ -75,5 +79,22 @@ module.exports = {
         message: error.message || "Internal Server Error"
       });
     }
-  }
+  },
+  uploadThumbnail: [
+    upload.single('file'),
+    async (req, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+        const result = await s3Service.uploadFile(req.file);
+        if (!result || !result.Location) {
+          return res.status(500).json({ success: false, message: 'Failed to upload image' });
+        }
+        return res.status(200).json({ success: true, url: result.Location });
+      } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+      }
+    }
+  ]
 };
