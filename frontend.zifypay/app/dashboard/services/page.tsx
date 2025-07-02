@@ -284,7 +284,7 @@ const ServiceManagerPage = () => {
               <div>
                 <SidebarTrigger className="mr-4" />
                 <div className="inline-block">
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-bold">
                     Service Manager
                   </h1>
                   <p className="text-gray-600 mt-1">Create and manage your business services</p>
@@ -306,7 +306,7 @@ const ServiceManagerPage = () => {
           <main className="p-6 max-w-7xl mx-auto space-y-8">
             {/* Service Creation Form */}
             <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
+              <CardHeader className="bg-gray-200">
                 <CardTitle className="flex items-center space-x-2">
                   <Plus className="h-6 w-6" />
                   <span>Create New Service</span>
@@ -423,7 +423,7 @@ const ServiceManagerPage = () => {
 
                     <Button
                       onClick={addToQueue}
-                      className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="w-full h-12 bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                       disabled={!currentService.title || !currentService.price || !currentService.duration}
                     >
                       <Plus className="h-5 w-5 mr-2" />
@@ -550,7 +550,7 @@ const ServiceManagerPage = () => {
 
             {/* All Existing Services */}
             <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
+              <CardHeader className="bg-gray-200 text-black rounded-t-lg">
                 <CardTitle className="flex items-center space-x-2">
                   <Settings className="h-6 w-6" />
                   <span>All Services ({allServices.length})</span>
