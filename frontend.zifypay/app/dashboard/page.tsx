@@ -198,36 +198,41 @@ export default function BusinessDashboard() {
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [recentReviews, setRecentReviews] = useState<any[]>([])
   const [loadingReviews, setLoadingReviews] = useState(true)
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [customerSatisfaction, setCustomerSatisfaction] = useState<number | null>(null);
+  const [loadingRatings, setLoadingRatings] = useState(true);
+
+  // Move fetchStats outside useEffect so it can be called elsewhere
+  const fetchStats = async () => {
+    setLoadingStats(true)
+    try {
+      let businessId = null
+      if (typeof window !== 'undefined') {
+        const businessProfile = localStorage.getItem('businessProfile')
+        if (businessProfile) {
+          businessId = JSON.parse(businessProfile)._id
+        }
+      }
+      if (!businessId) return
+      // Fetch total bookings
+      const bookingsRes = await fetch(`${API_URL}/appointments/${businessId}/total-bookings`)
+      const bookingsData = await bookingsRes.json()
+      setTotalBookings(bookingsData.totalBookings ?? 0)
+      // Fetch monthly revenue
+      const revenueRes = await fetch(`${API_URL}/appointments/${businessId}/monthly-revenue`)
+      const revenueData = await revenueRes.json()
+      setMonthlyRevenue(revenueData.monthlyRevenue ?? 0)
+    } catch (err) {
+      setTotalBookings(0)
+      setMonthlyRevenue(0)
+    } finally {
+      setLoadingStats(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchStats = async () => {
-      setLoadingStats(true)
-      try {
-        let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
-          if (businessProfile) {
-            businessId = JSON.parse(businessProfile)._id
-          }
-        }
-        if (!businessId) return
-        // Fetch total bookings
-        const bookingsRes = await fetch(`${API_URL}/appointments/${businessId}/total-bookings`)
-        const bookingsData = await bookingsRes.json()
-        setTotalBookings(bookingsData.totalBookings ?? 0)
-        // Fetch monthly revenue
-        const revenueRes = await fetch(`${API_URL}/appointments/${businessId}/monthly-revenue`)
-        const revenueData = await revenueRes.json()
-        setMonthlyRevenue(revenueData.monthlyRevenue ?? 0)
-      } catch (err) {
-        setTotalBookings(0)
-        setMonthlyRevenue(0)
-      } finally {
-        setLoadingStats(false)
-      }
-    }
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   useEffect(() => {
     const fetchToday = async () => {
@@ -355,6 +360,36 @@ export default function BusinessDashboard() {
     fetchReviews()
   }, [])
 
+  useEffect(() => {
+    const fetchRatings = async () => {
+      setLoadingRatings(true);
+      try {
+        let businessId = null;
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile');
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id;
+          }
+        }
+        if (!businessId) return;
+        // Fetch average rating
+        const avgRes = await fetch(`${API_URL}/appointments/${businessId}/average-rating`);
+        const avgData = await avgRes.json();
+        setAverageRating(avgData.averageRating ?? 0);
+        // Fetch customer satisfaction
+        const csRes = await fetch(`${API_URL}/appointments/${businessId}/customer-satisfaction`);
+        const csData = await csRes.json();
+        setCustomerSatisfaction(csData.customerSatisfaction ?? 0);
+      } catch (err) {
+        setAverageRating(0);
+        setCustomerSatisfaction(0);
+      } finally {
+        setLoadingRatings(false);
+      }
+    };
+    fetchRatings();
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -392,6 +427,10 @@ export default function BusinessDashboard() {
         const data = await res.json();
         setTodaysAppointments(data.data || []);
       }
+      // If status is completed, refresh monthly revenue
+      if (status === 'completed') {
+        fetchStats();
+      }
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
@@ -410,10 +449,10 @@ export default function BusinessDashboard() {
               <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
               <p className="text-gray-600">Welcome back! Here's what's happening today.</p>
             </div>
-            <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
+            {/* <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
               <Plus className="h-4 w-4 mr-2" />
               New Booking
-            </Button>
+            </Button> */}
           </div>
         </header>
 
@@ -448,8 +487,8 @@ export default function BusinessDashboard() {
                 <Star className="h-4 w-4 opacity-90" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dashboardData.stats.averageRating}</div>
-                <p className="text-xs opacity-90">Based on 132 reviews</p>
+                <div className="text-2xl font-bold">{loadingRatings ? '...' : (averageRating !== null ? averageRating.toFixed(1) : '0')}</div>
+                <p className="text-xs opacity-90">Based on {loadingReviews ? '...' : recentReviews.length} reviews</p>
               </CardContent>
             </Card>
 
@@ -560,9 +599,9 @@ export default function BusinessDashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Customer Satisfaction</span>
-                    <span className="font-medium">4.7/5</span>
+                    <span className="font-medium">{loadingRatings ? '...' : (customerSatisfaction !== null ? `${customerSatisfaction.toFixed(0)}%` : '0%')}</span>
                   </div>
-                  <Progress value={94} className="h-2" />
+                  <Progress value={customerSatisfaction ? Math.round(customerSatisfaction) : 0} className="h-2" />
                   <p className="text-xs text-gray-500 mt-1">Based on recent reviews</p>
                 </div>
               </CardContent>
@@ -624,7 +663,7 @@ export default function BusinessDashboard() {
                     recentReviews.map((review, idx) => (
                       <div key={review._id || idx} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-900">{review.addedBy?.name || 'Anonymous'}</h4>
+                          <h4 className="font-medium text-gray-900">{review.addedBy?.name || review.addedBy?.email || 'Anonymous'}</h4>
                           <div className="flex items-center">
                             {[...Array(review.stars)].map((_, i) => (
                               <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
