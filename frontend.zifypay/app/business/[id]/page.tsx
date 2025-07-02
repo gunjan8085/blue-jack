@@ -339,7 +339,7 @@ export default function BusinessProfilePage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery */}
@@ -404,8 +404,8 @@ export default function BusinessProfilePage() {
             {/* Tabs */}
             <Tabs defaultValue="about" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="services" onMouseEnter={fetchServices}>Services</TabsTrigger>
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="services" onClick={fetchServices}>Services</TabsTrigger>
                 <TabsTrigger value="team">Team</TabsTrigger>
                 <TabsTrigger value="location">Location</TabsTrigger>
               </TabsList>
@@ -559,48 +559,14 @@ export default function BusinessProfilePage() {
                         </div>
                       </div>
 
-                      <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center">
+                      {/* <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center">
                         <p className="text-gray-500">Map would be integrated here</p>
-                      </div>
+                      </div> */}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
-
-          {/* Booking Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5 text-purple-600" />
-                  <span>Contact Business</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
-                    Contact Owner
-                  </Button>
-
-                  <div className="space-y-3 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4" />
-                      <span>Business Hours: {business.timings[0]?.time[0]?.open.hour.toString().padStart(2, '0')}:{business.timings[0]?.time[0]?.open.minute.toString().padStart(2, '0')} - {business.timings[0]?.time[0]?.close.hour.toString().padStart(2, '0')}:{business.timings[0]?.time[0]?.close.minute.toString().padStart(2, '0')}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>Team Size: {business.teamSize.min} - {business.teamSize.max || '∞'} employees</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Star className="h-4 w-4" />
-                      <span>Rating: {business.avgReview.toFixed(1)} ({business.reviewCount} reviews)</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
