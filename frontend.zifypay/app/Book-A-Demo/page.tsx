@@ -190,7 +190,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
 
   return (
     <>
-<Navbar/>
+      <Navbar />
       <div className="min-h-screen bg-blue-600 flex items-center justify-center p-4">
         <div className="w-full max-w-6xl mx-auto">
           <div className="text-center mb-8 mt-28">
@@ -213,7 +213,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                 <br /> Terminal
               </span>
             </h2>
-           
           </div>
 
           <div className="flex flex-col md:flex-row gap-[41px] mt-32 mb-12">
@@ -263,7 +262,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                     value={formData.country}
                     onChange={(e) => {
                       const countryName = e.target.value;
-                      const match = countries.find(c =>
+                      const match = countries.find((c) =>
                         c.name.toLowerCase().includes(countryName.toLowerCase())
                       );
 
@@ -272,7 +271,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                           ...formData,
                           country: countryName,
                           countryCode: match.code,
-                          dialCode: match.dial_code
+                          dialCode: match.dial_code,
                         });
                       } else {
                         setFormData({ ...formData, country: countryName });
@@ -280,8 +279,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                     }}
                   />
                 </div>
-
-
 
                 <div>
                   <Label htmlFor="email" className="mb-2 block">
@@ -397,24 +394,21 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                 </div>
 
                 <Button
-                type="submit"
-                disabled={loading}
-                className={`w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 ${
-                  loading ? "opacity-70 cursor-not-allowed" : ""
-                }`}
-              >
-                {loading && <Spinner />}
-                {loading ? "Submitting..." : "ZifyPay $1 Demo Booking"}
-              </Button>
-
-
-
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 ${
+                    loading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {loading && <Spinner />}
+                  {loading ? "Submitting..." : "ZifyPay $1 Demo Booking"}
+                </Button>
               </form>
             </div>
 
             {/* Video section - properly implemented */}
             <div className="bg-gray-100 rounded-lg w-full md:w-7/12 flex items-center justify-center mb-36 overflow-hidden">
-              <video 
+              <video
                 className="w-full h-full object-cover"
                 controls
                 autoPlay
@@ -434,8 +428,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
 
         {/* Cards container with improved width and responsiveness */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 z-10 relative w-full max-w-6xl mx-12  ">
-        
-
           {/* right card (black) now second/right */}
           <div className="bg-black text-white rounded-lg shadow-lg p-8 w-full border-2 border-blue-600">
             <h2 className="text-3xl font-bold mb-8 text-center">
@@ -485,8 +477,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
             </div>
           </div>
 
-           {/* left card (white) now first/left */}
-           <div className="bg-white text-blue-900 rounded-lg shadow-lg p-8 w-full border-2 border-blue-600">
+          {/* left card (white) now first/left */}
+          <div className="bg-white text-blue-900 rounded-lg shadow-lg p-8 w-full border-2 border-blue-600">
             <h2 className="text-3xl font-bold mb-8 text-center  ">
               Traditional Processing
             </h2>
@@ -534,41 +526,29 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                 <span className="font-bold">$1-$199/mo</span>
               </div>
             </div>
-          </div>  
-          
-
-        
-
-          
+          </div>
         </div>
-
-      
-         
-
-
-
       </div>
-
-
 
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
-          window.scrollTo({ top: 10, behavior: 'smooth' });
-
+          window.scrollTo({ top: 10, behavior: "smooth" });
         }}
-              style={{
-          color: 'white',
+        style={{
+          color: "white",
           fontWeight: 600,
-          borderRadius: '0.5rem',
-          backgroundColor: '#2563eb',
-          textAlign: 'center',
-          cursor: 'pointer',
-          fontFamily: 'sans-serif',
-          transition: 'all 0.3s ease-in-out',
-          transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-          animation: isHovered ? 'jugnu-blink 1.2s infinite ease-in-out' : 'none',
+          borderRadius: "0.5rem",
+          backgroundColor: "#2563eb",
+          textAlign: "center",
+          cursor: "pointer",
+          fontFamily: "sans-serif",
+          transition: "all 0.3s ease-in-out",
+          transform: isHovered ? "scale(1.05)" : "scale(1)",
+          animation: isHovered
+            ? "jugnu-blink 1.2s infinite ease-in-out"
+            : "none",
         }}
         className={`w-[90%] md:w-[50%] 
           ml-[5%] md:ml-[25%] 
@@ -598,13 +578,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
         }
       `}</style>
 
-
       {/* section -3 */}
-      <div 
-       style={{
-        backgroundImage: `url(${"/Untitled/4.png"})`,
-      }}
-      className="bg-blue-600 min-h-screen p-4">
+      <div
+        style={{
+          backgroundImage: `url(${"/Untitled/4.png"})`,
+        }}
+        className="bg-blue-600 min-h-screen p-4"
+      >
         <div className="max-w-5xl mx-auto mt-24">
           {/* Card Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
@@ -739,7 +719,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> 
                 </div>
               ))}
             </div>
-            
           </div>
         </div>
       </div>

@@ -81,7 +81,7 @@ export default function FAQ() {
               id={`faq-answer-${idx}`}
               className={`overflow-hidden transition-all duration-300 px-6 ${
                 openIndex === idx
-                  ? "max-h-40 opacity-100 pb-6"
+                  ? "max-h-40 opacity-100 pb-6" 
                   : "max-h-0 opacity-0 pb-0"
               }`}
             >

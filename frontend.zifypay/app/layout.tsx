@@ -4,7 +4,7 @@ import './globals.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://zifypay.com'),
   title: 'Zifypay',
-  description: 'Smart booking software with built-in payments — simple, flexible, and ready to grow with your business.',
+  description: 'Smart booking software with built-in payments  simple, flexible, and ready to grow with your business.',
 }
 
 export default function RootLayout({

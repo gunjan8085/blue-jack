@@ -120,13 +120,13 @@ export default function CtaSection() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
           <Link
-            href="#"
+            href="/booking-engine"
             className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:shadow-lg min-w-[200px]"
           >
             Get Started Now
           </Link>
           <Link
-            href="#"
+            href="/Book-A-Demo"
             className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:shadow-lg min-w-[200px]"
           >
             Book a Demo

@@ -1,28 +1,50 @@
-import Link from 'next/link'
-import React from 'react'
-import { FacebookIcon, InstagramIcon, YoutubeIcon, LinkedinIcon } from 'lucide-react'
+import Link from "next/link";
+import React from "react";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  YoutubeIcon,
+  LinkedinIcon,
+} from "lucide-react";
 
 const socialLinks = [
-  { title: "Facebook", href: "https://www.facebook.com/profile.php?id=61573019611246", icon: FacebookIcon },
-  { title: "Instagram", href: "https://www.instagram.com/zifypay?igsh=MTFkZmM0M20zYjV2Zw==", icon: InstagramIcon },
-  { title: "Youtube", href: "https://www.youtube.com/watch?v=qjCH13g3wqY", icon: YoutubeIcon },
-  { title: "LinkedIn", href: "https://www.linkedin.com/company/zifypay/posts/?feedView=all", icon: LinkedinIcon },
-]
+  {
+    title: "Facebook",
+    href: "https://www.facebook.com/profile.php?id=61573019611246",
+    icon: FacebookIcon,
+  },
+  {
+    title: "Instagram",
+    href: "https://www.instagram.com/zifypay?igsh=MTFkZmM0M20zYjV2Zw==",
+    icon: InstagramIcon,
+  },
+  {
+    title: "Youtube",
+    href: "https://www.youtube.com/watch?v=qjCH13g3wqY",
+    icon: YoutubeIcon,
+  },
+  {
+    title: "LinkedIn",
+    href: "https://www.linkedin.com/company/zifypay/posts/?feedView=all",
+    icon: LinkedinIcon,
+  },
+];
 
 function Footer() {
   return (
-   <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                {/* <Sparkles className="h-6 w-6 text-blue-400" /> */}
-                <span className="text-xl font-bold">
-                              <img src="https://res.cloudinary.com/dt07noodg/image/upload/v1748250920/Group_5_e01ync.png" alt=""  className="min-w-min h-10" />
-
-                </span>
-              </div>
-              <p className="text-gray-400">Your trusted platform for beauty and wellness bookings.</p>
+    <footer className="bg-gray-900 text-white py-12">
+      <div className="container mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Logo and Company Info */}
+          <div>
+            <div className="flex items-center space-x-2 mb-4">
+              <span className="text-xl font-bold">
+                <img
+                  src="/logo.png"
+                  alt="ZifyPay logo"
+                  className="min-w-min h-10"
+                />
+              </span>
             </div>
             <div>
               <h4 className="font-semibold mb-4">For Customers</h4>
@@ -102,4 +124,4 @@ function Footer() {
   )
 }
 
-export default Footer
+export default Footer;

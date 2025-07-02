@@ -6,8 +6,9 @@ import Footer from "@/components/pos/Footer";
 
 export default function BlogPage() {
   return (
-    <main className="bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen flex flex-col">
+    <>
       <Navbar5 />
+    <main className="bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen flex flex-col">
 
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-bold mb-6 text-white">ZifyPay Blog</h1>
@@ -31,7 +32,8 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <Footer />
     </main>
+      <Footer />
+      </>
   );
 }
