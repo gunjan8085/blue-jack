@@ -13,6 +13,7 @@ import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
 import Footer from "@/components/Footer"
 import CTA from "@/components/CTA"
 import Reviews from "@/components/Reviews"
+import { API_URL } from '@/lib/const'
 
 function FeaturedBusinesses() {
   const router = useRouter()
@@ -23,7 +24,7 @@ function FeaturedBusinesses() {
     const fetchBusinesses = async () => {
       setLoading(true)
       try {
-        const res = await fetch('http://localhost:5001/api/v1/business/getAllBusiness')
+        const res = await fetch(`${API_URL}/business/getAllBusiness`)
         const data = await res.json()
         setBusinesses(data.data ? data.data.slice(0, 3) : [])
       } catch {
