@@ -20,6 +20,7 @@ const adminRoutes = require("./routes/admin.route");
 // Base Routes
 router.use("/api/v1/users", userRoutes);
 router.use("/api/v1/businesses", businessRoutes);
+router.use("/api/v1/business", businessRoutes);
 // router.use("/api/v1/employee", employeeRoutes);
 router.use("/api/v1/catalog", catalogRoutes);
 router.use("/api/v1/calender", calenderRoutes);
