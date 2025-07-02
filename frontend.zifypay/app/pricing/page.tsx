@@ -102,7 +102,7 @@ export default function Pricing() {
                 </ul>
 
                 <a
-                  href="/demo"
+                  href="Book-A-Demo"
                   className={`mt-auto w-full px-5 py-3 rounded-lg text-white font-semibold transition ${
                     tier.popular
                       ? "bg-blue-600 hover:bg-blue-700"
@@ -148,7 +148,7 @@ export default function Pricing() {
                       Centralized Business Control
                     </h3> 
                     <p className="text-gray-600 text-sm">
-                      Manage payments, inventory, staff, and insights—all from
+                      Manage payments, inventory, staff, and insights  all from
                       one intuitive dashboard.
                     </p>
                   </div>
@@ -184,8 +184,7 @@ export default function Pricing() {
               </div>
             </div>
           </div>
-
-          {/* Tailwind Animations */}
+               
          
         </section>
       </main>
