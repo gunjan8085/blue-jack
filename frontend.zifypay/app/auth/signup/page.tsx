@@ -40,11 +40,7 @@ export default function SignupPage() {
         throw new Error(data.message || 'Signup failed');
       }
 
-      // Store authentication data
-      setAuthToken(data.token);
-      setUserData(data.user);
-
-      // Redirect to dashboard
+      // Redirect to login
       router.push('/auth/login');
     } catch (err: any) {
       setError(err.message);

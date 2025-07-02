@@ -77,12 +77,12 @@ export default function LoginPage() {
       
       if (!businessProfile) {
         // Redirect to business creation page if no profile exists
-        window.location.href = '/business/create';
+        router.push('/business/create');
       } else {
         // Store business profile data
         localStorage.setItem('businessProfile', JSON.stringify(businessProfile));
         // Redirect to dashboard
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setError(err.message);
