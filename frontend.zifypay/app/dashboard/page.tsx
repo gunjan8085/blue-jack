@@ -161,6 +161,26 @@ const sidebarItems = [
 
 
 export default function BusinessDashboard() {
+  const [checkingRole, setCheckingRole] = useState(true);
+  const router = require('next/navigation').useRouter();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userDataStr = localStorage.getItem('userData');
+      let userData = null;
+      try { userData = userDataStr ? JSON.parse(userDataStr) : null; } catch { userData = null; }
+      const role = userData?.role || userData?.userType || null;
+      // Acceptable roles for business dashboard
+      if (role !== 'business' && role !== 'employee' && role !== 'owner') {
+        router.replace('/customer/home');
+        return;
+      }
+    }
+    setCheckingRole(false);
+  }, []);
+
+  if (checkingRole) return null;
+
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
   const [totalBookings, setTotalBookings] = useState<number | null>(null)
   const [monthlyRevenue, setMonthlyRevenue] = useState<number | null>(null)
