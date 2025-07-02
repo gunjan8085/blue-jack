@@ -51,7 +51,7 @@ function HeaderForCustomer() {
         {/* Nav */}
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/businesses" className="text-gray-600 hover:text-blue-600 transition-colors">
-            Find Services
+            View Businesses
           </Link>
 
           {isCustomer && (

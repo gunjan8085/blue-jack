@@ -184,6 +184,8 @@ export default function BusinessDashboard() {
   const [loadingQuickStats, setLoadingQuickStats] = useState(true);
   const [totalCustomers, setTotalCustomers] = useState<number | null>(null);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
+  const [recentReviews, setRecentReviews] = useState<any[]>([])
+  const [loadingReviews, setLoadingReviews] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -326,6 +328,30 @@ export default function BusinessDashboard() {
     };
     fetchTotalCustomers();
   }, []);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setLoadingReviews(true)
+      try {
+        let businessId = null
+        if (typeof window !== 'undefined') {
+          const businessProfile = localStorage.getItem('businessProfile')
+          if (businessProfile) {
+            businessId = JSON.parse(businessProfile)._id
+          }
+        }
+        if (!businessId) return
+        const res = await fetch(`${API_URL}/businesses/${businessId}/reviews`)
+        const data = await res.json()
+        setRecentReviews((data.data || []).slice(0, 5))
+      } catch (err) {
+        setRecentReviews([])
+      } finally {
+        setLoadingReviews(false)
+      }
+    }
+    fetchReviews()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -679,30 +705,35 @@ export default function BusinessDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData.recentReviews.map((review) => (
-                    <div key={review.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-gray-900">
-                          {review.customer}
+                  {loadingReviews ? (
+                    <div>Loading...</div>
+                  ) : recentReviews.length === 0 ? (
+                    <div className="text-gray-500">No recent reviews.</div>
+                  ) : (
+                    recentReviews.map((review, idx) => (
+                      <div key={review._id || idx} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-900">
+                          {review.addedBy?.name || 'Anonymous'}
                         </h4>
-                        <div className="flex items-center">
-                          {[...Array(review.rating)].map((_, i) => (
-                            <Star
+                          <div className="flex items-center">
+                            {[...Array(review.stars)].map((_, i) => (
+                              <Star
                               key={i}
                               className="h-4 w-4 fill-yellow-400 text-yellow-400"
                             />
-                          ))}
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                        "{review.text}"
+                      </p>
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>{new Date(review.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        "{review.comment}"
-                      </p>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>{review.service}</span>
-                        <span>{review.date}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

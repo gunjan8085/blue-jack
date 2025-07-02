@@ -42,7 +42,6 @@ export default function SignupPage() {
 
       setAuthToken(data.token);
       setUserData(data.user);
-
       router.push("/auth/login");
     } catch (err: any) {
       setError(err.message);

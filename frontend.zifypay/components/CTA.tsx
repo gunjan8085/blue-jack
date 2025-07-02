@@ -14,7 +14,7 @@ function CTA() {
 
             <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
               <Users className="mr-2 h-5 w-5" />
-              Book Appointment
+              View Businesses
             </Button>
 </Link>
             <Link href={"/for-bussiness"}>

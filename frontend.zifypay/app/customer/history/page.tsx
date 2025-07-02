@@ -81,13 +81,13 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
 
   // Get email dynamically (replace with your auth/user context as needed)
-  const email = typeof window !== 'undefined' ? localStorage.getItem("email") || "prityush@gmail.com" : ""
+  const email = typeof window !== 'undefined' ? localStorage.getItem("userEmail") || "prityush@gmail.com" : ""
 
   useEffect(() => {
     setLoading(true)
     axios
       .get(`${API_BASE}/appointments/customer/completed?email=${encodeURIComponent(email)}`)
-      .then((res) => {
+      .then(async (res) => {
         if (res.data && res.data.success) {
           setAppointments(res.data.data)
         } else {
@@ -114,20 +114,16 @@ export default function HistoryPage() {
   const handleReviewSubmit = async (id: string) => {
     const data = reviewData[id]
     if (!data) return
-
-    // Find the appointment to get businessId
     const appointment = appointments.find((a) => a.id === id)
     if (!appointment) return
-
     try {
-      // Replace with actual token logic
       const token = localStorage.getItem("token") || ""
       await axios.post(
-        `${API_BASE}/reviews`,
+        `${API_BASE}/businesses/${appointment.businessId}/reviews`,
         {
-          businessId: appointment.businessId || "", // You may need to add businessId to Appointment type
           text: data.comment,
           stars: data.rating,
+          userId: localStorage.getItem("userId") || undefined,
         },
         {
           headers: {
@@ -255,9 +251,9 @@ export default function HistoryPage() {
                         </div>
                       </div>
                       <div className="text-right space-y-2">
-                        <div className="flex items-center gap-1 text-lg font-bold text-gray-800">
-                          <DollarSign className="w-5 h-5" />₹{appointment.paymentAmount}
-                        </div>
+                        {/* <div className="flex items-center gap-1 text-lg font-bold text-gray-800">
+                          <DollarSign className="w-5 h-5" />{appointment.paymentAmount}
+                        </div> */}
                         <Badge
                           variant={appointment.status === "completed" ? "default" : "secondary"}
                           className={`${
@@ -275,7 +271,7 @@ export default function HistoryPage() {
                     {/* Review Section */}
                     <motion.div className="mt-6 p-4 bg-gray-50 rounded-lg" layout>
                       <AnimatePresence mode="wait">
-                        {appointment.review && !editReview[appointment.id] ? (
+                        {appointment.review ? (
                           <motion.div
                             key="review-display"
                             initial={{ opacity: 0 }}
@@ -291,18 +287,10 @@ export default function HistoryPage() {
                                 </div>
                                 <p className="text-gray-700 italic">"{appointment.review.comment}"</p>
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => startEditReview(appointment)}
-                                className="hover:bg-blue-100 hover:text-blue-600"
-                              >
-                                <Edit3 className="w-4 h-4 mr-1" />
-                                Edit
-                              </Button>
                             </div>
+                            <div className="text-green-600 font-semibold">Thank you for your review!</div>
                           </motion.div>
-                        ) : (
+                        ) : editReview[appointment.id] ? (
                           <motion.div
                             key="review-form"
                             initial={{ opacity: 0, height: 0 }}
@@ -344,12 +332,20 @@ export default function HistoryPage() {
                               </Button>
                             </div>
                           </motion.div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 mt-2"
+                            onClick={() => startEditReview(appointment)}
+                          >
+                            Leave a Review
+                          </Button>
                         )}
                       </AnimatePresence>
                     </motion.div>
 
                     {/* Rebook Button */}
-                    <div className="mt-6 flex justify-end">
+                    {/* <div className="mt-6 flex justify-end">
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
                           variant="outline"
@@ -360,7 +356,7 @@ export default function HistoryPage() {
                           Rebook (+10% price)
                         </Button>
                       </motion.div>
-                    </div>
+                    </div> */}
                   </CardContent>
                 </Card>
               </motion.div>
