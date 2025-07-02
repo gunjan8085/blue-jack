@@ -63,11 +63,7 @@ const   sidebarItems = [
     url: "/dashboard/customers",
     icon: Users,
   },
-  {
-    title: "Analytics",
-    url: "/dashboard/analytics",
-    icon: TrendingUp,
-  },
+  
   {
     title: "Settings",
     url: "/dashboard/settings",

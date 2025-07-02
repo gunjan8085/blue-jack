@@ -86,76 +86,84 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-150 to-white">
       {/* Header */}
-     
-     <HeaderForCustomer />
+
+      <HeaderForCustomer />
 
       {/* Hero Section */}
-      <section className="py-20 px-4 mt-28">
-        <div className="container mx-auto text-center">
+      <section className="relative py-28 px-6 md:px-12 overflow-hidden">
+        {/* Background Video */}
         <video
-        className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover z-[-1]"
-        autoPlay
-        muted
-        loop
-        playsInline
-      >
-        <source src="./acchivideo.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-          <h1 
-          className="text-5xl md:text-6xl font-bold mb-6 text-black bg-clip-text ">
-            Book local beauty and wellness services
+          className="absolute top-0 left-0 w-full h-full object-cover z-[-1] brightness-75"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="./acchivideo.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        {/* Content Container */}
+        <div className="container mx-auto text-center relative z-10 text-white">
+          <h1 className="text-4xl md:text-6xl font-extrabold font-serif mb-6 leading-tight">
+            Book Local Beauty & Wellness Services
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Discover and book appointments with top-rated beauty and wellness professionals in your area
+
+          <p className="text-lg md:text-xl text-gray-100 mb-10 max-w-2xl mx-auto">
+            Discover and book appointments with top-rated beauty and wellness
+            professionals near you.
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-3xl mx-auto mb-12">
+          <div className="max-w-2xl mx-auto mb-14">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 " />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
-                placeholder="Search for services, salons, or spas..."
+                placeholder="Search for salons, spas, or services..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-4 text-lg border-2 border-blue-200 focus:border-blue-400 rounded-full shadow-lg"
+                className="w-full h-16 pl-12 pr-36 text-base md:text-lg rounded-full shadow-lg border-0 focus:ring-4 focus:ring-blue-300"
               />
               <Button
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                size="sm"
-              >BookBeauty
-
+                size="lg"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-12 px-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-md"
+              >
                 Search
               </Button>
             </div>
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
-              <div className="text-gray-600">Verified Businesses</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 max-w-4xl mx-auto text-center">
+            <div>
+              <div className="text-4xl font-extrabold text-blue-400 mb-2">
+                500+
+              </div>
+              <p className="text-gray-100 text-lg">Verified Businesses</p>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">10k+</div>
-              <div className="text-gray-600">Happy Customers</div>
+            <div>
+              <div className="text-4xl font-extrabold text-blue-400 mb-2">
+                10k+
+              </div>
+              <p className="text-gray-100 text-lg">Happy Customers</p>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">4.8★</div>
-              <div className="text-gray-600">Average Rating</div>
+            <div>
+              <div className="text-4xl font-extrabold text-blue-400 mb-2">
+                4.8★
+              </div>
+              <p className="text-gray-100 text-lg">Average Rating</p>
             </div>
           </div>
         </div>
       </section>
 
-
       {/* <Hero /> */}
 
       {/* Featured Businesses */}
-     <FeaturedBusinesses featuredBusinesses = {featuredBusinesses}/>
+      <FeaturedBusinesses featuredBusinesses={featuredBusinesses} />
 
       {/* Reviews Carousel */}
-      <Reviews reviews = {reviews}/>
+      <Reviews reviews={reviews} />
 
       {/* CTA Section */}
       <CTA />
@@ -163,5 +171,5 @@ export default function LandingPage() {
       {/* Footer */}
       <Footer />
     </div>
-  )
+  );
 }
