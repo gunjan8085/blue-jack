@@ -7,7 +7,8 @@ import { FAQ_ITEMS } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { MonitorCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
-
+// import {FAQSection} from "@/app/FAQ/FAQSection";  
+import FAQSection from "@/components/FAQ"; 
 import { useState } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
@@ -171,149 +172,68 @@ export default function SquareSection({ className = "" }: SquareSectionProps) {
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-gray-50 py-12 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="text-3xl font-bold text-blue-600 text-center mb-8">
-            FAQ
-          </h2>
-
-          <div className="space-y-4 mb-12">
-            {[
-              "How do I switch from my current solution?",
-              "Can I upgrade my plan?",
-              "Can I downgrade my plan?",
-            ].map((question, index) => (
-              <div key={index} className="border border-gray-300 rounded-lg">
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
-                >
-                  <span className="font-medium text-gray-900">{question}</span>
-                  <Plus
-                    className={`h-5 w-5 text-gray-500 transition-transform ${
-                      openFaq === index ? "rotate-45" : ""
-                    }`}
-                  />
-                </button>
-                {openFaq === index && (
-                  <div className="px-4 pb-4 text-gray-600">
-                    <p>Answer content would go here...</p>
-                  </div>
-                )}
-              </div>
-            ))}
+      <FAQSection />
+      <footer className="bg-white py-12 px-4 border-t border-gray-200">
+        <div className="container mx-auto max-w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-xs text-gray-600 leading-relaxed">
+          <div>
+            <p className="mb-4">
+              ¹ ZifyPay, the ZifyPay logo, ZifyPay Financial Services, ZifyPay
+              Capital, ZifyPay POS, and other related marks are trademarks or
+              registered trademarks of ZifyPay Inc. and/or its affiliates.
+              ZifyPay Financial Services, Inc. is a wholly owned subsidiary of
+              ZifyPay Inc.
+            </p>
+            <p className="mb-4">
+              All financing products are issued by ZifyPay Financial Services,
+              Inc., subject to credit approval and compliance with applicable
+              law. Loan eligibility and terms are based on several factors
+              including business history, payment processing volume, and risk
+              assessment. Not all applicants will qualify.
+            </p>
+            <p className="mb-4">
+              ² ZifyPay Inc. is a technology and financial services platform.
+              ZifyPay is not a bank. Banking services may be provided by partner
+              financial institutions that are FDIC-insured. FDIC insurance is
+              only applicable to eligible accounts held directly with partner
+              banks.
+            </p>
+            <p className="mb-4">
+              Use of ZifyPay services is subject to our Terms of Service and
+              Privacy Policy. Certain features may be limited or restricted
+              based on location, regulatory requirements, or business
+              verification status.
+            </p>
           </div>
-
-          {/* Fine Print */}
-          {/* <div className="grid w-7xl grid-cols-1 md:grid-cols-2 gap-8 text-xs text-gray-500 leading-relaxed">
-            <div>
-              <p className="mb-4">
-                ¹Square, the Square logo, Square Financial Services, Square
-                Capital, and others are trademarks of Block, Inc. and/or its
-                subsidiaries. Square Financial Services, Inc. is a wholly owned
-                subsidiary of Block, Inc.
-              </p>
-              <p className="mb-4">
-                All loans are issued by Square Financial Services, Inc. Actual
-                fee depends upon payment card processing history, loan amount
-                and other eligibility factors. A minimum payment of 1/18th of
-                the initial balance is required every 90 days and full loan
-                repayment is required within 18 months. Loans to California
-                residents made or arranged pursuant to a California Finance
-                Lender License.
-              </p>
-              <p>
-                ²Block, Inc. is a financial services platform and not an
-                FDIC-insured bank. FDIC deposit insurance coverage only protects
-                against the failure of an FDIC-insured deposit institution. If
-                you hold funds in your Square Checking account, your funds are
-                held at Sutton Bank and if certain conditions are met, are
-                eligible for FDIC insurance. FDIC insurance does not cover the
-                aggregation of the account holder's funds held at Sutton Bank
-                and if certain conditions have been met.
-              </p>
-            </div>
-            <div>
-              <p className="mb-4">
-                ACH transfer fund availability: Instant availability does not
-                apply to funds added to the Square Checking account by ACH bank
-                transfer. ACH credit transfers to your Square Checking account
-                business days.
-              </p>
-              <p className="mb-4">
-                ³Savings accounts are provided by Square Financial Services,
-                Inc. Member FDIC. Accrue annual percentage yield (APY) of 1.00%
-                per folder on folder balances over $10. APY subject to change,
-                current as of 3/18/2025. No minimum deposit to open an account,
-                no minimum balance to earn the stated APY. Fees could reduce
-                earnings on the account. Pending balances are not subject to
-                FDIC insurance.
-              </p>
-              <p>
-                The rate of our savings account is more than 3x the national
-                average of 0.45% APY, based on the national average of savings
-                accounts rates published in the FDIC Weekly National Rates and
-                Rate Caps as of 3/18/2025.
-              </p>
-              <p className="mt-4">
-                © 2024 Square, Inc. and/or Square Financial Services, Inc. All
-                rights reserved.
-              </p>
-            </div>
-          </div> */}
-
-          {/* Legal Fine Print Footer Section */}
+          <div>
+            <p className="mb-4">
+              ACH and bank transfers may take 1–3 business days to process.
+              Availability of funds is subject to the receiving bank’s policies
+              and the timing of submission.
+            </p>
+            <p className="mb-4">
+              ³ ZifyPay Savings Accounts are issued by ZifyPay Financial
+              Services, Inc., Member FDIC. Annual Percentage Yield (APY) of
+              1.00% applies only to folder balances over $10. Rates are variable
+              and subject to change at any time without notice.
+            </p>
+            <p className="mb-4">
+              Comparisons to national average APYs are based on data provided by
+              the FDIC and are accurate as of the published date. Past
+              performance is not indicative of future results.
+            </p>
+            <p className="mb-4">
+              ZifyPay POS and payment hardware are PCI-DSS compliant and
+              designed to support secure, real-time transactions. Integration
+              with third-party apps and APIs is subject to approval and API
+              usage guidelines.
+            </p>
+            <p className="mt-4">
+              © 2024 ZifyPay Inc. and/or ZifyPay Financial Services, Inc. All
+              rights reserved. Unauthorized use is prohibited.
+            </p>
+          </div>
         </div>
-        <footer className="bg-white py-12 px-4 border-t border-gray-200">
-          <div className="container mx-auto max-w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-xs text-gray-600 leading-relaxed">
-            <div>
-              <p className="mb-4">
-                ¹ Square, the Square logo, Square Financial Services, Square
-                Capital, and others are trademarks of Block, Inc. and/or its
-                subsidiaries. Square Financial Services, Inc. is a wholly owned
-                subsidiary of Block, Inc.
-              </p>
-              <p className="mb-4">
-                All loans are issued by Square Financial Services, Inc. Actual
-                fee depends upon payment card processing history, loan amount
-                and other eligibility factors. A minimum payment of 1/18th of
-                the initial balance is required every 90 days and full loan
-                repayment is required within 18 months. Loans to California
-                residents made or arranged pursuant to a California Finance
-                Lender License.
-              </p>
-              <p>
-                ² Block, Inc. is a financial services platform and not an
-                FDIC-insured bank. FDIC deposit insurance coverage only protects
-                against the failure of an FDIC-insured deposit institution.
-              </p>
-            </div>
-            <div>
-              <p className="mb-4">
-                ACH transfer fund availability: Instant availability does not
-                apply to funds added to the Square Checking account by ACH bank
-                transfer. ACH credit transfers to your Square Checking account
-                business days.
-              </p>
-              <p className="mb-4">
-                ³ Savings accounts are provided by Square Financial Services,
-                Inc. Member FDIC. Accrue annual percentage yield (APY) of 1.00%
-                per folder on folder balances over $10. APY subject to change,
-                current as of 3/18/2025.
-              </p>
-              <p>
-                The rate of our savings account is more than 3x the national
-                average of 0.45% APY, based on FDIC Weekly National Rates and
-                Rate Caps as of 3/18/2025.
-              </p>
-              <p className="mt-4">
-                © 2024 Square, Inc. and/or Square Financial Services, Inc. All
-                rights reserved.
-              </p>
-            </div>
-          </div>
-        </footer>
-      </div>
+      </footer>
     </div>
   );
 }
