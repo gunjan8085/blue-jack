@@ -13,6 +13,13 @@ module.exports = {
       const employee = await employeeService.addEmployee(req.body);
 
       if (employee) {
+        // Send signup email (non-blocking)
+        const { email, name } = req.body;
+        if (email) {
+          const { sendSignupMail } = require("../services/mail.service");
+          sendSignupMail(email, name || email.split('@')[0]).catch(err => console.error('Employee signup email error:', err));
+        }
+
         const token = generateToken(employee._id, "Business");
 
         const responseData = { data: employee, success: true };
@@ -38,6 +45,11 @@ module.exports = {
           success: true,
           message: "Employee not found",
         });
+      }
+      // Send login email (non-blocking)
+      if (email) {
+        const { sendLoginMail } = require("../services/mail.service");
+        sendLoginMail(email, result.name || email.split('@')[0]).catch(err => console.error('Employee login email error:', err));
       }
       const token = generateToken(result._id, "Business");
       return res.status(200).json({

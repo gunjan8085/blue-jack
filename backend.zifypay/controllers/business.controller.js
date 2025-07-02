@@ -11,6 +11,12 @@ module.exports = {
   registerNewBusiness: async (req, res) => {
     try {
       const business = await businessService.registerNewBusiness(req.body);
+      // Send signup email (non-blocking)
+      const { email, name } = req.body;
+      if (email) {
+        const { sendSignupMail } = require("../services/mail.service");
+        sendSignupMail(email, name || email.split('@')[0]).catch(err => console.error('Business signup email error:', err));
+      }
       return res.status(201).json({ data: business, success: true });
     } catch (error) {
       logger.error("Error signing up business:", error);

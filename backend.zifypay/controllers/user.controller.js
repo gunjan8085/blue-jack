@@ -3,6 +3,7 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { sendSignupMail, sendLoginMail } = require("../services/mail.service");
 
 const userController = {
   // POST /users/signup
@@ -31,6 +32,10 @@ const userController = {
       });
 
       await newUser.save();
+
+      // Send signup email (don't block response)
+      sendSignupMail(email, firstName || email.split('@')[0])
+        .catch((err) => console.error('Signup email error:', err));
 
       const userResponse = newUser.toObject();
       delete userResponse.password;
@@ -78,6 +83,10 @@ const userController = {
 
       const userResponse = user.toObject();
       delete userResponse.password;
+
+      // Send login email (don't block response)
+      sendLoginMail(email, user.firstName || email.split('@')[0])
+        .catch((err) => console.error('Login email error:', err));
 
       res.status(200).json({
         success: true,

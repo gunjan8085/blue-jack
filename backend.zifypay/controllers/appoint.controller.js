@@ -5,6 +5,7 @@ const Business = require("../models/business.model");
 const Service = require("../models/services.model");
 const Employee = require("../models/employee.model");
 const { log } = require("console");
+const { sendAppointmentMail } = require("../services/mail.service");
 
 const createAppointment = async (req, res, next) => {
   try {
@@ -25,6 +26,32 @@ const createAppointment = async (req, res, next) => {
       time,
       customer,
     });
+
+    // Fetch business, service, staff details for email
+    let business, serviceObj, staffObj;
+    try {
+      business = await require("../models/business.model").findById(businessId);
+      serviceObj = await require("../models/services.model").findById(service);
+      staffObj = await require("../models/employee.model").findById(staff);
+    } catch (e) {}
+
+    // Compose details for email
+    const businessName = business?.brandName || business?.name || "Business";
+    const serviceName = serviceObj?.name || "Service";
+    const staffName = staffObj?.name || "Staff";
+    const location = business?.address?.addressLine1 ? `${business.address.addressLine1}, ${business.address.city}` : "";
+
+    // Send appointment confirmation email (non-blocking)
+    sendAppointmentMail(
+      customer.email,
+      customer.name,
+      businessName,
+      serviceName,
+      staffName,
+      date,
+      time,
+      location
+    ).catch((err) => console.error('Appointment email error:', err));
 
     res.status(201).json({ success: true, message: "Appointment booked", data: appointment });
   } catch (err) {

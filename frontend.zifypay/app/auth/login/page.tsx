@@ -68,8 +68,14 @@ export default function LoginPage() {
       );
 
       if (!businessProfile) {
+        // Redirect to business creation page if no profile exists
+        router.push('/business/create');
         window.location.href = "/business/create";
       } else {
+        // Store business profile data
+        localStorage.setItem('businessProfile', JSON.stringify(businessProfile));
+        // Redirect to dashboard
+        router.push('/dashboard');
         localStorage.setItem(
           "businessProfile",
           JSON.stringify(businessProfile)

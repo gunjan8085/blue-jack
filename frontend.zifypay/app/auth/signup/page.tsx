@@ -40,9 +40,8 @@ export default function SignupPage() {
         throw new Error(data.message || "Signup failed");
       }
 
-      setAuthToken(data.token);
-      setUserData(data.user);
-      router.push("/auth/login");
+      // Redirect to login
+      router.push('/auth/login');
     } catch (err: any) {
       setError(err.message);
     } finally {
