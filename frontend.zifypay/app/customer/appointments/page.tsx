@@ -60,7 +60,7 @@ export default function AppointmentsPage() {
 
       try {
         const res = await fetch(
-          `${API_URL}/api/v1/appointments/user?userId=${userId}`
+          `${API_URL}/appointments/user?userId=${userId}`
         );
         const data = await res.json();
 
