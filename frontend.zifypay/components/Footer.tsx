@@ -31,146 +31,115 @@ const socialLinks = [
 ];
 
 function Footer() {
-  return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo and Company Info */}
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-xl font-bold">
-                <img
-                  src="/logo.png"
-                  alt="ZifyPay logo"
-                  className="min-w-min h-10"
-                />
-              </span>
-            </div>
-           
-            <ul className="text-sm space-y-2 text-gray-400">
-              <li>
-                <span className="font-medium text-white">Email:</span>{" "}
-                <a
-                  href="mailto:support@zifypay.com"
-                  className="hover:text-blue-400"
-                >
-                  support@zifypay.com
-                </a>
-              </li>
-              <li>
-                <span className="font-medium text-white">Phone:</span>{" "}
-                <a href="tel:+19802560131" className="hover:text-blue-400">
-                  (980) 256-0131
-                </a>
-              </li>
-              <li>
-                <span className="font-medium text-white">Address:</span> 1309
-                Coffeen Avenue, Ste 1200, Sheridan, WY 82801
-              </li>
-            </ul>
-          </div>
 
-          {/* Customers Section */}
+  return (
+    <footer className="bg-gray-900 text-white py-8">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          {/* Logo */}
+          <div className="flex flex-col">
+            <div className="mb-6">
+              <img
+                src="/logo.png"
+                alt="ZifyPay logo"
+                className="h-10 w-auto"
+              />
+            </div>
+          </div>
+          
+          {/* For Customers */}
           <div>
-            <h4 className="font-semibold mb-4">For Customers</h4>
-            <ul className="space-y-2 text-gray-400">
+            <h4 className="font-semibold text-lg mb-4">For Customers</h4>
+            <ul className="space-y-3 text-gray-400">
               <li>
-                <Link
-                  href="/businesses"
-                  className="hover:text-white transition-colors"
-                >
+                <Link href="#" className="hover:text-white transition-colors block">
+                  Find Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/businesses" className="hover:text-white transition-colors block">
                   Book Appointment
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors block">
+                  Reviews
                 </Link>
               </li>
             </ul>
           </div>
-
-          {/* Business Section */}
+          
+          {/* For Business */}
           <div>
-            <h4 className="font-semibold mb-4">For Business</h4>
-            <ul className="space-y-2 text-gray-400">
+            <h4 className="font-semibold text-lg mb-4">For Business</h4>
+            <ul className="space-y-3 text-gray-400">
               <li>
-                <Link
-                  href="/for-bussiness"
-                  className="hover:text-white transition-colors"
+                <Link 
+                  href="/for-bussiness" 
+                  className="hover:text-white transition-colors block"
                 >
                   List Your Business
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/dash"
-                  className="hover:text-white transition-colors"
-                >
+                <Link href="/businesses" className="hover:text-white transition-colors block">
                   Dashboard
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/analytics"
-                  className="hover:text-white transition-colors"
-                >
+                <Link href="#" className="hover:text-white transition-colors block">
                   Analytics
                 </Link>
               </li>
             </ul>
           </div>
-
-          {/* Support Section */}
+          
+          {/* Support */}
           <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-gray-400">
+            <h4 className="font-semibold text-lg mb-4">Support</h4>
+            <ul className="space-y-3 text-gray-400">
               <li>
-                <Link
-                  href="/contact-us"
-                  className="hover:text-white transition-colors"
-                >
+                <Link href="#" className="hover:text-white transition-colors block">
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white transition-colors block">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/privacy-policy"
-                  className="hover:text-white transition-colors"
-                >
+                <Link href="#" className="hover:text-white transition-colors block">
                   Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/careers"
-                  className="hover:text-white transition-colors"
-                >
-                  Careers
                 </Link>
               </li>
             </ul>
           </div>
         </div>
-
-        {/* Social Links */}
-        <div className="flex justify-center space-x-6 mt-8 mb-4">
-          {socialLinks.map(({ title, href, icon: Icon }) => (
-            <Link
-              key={title}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={title}
-              className="hover:text-blue-400 transition-colors"
-            >
-              <Icon className="h-6 w-6" />
-            </Link>
-          ))}
-        </div>
-
-        {/* Footer Bottom */}
-        <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 zifypay.com. All rights reserved.</p>
+        
+        {/* Social Links and Copyright */}
+        <div className="border-t border-gray-800 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex space-x-6 mb-4 md:mb-0">
+              {socialLinks.map(({ title, href, icon: Icon }) => (
+                <Link 
+                  key={title} 
+                  href={href} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label={title} 
+                  className="text-gray-400 hover:text-blue-400 transition-colors"
+                >
+                  <Icon className="h-5 w-5" />
+                </Link>
+              ))}
+            </div>
+            <p className="text-gray-400 text-sm">&copy; 2025 zifypay.com. All rights reserved.</p>
+          </div>
         </div>
       </div>
     </footer>
-  );
+  )
 }
 
 export default Footer;
