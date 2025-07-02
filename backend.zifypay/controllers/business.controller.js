@@ -1,5 +1,7 @@
 const businessService = require("../services/business.service");
 const logger = require("../utils/logger.util");
+const Review = require("../models/review.model");
+const Business = require("../models/business.model");
 
 module.exports = {
   registerNewBusiness: async (req, res) => {
@@ -74,6 +76,53 @@ module.exports = {
         success: false,
         message: error.message || "Internal Server Error"
       });
+    }
+  },
+  addReviewToBusiness: async (req, res) => {
+    try {
+      const { id } = req.params; // business id
+      const { text, stars } = req.body;
+      const userId = req.user?._id || req.body.userId; // support for both auth and manual userId
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "User not authenticated." });
+      }
+      if (!stars || stars < 1 || stars > 5) {
+        return res.status(400).json({ success: false, message: "Stars must be between 1 and 5." });
+      }
+      const review = await Review.create({
+        addedBy: userId,
+        forBusiness: id,
+        text: text || "",
+        stars,
+      });
+      // Add review to business
+      await Business.findByIdAndUpdate(id, {
+        $push: { reviews: review._id },
+        $inc: { reviewCount: 1 },
+        $set: { updatedAt: new Date() },
+      });
+      // Optionally update avgReview
+      const business = await Business.findById(id).populate('reviews');
+      if (business) {
+        const totalStars = business.reviews.reduce((sum, r) => sum + (r.stars || 0), stars);
+        const avg = totalStars / (business.reviews.length || 1);
+        business.avgReview = avg;
+        await business.save();
+      }
+      return res.status(201).json({ success: true, data: review });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+  getBusinessReviews: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const reviews = await Review.find({ forBusiness: id })
+        .populate('addedBy', 'name email')
+        .sort({ createdAt: -1 });
+      return res.status(200).json({ success: true, data: reviews });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
     }
   }
 };

@@ -19,14 +19,13 @@ const adminRoutes = require("./routes/admin.route");
 
 // Base Routes
 router.use("/api/v1/users", userRoutes);
-router.use("/api/v1/business", businessRoutes);
+router.use("/api/v1/businesses", businessRoutes);
 // router.use("/api/v1/employee", employeeRoutes);
 router.use("/api/v1/catalog", catalogRoutes);
 router.use("/api/v1/calender", calenderRoutes);
 router.use("/api/v1/home", homeRoutes);
 router.use("/api/v1/employee", employeeRoutes);
 // router.use("/api/v1/services", serviceRoutes);
-router.use("/api/v1/business", businessRoutes);
 const serviceRoutes = require("./routes/services.route")
 router.use("/api/v1/services", serviceRoutes);
 router.use("/api/v1/service-categories", serviceCategoriesRoutes);
