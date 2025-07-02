@@ -9,7 +9,7 @@ const userController = {
   // POST /users/signup
   createNewUser: async (req, res) => {
     try {
-      const { firstName, lastName, email, password, phoneNumber, country } = req.body;
+      const { firstName, lastName, email, password, phoneNumber, country , profilePicUrl } = req.body;
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -27,6 +27,7 @@ const userController = {
         lastName,
         email,
         password: hashedPassword,
+        profilePicUrl: profilePicUrl,
         phoneNumber,
         country
       });
@@ -145,7 +146,7 @@ const userController = {
   // PATCH /users/update-profile
   updateUserProfile: async (req, res) => {
     try {
-      let userId = req.userId; // From auth middleware
+      let userId = req.body.userId; // From auth middleware
       if (!userId && req.query.userId) {
         userId = req.query.userId;
       }

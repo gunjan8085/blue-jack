@@ -12,7 +12,6 @@ const MONGODB_PROJECT_NAME = process.env.MONGODB_PROJECT_NAME;
 // const MONGODB_URI = `mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER}.mongodb.net/${MONGODB_DB_NAME}?retryWrites=true&w=majority&appName=${MONGODB_PROJECT_NAME}`;
 const MONGODB_URI = `mongodb+srv://birlapranjal460:OSoLJzGoDlhPh5OT@ninexfoldmain.hb8fltn.mongodb.net/pos`;
 
-
 const connectToDatabase = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
