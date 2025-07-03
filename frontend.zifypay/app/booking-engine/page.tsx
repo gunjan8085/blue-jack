@@ -99,7 +99,7 @@ export default function LandingPage() {
         loop
         playsInline
       >
-        <source src="./acchivideo.mp4" type="video/mp4" />
+        <source src="./white.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
           <h1 

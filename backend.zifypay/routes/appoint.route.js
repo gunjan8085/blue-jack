@@ -41,4 +41,10 @@ router.get("/user/completed", appointController.getCompletedAppointmentsForUser)
 // GET /api/v1/appointments/customer/completed?email=...
 router.get("/customer/completed", appointController.getCompletedAppointmentsForCustomerByEmail);
 
+// GET /api/v1/appointments/:businessId/average-rating
+router.get('/:businessId/average-rating', appointController.getAverageRating);
+
+// GET /api/v1/appointments/:businessId/customer-satisfaction
+router.get('/:businessId/customer-satisfaction', appointController.getCustomerSatisfaction);
+
 module.exports = router;

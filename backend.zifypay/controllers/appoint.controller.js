@@ -560,6 +560,38 @@ const getCompletedAppointmentsForCustomerByEmail = async (req, res, next) => {
   }
 };
 
+// Get average rating for a business
+const getAverageRating = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const reviews = await require('../models/review.model').find({ forBusiness: businessId });
+    if (!reviews.length) {
+      return res.status(200).json({ success: true, averageRating: 0 });
+    }
+    const totalStars = reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
+    const avg = totalStars / reviews.length;
+    res.status(200).json({ success: true, averageRating: avg });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get customer satisfaction (percentage of 4 or 5 star reviews) for a business
+const getCustomerSatisfaction = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const reviews = await require('../models/review.model').find({ forBusiness: businessId });
+    if (!reviews.length) {
+      return res.status(200).json({ success: true, customerSatisfaction: 0 });
+    }
+    const satisfiedCount = reviews.filter(r => r.stars >= 4).length;
+    const percentage = (satisfiedCount / reviews.length) * 100;
+    res.status(200).json({ success: true, customerSatisfaction: percentage });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -575,4 +607,6 @@ module.exports = {
   getTotalCustomers,
   getCompletedAppointmentsForUser,
   getCompletedAppointmentsForCustomerByEmail,
+  getAverageRating,
+  getCustomerSatisfaction,
 };

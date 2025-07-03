@@ -106,7 +106,7 @@ export const Navbar5 = () => {
           </a>
 
           {/* Desktop Menu */}
-          {/* <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6">
             <Dropdown title="Features" items={features} />
             <Dropdown title="Dashboard" items={dashboard} />
             <Dropdown title="Solutions" items={solutions} />
@@ -118,7 +118,7 @@ export const Navbar5 = () => {
             >
               Pricing
             </a>
-          </div> */}
+          </div>
 
           {/* Auth Buttons */}
           <div className="hidden lg:flex items-center gap-4">
