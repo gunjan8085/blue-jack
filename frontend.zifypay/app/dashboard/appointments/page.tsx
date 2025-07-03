@@ -356,10 +356,10 @@ const handleStatusChange = async (appointmentId: string, newStatus: string) => {
               <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
               <p className="text-gray-600">Manage your bookings and schedule</p>
             </div>
-            <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
+            {/* <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
               <Plus className="h-4 w-4 mr-2" />
               New Appointment
-            </Button>
+            </Button> */}
           </div>
         </header>
 
@@ -596,10 +596,10 @@ const handleStatusChange = async (appointmentId: string, newStatus: string) => {
                 <Calendar className="h-16 w-16 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No appointments found</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
-                <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
+                {/* <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Create New Appointment
-                </Button>
+                </Button> */}
               </CardContent>
             </Card>
           )}

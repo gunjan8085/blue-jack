@@ -284,6 +284,31 @@ export default function BusinessProfilePage() {
       }
     }
   }, [isBookingOpen]);
+  useEffect(() => {
+  const fetchBusiness = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`${API_URL}/business/${params.id}`)
+      const result: ApiResponse = await response.json()
+      if (result.success) {
+        console.log('Business data:', result.data)
+        console.log('Service categories:', result.data.serviceCategories)
+        setBusiness(result.data)
+        // Fetch services immediately after business data is loaded
+        await fetchServices()
+      } else {
+        throw new Error(result.message || 'Failed to fetch business details')
+      }
+    } catch (err) {
+      setError('Failed to load business details')
+      console.error('Error fetching business:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  fetchBusiness()
+}, [params.id])
 
   if (isLoading) {
     return (
@@ -402,9 +427,9 @@ export default function BusinessProfilePage() {
             </div>
 
             {/* Tabs */}
-            <Tabs defaultValue="about" className="w-full">
+            <Tabs defaultValue="services" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="services" onMouseEnter={fetchServices}>Services</TabsTrigger>
+                <TabsTrigger value="services">Services</TabsTrigger>
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="team">Team</TabsTrigger>
                 <TabsTrigger value="location">Location</TabsTrigger>

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import axios from "axios"
+import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
 
 interface Appointment {
   id: string
@@ -185,13 +186,14 @@ export default function HistoryPage() {
 
   return (
     <Layout>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Appointment History
-        </h1>
+    <HeaderForCustomer />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto py-10 px-4">
+         <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+        Appointments History
+      </h1>
 
         <motion.div
-          className="relative mb-8"
+          className="relative mb-8 ml-12"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}

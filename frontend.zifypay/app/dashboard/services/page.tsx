@@ -604,14 +604,14 @@ const ServiceManagerPage = () => {
                           </span>
                         </div>
                         <div className="mt-4 flex space-x-2">
-                          <Button
+                          {/* <Button
                             size="sm"
                             variant="outline"
                             className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent"
                           >
                             <Edit3 className="h-4 w-4 mr-1" />
                             Edit
-                          </Button>
+                          </Button> */}
                         </div>
                       </div>
                     ))}
