@@ -71,8 +71,7 @@ const StarRating = ({
     </div>
   )
 }
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001/api/v1"
+import { API_URL } from "@/lib/const"
 
 export default function HistoryPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -87,7 +86,7 @@ export default function HistoryPage() {
   useEffect(() => {
     setLoading(true)
     axios
-      .get(`${API_BASE}/appointments/customer/completed?email=${encodeURIComponent(email)}`)
+      .get(`${API_URL}/appointments/customer/completed?email=${encodeURIComponent(email)}`)
       .then(async (res) => {
         if (res.data && res.data.success) {
           setAppointments(res.data.data)
@@ -120,7 +119,7 @@ export default function HistoryPage() {
     try {
       const token = localStorage.getItem("token") || ""
       await axios.post(
-        `${API_BASE}/businesses/${appointment.businessId}/reviews`,
+        `${API_URL}/businesses/${appointment.businessId}/reviews`,
         {
           text: data.comment,
           stars: data.rating,

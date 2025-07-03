@@ -28,6 +28,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
+import { API_URL } from "@/lib/const"
 
 interface Customer {
   _id: string;
@@ -59,7 +60,7 @@ export default function CustomersPage() {
     const fetchCustomers = async () => {
       try {
         // Replace with your actual API endpoint
-        const response = await fetch('http://localhost:5001/api/v1/appointments/68652722209db192d721ad57/visit-history')
+        const response = await fetch(`${API_URL}/appointments/68652722209db192d721ad57/visit-history`)
         const data: ApiResponse = await response.json()
         
         if (data.success) {
