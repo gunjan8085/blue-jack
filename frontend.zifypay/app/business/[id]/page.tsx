@@ -16,6 +16,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import { API_URL } from "@/lib/const"
 import { getUserData } from "@/lib/auth"
+import Image from "next/image"
 
 interface BusinessTiming {
   days: number[]
@@ -38,6 +39,7 @@ interface Employee {
   _id: string
   name: string
   email: string
+  profilePicUrl: string
 }
 
 interface Service {
@@ -218,7 +220,7 @@ export default function BusinessProfilePage() {
       if (result.success) {
         console.log("Appointment created successfully:", result.data)
         setBookingSuccess("Appointment booked successfully! You will receive a confirmation email shortly.")
-        
+
         // Reset form after a short delay to show success message
         setTimeout(() => {
           setIsBookingOpen(false)
@@ -285,30 +287,30 @@ export default function BusinessProfilePage() {
     }
   }, [isBookingOpen]);
   useEffect(() => {
-  const fetchBusiness = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`${API_URL}/business/${params.id}`)
-      const result: ApiResponse = await response.json()
-      if (result.success) {
-        console.log('Business data:', result.data)
-        console.log('Service categories:', result.data.serviceCategories)
-        setBusiness(result.data)
-        // Fetch services immediately after business data is loaded
-        await fetchServices()
-      } else {
-        throw new Error(result.message || 'Failed to fetch business details')
+    const fetchBusiness = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch(`${API_URL}/business/${params.id}`)
+        const result: ApiResponse = await response.json()
+        if (result.success) {
+          console.log('Business data:', result.data)
+          console.log('Service categories:', result.data.serviceCategories)
+          setBusiness(result.data)
+          // Fetch services immediately after business data is loaded
+          await fetchServices()
+        } else {
+          throw new Error(result.message || 'Failed to fetch business details')
+        }
+      } catch (err) {
+        setError('Failed to load business details')
+        console.error('Error fetching business:', err)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (err) {
-      setError('Failed to load business details')
-      console.error('Error fetching business:', err)
-    } finally {
-      setIsLoading(false)
     }
-  }
 
-  fetchBusiness()
-}, [params.id])
+    fetchBusiness()
+  }, [params.id])
 
   if (isLoading) {
     return (
@@ -382,9 +384,8 @@ export default function BusinessProfilePage() {
                     <button
                       key={media._id}
                       onClick={() => setSelectedImage(index)}
-                      className={`relative overflow-hidden rounded-lg border-2 transition-all ${
-                        selectedImage === index ? "border-purple-500" : "border-transparent"
-                      }`}
+                      className={`relative overflow-hidden rounded-lg border-2 transition-all ${selectedImage === index ? "border-purple-500" : "border-transparent"
+                        }`}
                     >
                       <img
                         src={media.url || "/placeholder.svg"}
@@ -459,7 +460,7 @@ export default function BusinessProfilePage() {
                     <div className="space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Services</h3>
-                        
+
                         {isServicesLoading ? (
                           <div className="flex items-center justify-center py-8">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -490,7 +491,7 @@ export default function BusinessProfilePage() {
                                         <span className="font-medium text-purple-600">{formatPrice(service.price)}</span>
                                         <span>{formatDuration(service.duration)}</span>
                                       </div>
-                                      <Button 
+                                      <Button
                                         onClick={() => openBookingDialog(service)}
                                         className="bg-purple-600 hover:bg-purple-700"
                                       >
@@ -531,10 +532,7 @@ export default function BusinessProfilePage() {
                         <div className="flex items-center space-x-4">
                           <Avatar className="h-16 w-16">
                             <AvatarFallback>
-                              {employee.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                              <Image src={employee.profilePicUrl} height={80} width={64} alt={employee.name} />
                             </AvatarFallback>
                           </Avatar>
                           <div>
@@ -575,7 +573,7 @@ export default function BusinessProfilePage() {
                               </p>
                               {timing.time.map((t, i) => (
                                 <p key={i} className="text-gray-600">
-                                  {t.open.hour.toString().padStart(2, '0')}:{t.open.minute.toString().padStart(2, '0')} - 
+                                  {t.open.hour.toString().padStart(2, '0')}:{t.open.minute.toString().padStart(2, '0')} -
                                   {t.close.hour.toString().padStart(2, '0')}:{t.close.minute.toString().padStart(2, '0')}
                                 </p>
                               ))}
@@ -602,7 +600,7 @@ export default function BusinessProfilePage() {
           <DialogHeader>
             <DialogTitle>Book Appointment</DialogTitle>
           </DialogHeader>
-          
+
           {selectedService && (
             <div className="space-y-4">
               {/* Error Message */}
@@ -638,23 +636,48 @@ export default function BusinessProfilePage() {
                       <span className="text-sm text-gray-600">{formatDuration(selectedService.duration)}</span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="staff">Select Staff Member</Label>
                     <Select value={selectedStaff} onValueChange={setSelectedStaff}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Choose a staff member" />
+                        {selectedStaff ? (
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage
+                                src={business.employees.find(e => e._id === selectedStaff)?.profilePicUrl}
+                              />
+                              <AvatarFallback>
+                                {business.employees.find(e => e._id === selectedStaff)?.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{business.employees.find(e => e._id === selectedStaff)?.name}</span>
+                          </div>
+                        ) : (
+                          "Choose a staff member"
+                        )}
                       </SelectTrigger>
                       <SelectContent>
                         {business.employees.map((employee) => (
                           <SelectItem key={employee._id} value={employee._id}>
-                            {employee.name}
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={employee.profilePicUrl} />
+                                <AvatarFallback>
+                                  {employee.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{employee.name}</p>
+                                <p className="text-xs text-gray-500">{employee.email}</p>
+                              </div>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <Button onClick={handleBookingNext} className="w-full" disabled={!selectedStaff}>
                     Next
                   </Button>
@@ -673,7 +696,7 @@ export default function BusinessProfilePage() {
                       min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="time">Select Time</Label>
                     <Select value={selectedTime} onValueChange={setSelectedTime}>
@@ -693,7 +716,7 @@ export default function BusinessProfilePage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="flex space-x-2">
                     <Button variant="outline" onClick={handleBookingBack} className="flex-1">
                       Back
@@ -712,47 +735,47 @@ export default function BusinessProfilePage() {
                     <Label htmlFor="name">Full Name *</Label>
                     <Input
                       value={customerInfo.name}
-                      onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
                       placeholder="Enter your full name"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
                     <Input
                       type="email"
                       value={customerInfo.email}
-                      onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
                       placeholder="Enter your email"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       value={customerInfo.phone}
-                      onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
                       placeholder="Enter your phone number"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="notes">Additional Notes (Optional)</Label>
                     <Textarea
                       value={customerInfo.notes}
-                      onChange={(e) => setCustomerInfo({...customerInfo, notes: e.target.value})}
+                      onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
                       placeholder="Any special requests or notes"
                       rows={3}
                     />
                   </div>
-                  
+
                   <div className="flex space-x-2">
                     <Button variant="outline" onClick={handleBookingBack} className="flex-1" disabled={isBookingLoading}>
                       Back
                     </Button>
-                    <Button 
-                      onClick={handleBookingSubmit} 
-                      className="flex-1" 
+                    <Button
+                      onClick={handleBookingSubmit}
+                      className="flex-1"
                       disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone || isBookingLoading}
                     >
                       {isBookingLoading ? (
@@ -771,6 +794,7 @@ export default function BusinessProfilePage() {
           )}
         </DialogContent>
       </Dialog>
+      <div className="h-96"></div>
     </div>
   )
 }

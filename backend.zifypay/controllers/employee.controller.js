@@ -142,6 +142,54 @@ module.exports = {
       next(err);
     }
   },
+  updateEmployee: async (req, res, next) => {
+  try {
+    const { employeeId } = req.params;
+    const updateData = req.body;
+
+    // Validate request body
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must contain at least one field to update"
+      });
+    }
+
+    // Encrypt password if it's being updated
+    if (updateData.password) {
+      updateData.password = await securePassword(updateData.password);
+    }
+
+    // Handle profile picture upload if included
+    if (req.file) {
+      updateData.profilePicUrl = req.file.path; // Assuming you're using multer or similar for file uploads
+    }
+
+    // Update the employee
+    const updatedEmployee = await employeeService.updateEmployee(
+      employeeId,
+      updateData
+    );
+
+    if (!updatedEmployee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedEmployee,
+      message: "Employee updated successfully"
+    });
+
+  } catch (error) {
+    console.error("Error updating employee:", error);
+    next(error);
+  }
+},
+
 //new code
   createEmployeeForBusiness : async (req, res, next) => {
     try {

@@ -6,6 +6,7 @@ const Service = require("../models/services.model");
 const Employee = require("../models/employee.model");
 const { log } = require("console");
 const { sendAppointmentMail } = require("../services/mail.service");
+const customerService = require("../services/customer.service");
 
 const createAppointment = async (req, res, next) => {
   try {
@@ -592,6 +593,47 @@ const getCustomerSatisfaction = async (req, res, next) => {
   }
 };
 
+
+const getCustomerVisitHistory = async (req, res, next) => {
+    try {
+      const { businessId } = req.params;
+      const { page = 1, limit = 10, sortBy = "recent" } = req.query;
+
+      const result = await customerService.getCustomerVisitHistory(
+        businessId,
+        parseInt(page),
+        parseInt(limit),
+        sortBy
+      );
+
+      res.json({
+        success: true,
+        data: result.customers,
+        pagination: result.pagination
+      });
+    } catch (err) {
+      next(new ApiError(500, "Failed to fetch customer visit history", err));
+    }
+  }
+
+const getTopCustomers = async (req, res, next) => {
+    try {
+      const { businessId } = req.params;
+      const { limit = 5 } = req.query;
+
+      const topCustomers = await customerService.getTopCustomers(
+        businessId,
+        parseInt(limit)
+      );
+
+      res.json({
+        success: true,
+        data: topCustomers
+      });
+    } catch (err) {
+      next(new ApiError(500, "Failed to fetch top customers", err));
+    }
+  }
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -609,4 +651,6 @@ module.exports = {
   getCompletedAppointmentsForCustomerByEmail,
   getAverageRating,
   getCustomerSatisfaction,
+  getCustomerVisitHistory,
+  getTopCustomers
 };

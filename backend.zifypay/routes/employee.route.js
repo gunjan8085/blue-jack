@@ -21,6 +21,13 @@ router.get(
   employeeController.getEmployeeById
 );
 
+router.put(
+  "/:employeeId/update",
+  authenticateBusinessToken,
+  checkIsOwner,
+  employeeController.updateEmployee
+);
+
 router.post(
   "/signup",
   validate(newUserValidation),
@@ -52,7 +59,6 @@ router.get(
   "/business/:businessId/all",
   employeeController.getEmployeesForBusiness
 );
-
 
 
 module.exports = router;

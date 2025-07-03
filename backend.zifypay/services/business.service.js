@@ -123,7 +123,7 @@ module.exports = {
     try {
       const business = await Business.findById(id)
         .populate('serviceCategories', 'name description appointmentColor')
-        .populate('employees', 'name email')
+        .populate('employees', 'name email profilePicUrl jobProfile')
         .populate('workspace', 'name')
         .populate('reviews', 'rating comment')
         .lean();

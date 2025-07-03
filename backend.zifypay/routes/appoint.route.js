@@ -47,4 +47,10 @@ router.get('/:businessId/average-rating', appointController.getAverageRating);
 // GET /api/v1/appointments/:businessId/customer-satisfaction
 router.get('/:businessId/customer-satisfaction', appointController.getCustomerSatisfaction);
 
+// GET /api/v1/customers/:businessId/visit-history
+router.get("/:businessId/visit-history", appointController.getCustomerVisitHistory);
+
+// GET /api/v1/customers/:businessId/top-customers
+router.get("/:businessId/top-customers", appointController.getTopCustomers);
+
 module.exports = router;
