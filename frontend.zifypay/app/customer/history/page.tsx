@@ -79,6 +79,7 @@ export default function HistoryPage() {
   const [editReview, setEditReview] = useState<{ [key: string]: boolean }>({})
   const [reviewData, setReviewData] = useState<{ [key: string]: { rating: number; comment: string } }>({})
   const [loading, setLoading] = useState(true)
+  const [submittingReviews, setSubmittingReviews] = useState<{ [key: string]: boolean }>({})
 
   // Get email dynamically (replace with your auth/user context as needed)
   const email = typeof window !== 'undefined' ? localStorage.getItem("userEmail") || "prityush@gmail.com" : ""
@@ -116,6 +117,9 @@ export default function HistoryPage() {
     if (!data) return
     const appointment = appointments.find((a) => a.id === id)
     if (!appointment) return
+    
+    setSubmittingReviews(prev => ({ ...prev, [id]: true }))
+    
     try {
       const token = localStorage.getItem("token") || ""
       await axios.post(
@@ -138,6 +142,8 @@ export default function HistoryPage() {
       setReviewData((prev) => ({ ...prev, [id]: { rating: 5, comment: "" } }))
     } catch (err) {
       alert("Failed to submit review. Please try again.")
+    } finally {
+      setSubmittingReviews(prev => ({ ...prev, [id]: false }))
     }
   }
 
@@ -252,9 +258,6 @@ export default function HistoryPage() {
                         </div>
                       </div>
                       <div className="text-right space-y-2">
-                        {/* <div className="flex items-center gap-1 text-lg font-bold text-gray-800">
-                          <DollarSign className="w-5 h-5" />{appointment.paymentAmount}
-                        </div> */}
                         <Badge
                           variant={appointment.status === "completed" ? "default" : "secondary"}
                           className={`${
@@ -321,13 +324,23 @@ export default function HistoryPage() {
                                 size="sm"
                                 onClick={() => handleReviewSubmit(appointment.id)}
                                 className="bg-blue-600 hover:bg-blue-700"
+                                disabled={submittingReviews[appointment.id]}
                               >
-                                Submit Review
+                                {submittingReviews[appointment.id] ? (
+                                  <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Submitting...
+                                  </>
+                                ) : "Submit Review"}
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setEditReview((prev) => ({ ...prev, [appointment.id]: false }))}
+                                disabled={submittingReviews[appointment.id]}
                               >
                                 Cancel
                               </Button>
@@ -344,20 +357,6 @@ export default function HistoryPage() {
                         )}
                       </AnimatePresence>
                     </motion.div>
-
-                    {/* Rebook Button */}
-                    {/* <div className="mt-6 flex justify-end">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleRebook(appointment)}
-                          className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                        >
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          Rebook (+10% price)
-                        </Button>
-                      </motion.div>
-                    </div> */}
                   </CardContent>
                 </Card>
               </motion.div>

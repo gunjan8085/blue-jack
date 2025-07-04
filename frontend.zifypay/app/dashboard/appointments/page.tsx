@@ -144,15 +144,7 @@ function AppSidebar() {
       <SidebarFooter>
         <div className="p-4">
           <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" />
-              <AvatarFallback>GG</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">Glow & Go Salon</p>
-              <p className="text-xs text-gray-500">Premium Plan</p>
             </div>
-          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
@@ -492,10 +484,10 @@ const handleStatusChange = async (appointmentId: string, newStatus: string) => {
 
                           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                             <DialogTrigger asChild>
-                              <Button size="sm" variant="outline" onClick={() => setSelectedAppointment(appointment)}>
+                              {/* <Button size="sm" variant="outline" onClick={() => setSelectedAppointment(appointment)}>
                                 <Edit className="h-4 w-4 mr-1" />
                                 Edit
-                              </Button>
+                              </Button> */}
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
                               <DialogHeader>

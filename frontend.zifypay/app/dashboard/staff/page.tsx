@@ -829,10 +829,10 @@ export default function StaffPage() {
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                        {/* <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
                           <Trash2 className="h-4 w-4 mr-1" />
                           Remove
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                   </CardContent>

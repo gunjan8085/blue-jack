@@ -62,13 +62,13 @@ function HeaderForCustomer() {
 
         {/* Nav */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/businesses" className="text-gray-600 hover:text-blue-600 transition-colors">
-            View Businesses
-          </Link>
-
-          {isCustomer && (
-            <Link href="/for-bussiness" className="text-gray-600 hover:text-blue-600 transition-colors">
-              For Business
+          {isLoggedIn? (
+            <Link href="/customer/home" className="text-gray-600 hover:text-blue-600 transition-colors">
+              View Businesses
+            </Link>
+          ) : (
+            <Link href="/businesses" className="text-gray-600 hover:text-blue-600 transition-colors">
+              View Businesses
             </Link>
           )}
 

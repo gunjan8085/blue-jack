@@ -125,7 +125,7 @@ module.exports = {
         .populate('serviceCategories', 'name description appointmentColor')
         .populate('employees', 'name email profilePicUrl jobProfile')
         .populate('workspace', 'name')
-        .populate('reviews', 'rating comment')
+        .populate('reviews','stars', 'rating comment')
         .lean();
 
       if (!business) {
