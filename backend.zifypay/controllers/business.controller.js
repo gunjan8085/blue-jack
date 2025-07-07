@@ -1,7 +1,7 @@
 const businessService = require("../services/business.service");
 const logger = require("../utils/logger.util");
-const multer = require('multer');
-const s3Service = require('../services/s3.service');
+const multer = require("multer");
+const s3Service = require("../services/s3.service");
 
 const upload = multer({ storage: multer.memoryStorage() });
 const Review = require("../models/review.model");
@@ -27,33 +27,35 @@ module.exports = {
       });
     } catch (error) {
       logger.error("Error fetching businesses:", error);
-      return res.status(500).send({ success: false, message: "Internal Server Error" });
+      return res
+        .status(500)
+        .send({ success: false, message: "Internal Server Error" });
     }
   },
   getBusinessByOwnerId: async (req, res) => {
     try {
       const { ownerId } = req.params;
-      
+
       // Get the business without owner verification first
       const business = await businessService.getBusinessByOwnerId(ownerId);
-      
+
       if (!business) {
         return res.status(404).json({
           success: false,
-          message: "No business found for this owner"
+          message: "No business found for this owner",
         });
       }
 
       return res.status(200).json({
         success: true,
         data: business,
-        message: "Business retrieved successfully"
+        message: "Business retrieved successfully",
       });
     } catch (error) {
       logger.error("Error fetching business by owner:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || "Internal Server Error"
+        message: error.message || "Internal Server Error",
       });
     }
   },
@@ -61,24 +63,24 @@ module.exports = {
     try {
       const { id } = req.params;
       const business = await businessService.getBusinessById(id);
-      
+
       if (!business) {
         return res.status(404).json({
           success: false,
-          message: "Business not found"
+          message: "Business not found",
         });
       }
 
       return res.status(200).json({
         success: true,
         data: business,
-        message: "Business retrieved successfully"
+        message: "Business retrieved successfully",
       });
     } catch (error) {
       logger.error("Error fetching business by ID:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || "Internal Server Error"
+        message: error.message || "Internal Server Error",
       });
     }
   },
@@ -88,10 +90,14 @@ module.exports = {
       const { text, stars } = req.body;
       const userId = req.user?._id || req.body.userId; // support for both auth and manual userId
       if (!userId) {
-        return res.status(401).json({ success: false, message: "User not authenticated." });
+        return res
+          .status(401)
+          .json({ success: false, message: "User not authenticated." });
       }
       if (!stars || stars < 1 || stars > 5) {
-        return res.status(400).json({ success: false, message: "Stars must be between 1 and 5." });
+        return res
+          .status(400)
+          .json({ success: false, message: "Stars must be between 1 and 5." });
       }
       const review = await Review.create({
         addedBy: userId,
@@ -106,9 +112,12 @@ module.exports = {
         $set: { updatedAt: new Date() },
       });
       // Optionally update avgReview
-      const business = await Business.findById(id).populate('reviews');
+      const business = await Business.findById(id).populate("reviews");
       if (business) {
-        const totalStars = business.reviews.reduce((sum, r) => sum + (r.stars || 0), stars);
+        const totalStars = business.reviews.reduce(
+          (sum, r) => sum + (r.stars || 0),
+          stars
+        );
         const avg = totalStars / (business.reviews.length || 1);
         business.avgReview = avg;
         await business.save();
@@ -122,7 +131,7 @@ module.exports = {
     try {
       const { id } = req.params;
       const reviews = await Review.find({ forBusiness: id })
-        .populate('addedBy', 'name email')
+        .populate("addedBy", "name email")
         .sort({ createdAt: -1 });
       return res.status(200).json({ success: true, data: reviews });
     } catch (error) {
@@ -130,20 +139,63 @@ module.exports = {
     }
   },
   uploadThumbnail: [
-    upload.single('file'),
+    upload.single("file"),
     async (req, res) => {
       try {
         if (!req.file) {
-          return res.status(400).json({ success: false, message: 'No file uploaded' });
+          return res
+            .status(400)
+            .json({ success: false, message: "No file uploaded" });
         }
         const result = await s3Service.uploadFile(req.file);
         if (!result || !result.Location) {
-          return res.status(500).json({ success: false, message: 'Failed to upload image' });
+          return res
+            .status(500)
+            .json({ success: false, message: "Failed to upload image" });
         }
         return res.status(200).json({ success: true, url: result.Location });
       } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
       }
+    },
+  ],
+  updateBusiness: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const business = await Business.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
+      if (!business) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Business not found" });
+      }
+      return res
+        .status(200)
+        .json({
+          success: true,
+          data: business,
+          message: "Business updated successfully",
+        });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
     }
-  ]
+  },
+  deleteBusiness: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const business = await Business.findByIdAndDelete(id);
+      if (!business) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Business not found" });
+      }
+      return res
+        .status(200)
+        .json({ success: true, message: "Business deleted successfully" });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
 };

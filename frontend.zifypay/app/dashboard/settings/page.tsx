@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { API_URL } from "@/lib/const";
 import { useRouter } from "next/navigation";
+import { BusinessProfileForm } from "@/components/BusinessProfileForm";
 
 export default function SettingsPage() {
   const [formData, setFormData] = useState({
@@ -29,9 +30,13 @@ export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const [business, setBusiness] = useState<any>(null);
+  const [businessLoading, setBusinessLoading] = useState(true);
+  const [businessEditMode, setBusinessEditMode] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
+    loadBusinessProfile();
   }, []);
 
   const loadUserProfile = async () => {
@@ -77,6 +82,30 @@ export default function SettingsPage() {
         description: "Failed to load user profile.",
         variant: "destructive",
       });
+    }
+  };
+
+  const loadBusinessProfile = async () => {
+    try {
+      const userDataRaw = localStorage.getItem("userData");
+      if (!userDataRaw) return;
+      const userData = JSON.parse(userDataRaw);
+      const ownerId = userData._id;
+      const response = await fetch(`${API_URL}/business/by-owner/${ownerId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setBusiness(result.data);
+      } else {
+        setBusiness(null);
+      }
+    } catch (err) {
+      setBusiness(null);
+    } finally {
+      setBusinessLoading(false);
     }
   };
 
@@ -179,6 +208,65 @@ export default function SettingsPage() {
     }
   };
 
+  const handleBusinessUpdate = async (data: any) => {
+    if (!business) return;
+    try {
+      setBusinessLoading(true);
+      const response = await fetch(`${API_URL}/business/${business._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Update failed");
+      setBusiness(result.data);
+      setBusinessEditMode(false);
+      toast({
+        title: "Success",
+        description: "Business updated successfully!",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Update failed",
+        variant: "destructive",
+      });
+    } finally {
+      setBusinessLoading(false);
+    }
+  };
+
+  const handleBusinessDelete = async () => {
+    if (!business) return;
+    try {
+      setBusinessLoading(true);
+      const response = await fetch(`${API_URL}/business/${business._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Delete failed");
+      setBusiness(null);
+      toast({
+        title: "Deleted",
+        description: "Business deleted successfully!",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Delete failed",
+        variant: "destructive",
+      });
+    } finally {
+      setBusinessLoading(false);
+    }
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -188,12 +276,14 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between w-full">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-              <p className="text-gray-600">Manage your user profile</p>
+              <p className="text-gray-600">
+                Manage your user and business profile
+              </p>
             </div>
           </div>
         </header>
-        <div className="flex-1 flex justify-center items-start p-6">
-          <Card className="w-full max-w-2xl border-0 shadow-lg">
+        <div className="flex-1 flex flex-col gap-8 justify-center items-start p-6">
+          <Card className="w-full max-w-2xl border-0 shadow-lg mb-8">
             <CardHeader>
               <CardTitle className="text-2xl">User Profile</CardTitle>
             </CardHeader>
@@ -344,6 +434,68 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+          <Card className="w-full max-w-2xl border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">Business Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {businessLoading ? (
+                <div>Loading business profile...</div>
+              ) : business ? (
+                businessEditMode ? (
+                  <BusinessProfileForm
+                    initialData={business}
+                    onSubmit={handleBusinessUpdate}
+                    onCancel={() => setBusinessEditMode(false)}
+                    isEditMode
+                  />
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-4 mb-4">
+                      <img
+                        src={business.thumbnail}
+                        alt="Logo"
+                        className="w-16 h-16 rounded-lg object-cover border"
+                      />
+                      <div>
+                        <div className="font-bold text-lg">
+                          {business.brandName}
+                        </div>
+                        <div className="text-gray-500">
+                          {business.businessType}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mb-2">
+                      <b>About:</b> {business.about}
+                    </div>
+                    <div className="mb-2">
+                      <b>Contact:</b> {business.contactEmail} |{" "}
+                      {business.contactPhone}
+                    </div>
+                    <div className="mb-2">
+                      <b>Address:</b> {business.address?.addressLine1},{" "}
+                      {business.address?.city}, {business.address?.state},{" "}
+                      {business.address?.country} - {business.address?.pincode}
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={() => setBusinessEditMode(true)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleBusinessDelete}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div>No business profile found.</div>
               )}
             </CardContent>
           </Card>

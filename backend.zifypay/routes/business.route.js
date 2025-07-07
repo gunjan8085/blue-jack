@@ -9,5 +9,7 @@ router.get("/:id", businessController.getBusinessById);
 const { addReviewToBusiness, getBusinessReviews } = businessController;
 router.post("/:id/reviews", addReviewToBusiness);
 router.get("/:id/reviews", getBusinessReviews);
+router.patch("/:id", businessController.updateBusiness);
+router.delete("/:id", businessController.deleteBusiness);
 
 module.exports = router;
