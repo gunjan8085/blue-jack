@@ -60,6 +60,97 @@ const createAppointment = async (req, res, next) => {
     next(err);
   }
 };
+const createAppointmentByBusiness = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const { service, staff, date, time, customer, user } = req.body;
+
+    // Basic checks
+    if (!service || !staff || !date || !time || !customer?.name || !customer?.email || !customer?.phone) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    // Check if user already exists with the same email or phone
+    let existingUser;
+    try {
+      const User = require("../models/user.model");
+      existingUser = await User.findOne({
+        $or: [
+          { email: customer.email },
+          { phone: customer.phone }
+        ]
+      });
+    } catch (e) {
+      console.error('Error finding user:', e);
+    }
+
+    let userIdToUse = user;
+    
+    // If user doesn't exist, create a new one
+    if (!existingUser) {
+      try {
+        const User = require("../models/user.model");
+        const newUser = await User.create({
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          // Add any other relevant fields from customer or user
+        });
+        userIdToUse = newUser._id;
+      } catch (e) {
+        console.error('Error creating user:', e);
+        // Continue with the original user ID if creation fails
+      }
+    } else {
+      userIdToUse = existingUser._id;
+    }
+
+    const appointment = await Appoint.create({
+      business: businessId,
+      service,
+      staff,
+      user: userIdToUse,
+      date,
+      time,
+      customer: {
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone
+      },
+    });
+
+    // Fetch business, service, staff details for email
+    let business, serviceObj, staffObj;
+    try {
+      business = await require("../models/business.model").findById(businessId);
+      serviceObj = await require("../models/services.model").findById(service);
+      staffObj = await require("../models/employee.model").findById(staff);
+    } catch (e) {}
+
+    // Compose details for email
+    const businessName = business?.brandName || business?.name || "Business";
+    const serviceName = serviceObj?.name || "Service";
+    const staffName = staffObj?.name || "Staff";
+    const location = business?.address?.addressLine1 ? `${business.address.addressLine1}, ${business.address.city}` : "";
+
+    // Send appointment confirmation email (non-blocking)
+    sendAppointmentMail(
+      customer.email,
+      customer.name,
+      businessName,
+      serviceName,
+      staffName,
+      date,
+      time,
+      location
+    ).catch((err) => console.error('Appointment email error:', err));
+
+    res.status(201).json({ success: true, message: "Appointment booked", data: appointment });
+  } catch (err) {
+    console.error("Create appointment error:", err);
+    next(err);
+  }
+};
 
 const getAppointmentsForBusiness = async (req, res, next) => {
   try {
@@ -652,5 +743,6 @@ module.exports = {
   getAverageRating,
   getCustomerSatisfaction,
   getCustomerVisitHistory,
-  getTopCustomers
+  getTopCustomers,
+  createAppointmentByBusiness
 };
