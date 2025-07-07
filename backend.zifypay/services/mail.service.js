@@ -76,8 +76,66 @@ const sendAppointmentMail = async (to, customerName, businessName, serviceName, 
   });
 };
 
+const sendAppointmentReminderMail24h = async (to, customerName, businessName, serviceName, staffName, date, time, location) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 550px; margin: auto; background: #f8f8f8; padding: 32px 24px; border-radius: 10px; border:1px solid #e0e0e0;">
+      <h2 style="color: #FFA500; margin-bottom: 12px;">Appointment Reminder: 24 Hours Left!</h2>
+      <p style="font-size: 16px; color: #222;">Hello <b>${customerName}</b>,</p>
+      <p style="font-size: 15px; color: #333;">This is a friendly reminder that you have an appointment with <b>${businessName}</b> in 24 hours.</p>
+      <div style="background: #fff; border-radius: 7px; border: 1px solid #e0e0e0; margin: 18px 0 20px 0; padding: 18px 16px;">
+        <table style="width: 100%; font-size: 15px; color: #222;">
+          <tr><td><b>Service</b></td><td>${serviceName}</td></tr>
+          <tr><td><b>Staff</b></td><td>${staffName}</td></tr>
+          <tr><td><b>Date</b></td><td>${date}</td></tr>
+          <tr><td><b>Time</b></td><td>${time}</td></tr>
+          <tr><td><b>Location</b></td><td>${location}</td></tr>
+        </table>
+      </div>
+      <p style="color:#555;">If you need to reschedule or have questions, please contact us as soon as possible.</p>
+      <hr style="margin: 24px 0;">
+      <p style="font-size: 12px; color: #888;">This is an automated reminder from Zifypay. Please do not reply directly to this email.</p>
+    </div>
+  `;
+  await transporter.sendMail({
+    from: `Zifypay <${process.env.EMAIL_USER}>`,
+    to,
+    subject: `Reminder: Your Appointment with ${businessName} is Tomorrow`,
+    html,
+  });
+};
+
+const sendAppointmentReminderMail1h = async (to, customerName, businessName, serviceName, staffName, date, time, location) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 550px; margin: auto; background: #f8f8f8; padding: 32px 24px; border-radius: 10px; border:1px solid #e0e0e0;">
+      <h2 style="color: #FF4500; margin-bottom: 12px;">Final Reminder: Appointment Soon!</h2>
+      <p style="font-size: 16px; color: #222;">Hello <b>${customerName}</b>,</p>
+      <p style="font-size: 15px; color: #333;">Your appointment with <b>${businessName}</b> is coming up in about 1 hour.</p>
+      <div style="background: #fff; border-radius: 7px; border: 1px solid #e0e0e0; margin: 18px 0 20px 0; padding: 18px 16px;">
+        <table style="width: 100%; font-size: 15px; color: #222;">
+          <tr><td><b>Service</b></td><td>${serviceName}</td></tr>
+          <tr><td><b>Staff</b></td><td>${staffName}</td></tr>
+          <tr><td><b>Date</b></td><td>${date}</td></tr>
+          <tr><td><b>Time</b></td><td>${time}</td></tr>
+          <tr><td><b>Location</b></td><td>${location}</td></tr>
+        </table>
+      </div>
+      <p style="color:#555;">We look forward to seeing you soon!</p>
+      <hr style="margin: 24px 0;">
+      <p style="font-size: 12px; color: #888;">This is an automated reminder from Zifypay. Please do not reply directly to this email.</p>
+    </div>
+  `;
+  await transporter.sendMail({
+    from: `Zifypay <${process.env.EMAIL_USER}>`,
+    to,
+    subject: `Final Reminder: Your Appointment with ${businessName} is Soon`,
+    html,
+  });
+};
+
 module.exports = {
   sendSignupMail,
   sendLoginMail,
   sendAppointmentMail,
+  sendAppointmentReminderMail24h,
+  sendAppointmentReminderMail1h,
 };

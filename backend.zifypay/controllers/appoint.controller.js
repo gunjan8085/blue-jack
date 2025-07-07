@@ -7,6 +7,7 @@ const Employee = require("../models/employee.model");
 const { log } = require("console");
 const { sendAppointmentMail } = require("../services/mail.service");
 const customerService = require("../services/customer.service");
+const { scheduleAppointmentReminders } = require("../services/appointment.service");
 
 const createAppointment = async (req, res, next) => {
   try {
@@ -18,13 +19,27 @@ const createAppointment = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
+    // Normalize date and time
+    const normalizedDate = date.trim();
+    const normalizedTime = time.padStart(5, '0'); // ensures e.g. '09:00'
+
+    // Logging for debugging
+    console.log("Checking for double booking:", { staff, normalizedDate, normalizedTime });
+
+    // Double booking check
+    const existing = await Appoint.findOne({ staff, date: normalizedDate, time: normalizedTime, status: { $ne: "cancelled" } });
+    console.log("Existing appointment found:", existing);
+    if (existing) {
+      return res.status(409).json({ success: false, message: "This slot is booked" });
+    }
+
     const appointment = await Appoint.create({
       business: businessId,
       service,
       staff,
       user,
-      date,
-      time,
+      date: normalizedDate,
+      time: normalizedTime,
       customer,
     });
 
@@ -54,8 +69,23 @@ const createAppointment = async (req, res, next) => {
       location
     ).catch((err) => console.error('Appointment email error:', err));
 
+    // Schedule appointment reminders
+    scheduleAppointmentReminders({
+      customer,
+      businessName,
+      serviceName,
+      staffName,
+      date,
+      time,
+      location
+    });
+
     res.status(201).json({ success: true, message: "Appointment booked", data: appointment });
   } catch (err) {
+    // Handle duplicate key error from unique index
+    if (err.code === 11000) {
+      return res.status(409).json({ success: false, message: "This slot is booked" });
+    }
     console.error("Create appointment error:", err);
     next(err);
   }
@@ -634,6 +664,27 @@ const getTopCustomers = async (req, res, next) => {
       next(new ApiError(500, "Failed to fetch top customers", err));
     }
   }
+
+// Get all booked times for a staff member on a given date
+const getBookedTimesForEmployee = async (req, res, next) => {
+  try {
+    const { staffId } = req.params;
+    const { date } = req.query;
+    if (!staffId || !date) {
+      return res.status(400).json({ success: false, message: "Missing staffId or date" });
+    }
+    const appointments = await Appoint.find({
+      staff: staffId,
+      date,
+      status: { $ne: "cancelled" }
+    }).select("time");
+    const bookedTimes = appointments.map(a => a.time);
+    res.json({ success: true, data: bookedTimes });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -652,5 +703,6 @@ module.exports = {
   getAverageRating,
   getCustomerSatisfaction,
   getCustomerVisitHistory,
-  getTopCustomers
+  getTopCustomers,
+  getBookedTimesForEmployee
 };

@@ -23,5 +23,11 @@ const appointSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add unique index to prevent double bookings (except cancelled)
+appointSchema.index(
+  { staff: 1, date: 1, time: 1 },
+  { unique: true, partialFilterExpression: { status: { $ne: "cancelled" } } }
+);
+
 // ✅ Use "Appoint" instead of "Appointment"
 module.exports = mongoose.models.Appoint || mongoose.model("Appoint", appointSchema);

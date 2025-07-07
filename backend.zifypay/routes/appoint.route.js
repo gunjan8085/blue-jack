@@ -53,4 +53,7 @@ router.get("/:businessId/visit-history", appointController.getCustomerVisitHisto
 // GET /api/v1/customers/:businessId/top-customers
 router.get("/:businessId/top-customers", appointController.getTopCustomers);
 
+// GET /api/v1/employee/:staffId/booked
+router.get('/employee/:staffId/booked', appointController.getBookedTimesForEmployee);
+
 module.exports = router;

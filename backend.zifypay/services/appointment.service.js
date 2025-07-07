@@ -1,6 +1,8 @@
 const { Appointment } = require("../models/index");
 const ApiError = require("../utils/apiError.util");
 const mongoose = require("mongoose");
+const cron = require('node-cron');
+const { sendAppointmentReminderMail24h, sendAppointmentReminderMail1h } = require('./mail.service');
 
 module.exports = {
   createAppointmentByUser: async (userId, data) => {
@@ -200,3 +202,57 @@ module.exports = {
     }
   },
 };
+
+// Helper to schedule reminders
+function scheduleAppointmentReminders(appointment) {
+  const {
+    customer,
+    businessName,
+    serviceName,
+    staffName,
+    date, // expected to be a string or Date
+    time, // expected to be a string
+    location,
+  } = appointment;
+
+  // Parse appointment datetime
+  const appointmentDateTime = new Date(`${date} ${time}`);
+  const now = new Date();
+
+  // 24h reminder
+  const reminder24h = new Date(appointmentDateTime.getTime() - 24 * 60 * 60 * 1000);
+  if (reminder24h > now) {
+    cron.schedule(reminder24h, () => {
+      sendAppointmentReminderMail24h(
+        customer.email,
+        customer.name,
+        businessName,
+        serviceName,
+        staffName,
+        date,
+        time,
+        location
+      ).catch((err) => console.error('24h reminder email error:', err));
+    });
+  }
+
+  // 1h reminder
+  const reminder1h = new Date(appointmentDateTime.getTime() - 1 * 60 * 60 * 1000);
+  if (reminder1h > now) {
+    cron.schedule(reminder1h, () => {
+      sendAppointmentReminderMail1h(
+        customer.email,
+        customer.name,
+        businessName,
+        serviceName,
+        staffName,
+        date,
+        time,
+        location
+      ).catch((err) => console.error('1h reminder email error:', err));
+    });
+  }
+}
+
+// Export the helper for use in controller or wherever appointment is created
+module.exports.scheduleAppointmentReminders = scheduleAppointmentReminders;

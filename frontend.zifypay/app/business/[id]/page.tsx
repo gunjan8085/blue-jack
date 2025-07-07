@@ -122,6 +122,7 @@ export default function BusinessProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null)
+  const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -232,6 +233,8 @@ export default function BusinessProfilePage() {
           setCustomerInfo({ name: "", email: "", phone: "", notes: "" })
           setBookingSuccess(null)
         }, 2000)
+      } else if (response.status === 409 && result.message === "This slot is booked") {
+        setBookingError("This slot is already booked. Please choose another time or staff member.");
       } else {
         throw new Error(result.message || 'Failed to create appointment')
       }
@@ -311,6 +314,34 @@ export default function BusinessProfilePage() {
 
     fetchBusiness()
   }, [params.id])
+
+  useEffect(() => {
+    const fetchBookedTimes = async () => {
+      if (selectedStaff && selectedDate) {
+        try {
+          const response = await fetch(`${API_URL}/appointments/${params.id}/employee/${selectedStaff}/booked?date=${selectedDate}`);
+          const result = await response.json();
+          if (result.success) {
+            setBookedTimes(result.data);
+          } else {
+            setBookedTimes([]);
+          }
+        } catch (err) {
+          setBookedTimes([]);
+        }
+      } else {
+        setBookedTimes([]);
+      }
+    };
+    fetchBookedTimes();
+  }, [selectedStaff, selectedDate, params.id]);
+
+  // Define all possible time slots
+  const allTimes = [
+    "09:00", "10:00", "11:00", "12:00", "13:00",
+    "14:00", "15:00", "16:00", "17:00"
+  ];
+  const availableTimes = allTimes.filter(time => !bookedTimes.includes(time));
 
   if (isLoading) {
     return (
@@ -704,15 +735,15 @@ export default function BusinessProfilePage() {
                         <SelectValue placeholder="Choose a time" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="09:00">9:00 AM</SelectItem>
-                        <SelectItem value="10:00">10:00 AM</SelectItem>
-                        <SelectItem value="11:00">11:00 AM</SelectItem>
-                        <SelectItem value="12:00">12:00 PM</SelectItem>
-                        <SelectItem value="13:00">1:00 PM</SelectItem>
-                        <SelectItem value="14:00">2:00 PM</SelectItem>
-                        <SelectItem value="15:00">3:00 PM</SelectItem>
-                        <SelectItem value="16:00">4:00 PM</SelectItem>
-                        <SelectItem value="17:00">5:00 PM</SelectItem>
+                        {availableTimes.length > 0 ? (
+                          availableTimes.map(time => (
+                            <SelectItem key={time} value={time}>
+                              {`${parseInt(time) > 12 ? parseInt(time) - 12 : parseInt(time)}:${time.slice(3)} ${parseInt(time) >= 12 ? 'PM' : 'AM'}`}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="p-2 text-gray-500">No available times</div>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
