@@ -15,6 +15,7 @@ const platformReviewRoutes = require("./routes/platformReview.route");
 const jobRoutes = require("./routes/job.route");
 const applicationRoutes = require("./routes/application.route");
 const adminRoutes = require("./routes/admin.route");
+const pricingPlanRoutes = require("./routes/pricingPlan.route");
 
 
 // Base Routes
@@ -35,6 +36,7 @@ router.use("/api/v1/platform-reviews", platformReviewRoutes);
 router.use("/api/v1/jobs", jobRoutes);
 router.use("/api/v1/applications", applicationRoutes);
 router.use("/api/v1/admin", adminRoutes);
+router.use("/api/pricing-plan", pricingPlanRoutes);
 
 module.exports = router;
 

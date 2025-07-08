@@ -14,6 +14,7 @@ const Service = require("./services.model");
 const Shifts = require("./shifts.model");
 const User = require("./user.model");
 const Workspace = require("./workspace.model");
+const PricingPlan = require("./pricingPlan.model");
 
 module.exports = {
   Appointment,
@@ -32,4 +33,5 @@ module.exports = {
   Shifts,
   User,
   Workspace,
+  PricingPlan,
 };

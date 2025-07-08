@@ -130,6 +130,10 @@ const businessSchema = new mongoose.Schema(
     avgReview: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
+    // Subscription & Appointment Tracking
+    appointmentCount: { type: Number, default: 0 },
+    subscriptionPlan: { type: mongoose.Schema.Types.ObjectId, ref: "PricingPlan", default: null },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
