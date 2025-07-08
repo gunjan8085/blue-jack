@@ -1,8 +1,7 @@
 "use client"
 import Layout from '@/components/customer/Layout';
-
 import { useState, useEffect } from "react"
-import { Search, Filter, Star, MapPin, Clock, SlidersHorizontal, Grid, List, AlertCircle } from "lucide-react"
+import { Search, Filter, Star, MapPin, Clock, SlidersHorizontal, Grid, List, AlertCircle, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,8 +12,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
-import Header from "@/components/Header"
 import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
+import { useRouter } from 'next/navigation';
+import { Separator } from "@/components/ui/separator"
+
 interface BusinessTiming {
   days: number[]
   time: {
@@ -38,22 +39,21 @@ interface Business {
   website: string
   thumbnail: string
   about: string
-  serviceCategories: string[]
+  businessType: string
   teamSize: {
     min: number
     max: number
   }
   address: BusinessAddress
   isOnlineOnly: boolean
-  existingSoftware: string
-  foundUsAt: string
-  media: {
-    url: string
-    type: "photo" | "video"
-  }[]
   timings: BusinessTiming[]
   avgReview: number
   reviewCount: number
+  serviceCategories: {
+    title: string
+    tags: string[]
+    price: number
+  }[]
   services: string[]
 }
 
@@ -61,313 +61,794 @@ interface ApiResponse {
   data: Business[]
 }
 
-interface Category {
-  id: string
-  label: string
-}
-
 export default function DashboardPage() {
-   const [searchQuery, setSearchQuery] = useState("")
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const [sortBy, setSortBy] = useState("rating")
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-    const [minRating, setMinRating] = useState(0)
-    const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-  
-    const categories: Category[] = [
-      { id: "salon", label: "Hair Salon" },
-      { id: "barbershop", label: "Barbershop" },
-      { id: "spa", label: "Spa" },
-      { id: "nail-salon", label: "Nail Salon" },
-    ]
-  
-    // Fetch businesses from API
-    useEffect(() => {
-      const fetchBusinesses = async () => {
-        try {
-          setIsLoading(true)
-          const response = await fetch(`${API_URL}/business/getAllBusiness`)
-          const result: ApiResponse = await response.json()
-          setFilteredBusinesses(result.data)
-          setError(null)
-        } catch (err) {
-          setError('Failed to fetch businesses')
-          console.error('Error fetching businesses:', err)
-        } finally {
-          setIsLoading(false)
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [sortBy, setSortBy] = useState("rating")
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [hasToken, setHasToken] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
+  const [businesses, setBusinesses] = useState<Business[]>([])
+  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([])
+
+  // Filter states
+  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([])
+  const [selectedCities, setSelectedCities] = useState<string[]>([])
+  const [minRating, setMinRating] = useState(0)
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000])
+  const [teamSizeRange, setTeamSizeRange] = useState<[number, number]>([0, 50])
+  const [onlineOnly, setOnlineOnly] = useState<boolean | null>(null)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+
+  // Extract filter options from data
+  const businessTypes = Array.from(new Set(businesses.map(b => b.businessType)))
+  const cities = Array.from(new Set(businesses.map(b => b.address.city)))
+  const allTags = Array.from(new Set(businesses.flatMap(b =>
+    b.serviceCategories?.flatMap(cat => cat.tags) || []
+  )))
+
+  // Check authentication first
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/customer/auth/login');
+      return;
+    }
+    setHasToken(true);
+    setAuthChecked(true);
+  }, [router]);
+
+  // Fetch businesses only after auth check
+  useEffect(() => {
+    if (!authChecked) return;
+
+    const fetchBusinesses = async () => {
+      try {
+        setIsLoading(true)
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/business/getAllBusiness`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch businesses')
         }
-      }
-  
-      fetchBusinesses()
-    }, [])
-  
-    const handleCategoryChange = (categoryId: string, checked: boolean) => {
-      if (checked) {
-        setSelectedCategories([...selectedCategories, categoryId])
-      } else {
-        setSelectedCategories(selectedCategories.filter((id) => id !== categoryId))
+
+        const result: ApiResponse = await response.json()
+        setBusinesses(result.data)
+        setFilteredBusinesses(result.data)
+        setError(null)
+
+        // Set dynamic price range based on data
+        const prices = result.data.flatMap(b =>
+          b.serviceCategories?.map(cat => cat.price) || []
+        )
+        const maxPrice = Math.max(...prices, 1000)
+        setPriceRange([0, maxPrice])
+
+        // Set dynamic team size range
+        const teamSizes = result.data.flatMap(b => [b.teamSize.min, b.teamSize.max])
+        const maxTeamSize = Math.max(...teamSizes, 50)
+        setTeamSizeRange([0, maxTeamSize])
+
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch businesses')
+        console.error('Error fetching businesses:', err)
+      } finally {
+        setIsLoading(false)
       }
     }
-  
-    const applyFilters = () => {
-      const filtered = filteredBusinesses.filter((business) => {
-        const matchesSearch =
-          business.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          business.services.some((service) => service.toLowerCase().includes(searchQuery.toLowerCase()))
-        const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(business.serviceCategories[0] || '')
-        const matchesRating = business.avgReview >= minRating
-  
-        return matchesSearch && matchesCategory && matchesRating
-      })
-  
-      // Sort results
-      filtered.sort((a, b) => {
-        switch (sortBy) {
-          case "rating":
-            return b.avgReview - a.avgReview
-          case "name":
-            return a.brandName.localeCompare(b.brandName)
-          default:
-            return 0
-        }
-      })
-  
-      setFilteredBusinesses(filtered)
-    }
-  
-    // Apply filters whenever dependencies change
-    useEffect(() => {
-      applyFilters()
-    }, [searchQuery, selectedCategories, minRating, sortBy])
-  
-    const FilterContent = () => (
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-semibold mb-3">Service Type</h3>
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <div key={category.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={category.id}
-                  checked={selectedCategories.includes(category.id)}
-                  onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
-                />
-                <label htmlFor={category.id} className="text-sm">
-                  {category.label}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-  
-        <div>
-          <h3 className="font-semibold mb-3">Minimum Rating</h3>
-          <div className="space-y-2">
-            {[4.5, 4.0, 3.5, 3.0].map((rating) => (
-              <div key={rating} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`rating-${rating}`}
-                  checked={minRating === rating}
-                  onCheckedChange={(checked) => setMinRating(checked ? rating : 0)}
-                />
-                <label htmlFor={`rating-${rating}`} className="text-sm flex items-center">
-                  {rating}+ <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 ml-1" />
-                </label>
-              </div>
-            ))}
-          </div>
+
+    fetchBusinesses()
+  }, [authChecked])
+
+  // Apply filters whenever filter criteria change
+  useEffect(() => {
+    const filtered = businesses.filter((business) => {
+      // Search filter
+      const matchesSearch = searchQuery === "" ||
+        business.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.about.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.serviceCategories?.some(cat =>
+          cat.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+
+      // Business type filter
+      const matchesBusinessType = selectedBusinessTypes.length === 0 ||
+        selectedBusinessTypes.includes(business.businessType)
+
+      // City filter
+      const matchesCity = selectedCities.length === 0 ||
+        selectedCities.includes(business.address.city)
+
+      // Rating filter
+      const matchesRating = business.avgReview >= minRating
+
+      // Price filter (check if any service category falls within range)
+      const matchesPrice = business.serviceCategories?.some(cat =>
+        cat.price >= priceRange[0] && cat.price <= priceRange[1]
+      ) ?? false
+
+      // Team size filter
+      const matchesTeamSize =
+        (business.teamSize.min >= teamSizeRange[0] ||
+          business.teamSize.max >= teamSizeRange[0]) &&
+        (business.teamSize.max <= teamSizeRange[1] ||
+          business.teamSize.min <= teamSizeRange[1])
+
+      // Online only filter
+      const matchesOnline = onlineOnly === null ||
+        business.isOnlineOnly === onlineOnly
+
+      // Tags filter
+      const matchesTags = selectedTags.length === 0 ||
+        selectedTags.some(tag =>
+          business.serviceCategories?.some(cat =>
+            cat.tags?.includes(tag)
+          )
+        )
+
+      return matchesSearch && matchesBusinessType && matchesCity &&
+        matchesRating && matchesPrice && matchesTeamSize &&
+        matchesOnline && matchesTags
+    })
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "rating":
+          return b.avgReview - a.avgReview
+        case "name":
+          return a.brandName.localeCompare(b.brandName)
+        case "price-high":
+          const maxPriceA = Math.max(...(a.serviceCategories?.map(c => c.price) || [0]))
+          const maxPriceB = Math.max(...(b.serviceCategories?.map(c => c.price) || [0]))
+          return maxPriceB - maxPriceA
+        case "price-low":
+          const minPriceA = Math.min(...(a.serviceCategories?.map(c => c.price) || [0]))
+          const minPriceB = Math.min(...(b.serviceCategories?.map(c => c.price) || [0]))
+          return minPriceA - minPriceB
+        default:
+          return 0
+      }
+    })
+
+    setFilteredBusinesses(filtered)
+  }, [
+    searchQuery, selectedBusinessTypes, selectedCities, minRating,
+    priceRange, teamSizeRange, onlineOnly, selectedTags, sortBy, businesses
+  ])
+
+  const resetFilters = () => {
+    setSelectedBusinessTypes([])
+    setSelectedCities([])
+    setMinRating(0)
+    setOnlineOnly(null)
+    setSelectedTags([])
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
         </div>
       </div>
     )
-  
+  }
+
+  if (!hasToken) {
+    return null;
+  }
+
   return (
     <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
-      {/* Header */}
-      <HeaderForCustomer />
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
+        <HeaderForCustomer />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block w-80">
-            <Card className="sticky top-24">
-              <div className="p-6">
-                <div className="flex items-center space-x-2 mb-6">
-                  <SlidersHorizontal className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-lg font-semibold">Filters</h2>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Desktop Filters - Left Sidebar */}
+            <div className="hidden lg:block w-72 space-y-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-lg">Filters</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetFilters}
+                    className="text-purple-600 hover:text-purple-700"
+                  >
+                    Reset all
+                  </Button>
                 </div>
-                <FilterContent />
-              </div>
-            </Card>
-          </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Controls Bar */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-gray-900">{filteredBusinesses.length} businesses found</h1>
+                {/* Search */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Search</h4>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search businesses..."
+                      className="pl-9"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-                {/* Mobile Filter Button */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="lg:hidden">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filters
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-80">
-                    <SheetHeader>
-                      <SheetTitle className="flex items-center space-x-2">
-                        <SlidersHorizontal className="h-5 w-5 text-purple-600" />
-                        <span>Filters</span>
-                      </SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6">
-                      <FilterContent />
+                {/* Business Type */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Business Type</h4>
+                  <div className="space-y-2">
+                    {businessTypes.map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`type-${type}`}
+                          checked={selectedBusinessTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedBusinessTypes([...selectedBusinessTypes, type])
+                            } else {
+                              setSelectedBusinessTypes(selectedBusinessTypes.filter(t => t !== type))
+                            }
+                          }}
+                        />
+                        <label htmlFor={`type-${type}`} className="text-sm">
+                          {type || "Other"}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cities */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Cities</h4>
+                  <div className="space-y-2">
+                    {cities.map((city) => (
+                      <div key={city} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`city-${city}`}
+                          checked={selectedCities.includes(city)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCities([...selectedCities, city])
+                            } else {
+                              setSelectedCities(selectedCities.filter(c => c !== city))
+                            }
+                          }}
+                        />
+                        <label htmlFor={`city-${city}`} className="text-sm">
+                          {city}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rating */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-2">Minimum Rating</h4>
+                  <div className="flex items-center space-x-2">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <Slider
+                      min={0}
+                      max={5}
+                      step={0.5}
+                      value={[minRating]}
+                      onValueChange={(value) => setMinRating(value[0])}
+                      className="flex-1"
+                    />
+                    <span className="text-sm w-8">{minRating}</span>
+                  </div>
+                </div>
+
+              
+
+                {/* Tags */}
+                {allTags.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="font-medium mb-2">Service Tags</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {allTags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant={selectedTags.includes(tag) ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            if (selectedTags.includes(tag)) {
+                              setSelectedTags(selectedTags.filter(t => t !== tag))
+                            } else {
+                              setSelectedTags([...selectedTags, tag])
+                            }
+                          }}
+                        >
+                          {tag}
+                          {selectedTags.includes(tag) && (
+                            <X className="h-3 w-3 ml-1" />
+                          )}
+                        </Badge>
+                      ))}
                     </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="rating">Highest Rated</SelectItem>
-                    <SelectItem value="name">Name</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="flex border rounded-lg">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className={viewMode === "grid" ? "bg-purple-600" : ""}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className={viewMode === "list" ? "bg-purple-600" : ""}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Loading State */}
-            {isLoading && (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading businesses...</p>
+            {/* Mobile Filters - Sheet */}
+            <div className="lg:hidden flex items-center justify-between mb-4">
+              <div className="relative flex-1 max-w-md mr-4">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search businesses..."
+                  className="pl-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-            )}
-
-            {/* Error State */}
-            {error && (
-              <div className="text-center py-12">
-                <div className="text-red-500 mb-4">
-                  <AlertCircle className="h-16 w-16 mx-auto" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Businesses</h3>
-                <p className="text-gray-600">{error}</p>
-              </div>
-            )}
-
-            {/* Business Grid/List */}
-            {!isLoading && !error && (
-              <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "space-y-4"}>
-                {filteredBusinesses.map((business) => (
-                  <Card
-                    key={business._id}
-                    className={`group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1 ${viewMode === "list" ? "flex" : ""}`}
-                  >
-                    <div
-                      className={`relative overflow-hidden ${viewMode === "list" ? "w-48 flex-shrink-0" : "rounded-t-lg"}`}
-                    >
-                      <img
-                        src={business.thumbnail || "/placeholder.svg"}
-                        alt={business.brandName}
-                        className={`object-cover group-hover:scale-105 transition-transform duration-300 ${viewMode === "list" ? "w-full h-full" : "w-full h-48"}`}
-                      />
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:w-96 overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6 space-y-6">
+                    {/* Business Type */}
+                    <div>
+                      <h4 className="font-medium mb-2">Business Type</h4>
+                      <div className="space-y-2">
+                        {businessTypes.map((type) => (
+                          <div key={type} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`mobile-type-${type}`}
+                              checked={selectedBusinessTypes.includes(type)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedBusinessTypes([...selectedBusinessTypes, type])
+                                } else {
+                                  setSelectedBusinessTypes(selectedBusinessTypes.filter(t => t !== type))
+                                }
+                              }}
+                            />
+                            <label htmlFor={`mobile-type-${type}`} className="text-sm">
+                              {type || "Other"}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <CardContent className={`${viewMode === "list" ? "flex-1" : ""} p-6`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{business.brandName}</h3>
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-medium">{business.avgReview.toFixed(1)}</span>
-                          <span className="text-sm text-gray-500">({business.reviewCount})</span>
+
+                    <Separator />
+
+                    {/* Cities */}
+                    <div>
+                      <h4 className="font-medium mb-2">Cities</h4>
+                      <div className="space-y-2">
+                        {cities.map((city) => (
+                          <div key={city} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`mobile-city-${city}`}
+                              checked={selectedCities.includes(city)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCities([...selectedCities, city])
+                                } else {
+                                  setSelectedCities(selectedCities.filter(c => c !== city))
+                                }
+                              }}
+                            />
+                            <label htmlFor={`mobile-city-${city}`} className="text-sm">
+                              {city}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Rating */}
+                    <div>
+                      <h4 className="font-medium mb-2">Minimum Rating</h4>
+                      <div className="flex items-center space-x-2">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Slider
+                          min={0}
+                          max={5}
+                          step={0.5}
+                          value={[minRating]}
+                          onValueChange={(value) => setMinRating(value[0])}
+                          className="flex-1"
+                        />
+                        <span className="text-sm w-8">{minRating}</span>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Price Range */}
+                    <div>
+                      <h4 className="font-medium mb-2">Price Range</h4>
+                      <Slider
+                        min={0}
+                        max={priceRange[1]}
+                        step={10}
+                        value={priceRange}
+                        onValueChange={(value) => setPriceRange(value as [number, number])}
+                        className="mb-2"
+                      />
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>${priceRange[0]}</span>
+                        <span>${priceRange[1]}</span>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Team Size */}
+                    <div>
+                      <h4 className="font-medium mb-2">Team Size</h4>
+                      <Slider
+                        min={0}
+                        max={teamSizeRange[1]}
+                        step={1}
+                        value={teamSizeRange}
+                        onValueChange={(value) => setTeamSizeRange(value as [number, number])}
+                        className="mb-2"
+                      />
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{teamSizeRange[0]} people</span>
+                        <span>{teamSizeRange[1]} people</span>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Online Only */}
+                    <div>
+                      <h4 className="font-medium mb-2">Business Mode</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="mobile-online-only"
+                            checked={onlineOnly === true}
+                            onCheckedChange={(checked) => setOnlineOnly(checked ? true : null)}
+                          />
+                          <label htmlFor="mobile-online-only" className="text-sm">
+                            Online Only
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="mobile-physical"
+                            checked={onlineOnly === false}
+                            onCheckedChange={(checked) => setOnlineOnly(checked ? false : null)}
+                          />
+                          <label htmlFor="mobile-physical" className="text-sm">
+                            Physical Location
+                          </label>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span className="text-sm">
-                          {business.address.city}, {business.address.state}
-                        </span>
-                      </div>
+                    {allTags.length > 0 && (
+                      <>
+                        <Separator />
+                        {/* Tags */}
+                        <div>
+                          <h4 className="font-medium mb-2">Service Tags</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {allTags.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant={selectedTags.includes(tag) ? "default" : "outline"}
+                                className="cursor-pointer"
+                                onClick={() => {
+                                  if (selectedTags.includes(tag)) {
+                                    setSelectedTags(selectedTags.filter(t => t !== tag))
+                                  } else {
+                                    setSelectedTags([...selectedTags, tag])
+                                  }
+                                }}
+                              >
+                                {tag}
+                                {selectedTags.includes(tag) && (
+                                  <X className="h-3 w-3 ml-1" />
+                                )}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
-                      <div className="flex items-center text-gray-600 mb-3">
-                        <Clock className="h-4 w-4 mr-1" />
-                        <span className="text-sm">
-                          {business.timings[0]?.time[0]?.open.hour.toString().padStart(2, '0')}:{business.timings[0]?.time[0]?.open.minute.toString().padStart(2, '0')} - 
-                          {business.timings[0]?.time[0]?.close.hour.toString().padStart(2, '0')}:{business.timings[0]?.time[0]?.close.minute.toString().padStart(2, '0')}
-                        </span>
-                      </div>
+                    <div className="pt-4">
+                      <Button
+                        onClick={resetFilters}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Reset All Filters
+                      </Button>
+                    </div>
+                                      </div>
+                </SheetContent>
+              </Sheet>
 
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {business.services.slice(0, 3).map((service) => (
-                          <Badge key={service} variant="secondary" className="bg-purple-100 text-purple-700">
-                            {service}
-                          </Badge>
-                        ))}
-                        {business.services.length > 3 && (
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-600">
-                            +{business.services.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between">
-               
-         <span className="text-sm text-gray-600">{business.about.substring(0, 50)}...</span>
-                        <Link href={`/business/${business._id}`}>
-                          <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
-                            View Profile
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              {/* View Mode Toggle */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-9 w-9 p-0"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-9 w-9 p-0"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
               </div>
-            )}
+            </div>
 
-            {!isLoading && !error && filteredBusinesses.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">
-                  <Search className="h-16 w-16 mx-auto" />
+            {/* Sort By Dropdown - Mobile */}
+            <div className="lg:hidden">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rating">Rating</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1">
+              {/* Sort and Results Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">
+                  {filteredBusinesses.length} {filteredBusinesses.length === 1 ? "Business" : "Businesses"} Found
+                </h2>
+                <div className="hidden lg:block">
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rating">Rating</SelectItem>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No businesses found</h3>
-                <p className="text-gray-600">Try adjusting your filters or search terms</p>
               </div>
-            )}
+
+              {/* Loading State */}
+              {isLoading && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                </div>
+              )}
+
+              {/* Error State */}
+              {error && (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-6 text-center">
+                    <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading businesses</h3>
+                    <p className="text-gray-600 mb-4">{error}</p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.location.reload()}
+                    >
+                      Try Again
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Empty State */}
+              {!isLoading && !error && filteredBusinesses.length === 0 && (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-6 text-center">
+                    <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No businesses found</h3>
+                    <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
+                    <Button 
+                      variant="outline"
+                      onClick={resetFilters}
+                    >
+                      Reset Filters
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Grid View */}
+              {!isLoading && !error && filteredBusinesses.length > 0 && viewMode === "grid" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredBusinesses.map((business) => (
+                    <Link key={business._id} href={`/business/${business._id}`}>
+                      <Card className="h-full transition-all hover:shadow-md hover:border-purple-200 cursor-pointer">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col h-full">
+                            {/* Business Image */}
+                            <div className="relative aspect-video rounded-lg overflow-hidden mb-4 bg-gray-100">
+                              {business.thumbnail ? (
+                                <img
+                                  src={business.thumbnail}
+                                  alt={business.brandName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                                  <span>No Image</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Business Info */}
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-lg font-semibold line-clamp-1">{business.brandName}</h3>
+                                <div className="flex items-center">
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                                  <span className="text-sm font-medium">
+                                    {business.avgReview.toFixed(1)} ({business.reviewCount})
+                                  </span>
+                                </div>
+                              </div>
+
+                              <p className="text-sm text-gray-600 line-clamp-2 mb-3">{business.about}</p>
+
+                              <div className="flex items-center text-sm text-gray-500 mb-3">
+                                <MapPin className="h-4 w-4 mr-1" />
+                                <span className="line-clamp-1">
+                                  {business.address.city}, {business.address.state}
+                                </span>
+                              </div>
+
+                              {/* Price Range */}
+                              <div className="mt-auto">
+                                <div className="text-sm text-gray-600 mb-2">
+                                  {business.serviceCategories?.length > 0 && (
+                                    <span>
+                                      From ${Math.min(...business.serviceCategories.map(c => c.price))}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Tags */}
+                                <div className="flex flex-wrap gap-2">
+                                  {business.serviceCategories?.slice(0, 3).map((category) => (
+                                    <Badge key={category.title} variant="outline" className="text-xs">
+                                      {category.title}
+                                    </Badge>
+                                  ))}
+                                  {business.serviceCategories?.length > 3 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{business.serviceCategories.length - 3} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* List View */}
+              {!isLoading && !error && filteredBusinesses.length > 0 && viewMode === "list" && (
+                <div className="space-y-4">
+                  {filteredBusinesses.map((business) => (
+                    <Link key={business._id} href={`/customer/business/${business._id}`}>
+                      <Card className="transition-all hover:shadow-md hover:border-purple-200 cursor-pointer">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col sm:flex-row gap-6">
+                            {/* Business Image */}
+                            <div className="w-full sm:w-48 aspect-video rounded-lg overflow-hidden bg-gray-100">
+                              {business.thumbnail ? (
+                                <img
+                                  src={business.thumbnail}
+                                  alt={business.brandName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                                  <span>No Image</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Business Info */}
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-lg font-semibold">{business.brandName}</h3>
+                                <div className="flex items-center">
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                                  <span className="text-sm font-medium">
+                                    {business.avgReview.toFixed(1)} ({business.reviewCount})
+                                  </span>
+                                </div>
+                              </div>
+
+                              <p className="text-sm text-gray-600 mb-3">{business.about}</p>
+
+                              <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+                                <div className="flex items-center">
+                                  <MapPin className="h-4 w-4 mr-1" />
+                                  <span>
+                                    {business.address.city}, {business.address.state}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  <span>
+                                    {business.isOnlineOnly ? "Online Only" : "Physical Location"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Price and Tags */}
+                              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                                <div className="text-sm text-gray-600">
+                                  {business.serviceCategories?.length > 0 && (
+                                    <span>
+                                      From ${Math.min(...business.serviceCategories.map(c => c.price))}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                  {business.serviceCategories?.slice(0, 5).map((category) => (
+                                    <Badge key={category.title} variant="outline" className="text-xs">
+                                      {category.title}
+                                    </Badge>
+                                  ))}
+                                  {business.serviceCategories?.length > 5 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{business.serviceCategories.length - 5} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </Layout>
-  );
+  )
 }
-
-

@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import AppSidebar from "@/components/for-bussiness/AppSidebar"
 
 // Employee interface
 interface Employee {
@@ -44,6 +45,17 @@ interface Employee {
   startDate?: string
   servicesProvided?: string[]
   allowCalendarBooking?: boolean
+  profilePicUrl?: string
+  dob?: string
+  additionalPhoneNumber?: string
+  country?: string
+  emergencyContacts?: {
+    name: string
+    relationship: string
+    email: string
+    phoneNumber: string
+  }[]
+  isAvailableForNewJob?: boolean
 }
 
 // Create employee payload interface
@@ -51,16 +63,25 @@ interface CreateEmployeePayload {
   name: string
   email: string
   authType: string
-  password: string
+  password?: string
   phoneNumber: string
+  additionalPhoneNumber?: string
   jobTitle: string
   startDate: string
+  dob?: string
+  country?: string
   servicesProvided: string[]
   allowCalendarBooking: boolean
+  profilePicUrl?: string
+  emergencyContacts?: {
+    name: string
+    relationship: string
+    email: string
+    phoneNumber: string
+  }[]
+  isAvailableForNewJob?: boolean
 }
-import AppSidebar from "@/components/for-bussiness/AppSidebar"
 
-  
 export default function StaffPage() {
   const { toast } = useToast()
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -69,8 +90,18 @@ export default function StaffPage() {
   const [jobTitleFilter, setJobTitleFilter] = useState("all")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [creatingEmployee, setCreatingEmployee] = useState(false)
+  const [updatingEmployee, setUpdatingEmployee] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [profilePicPreview, setProfilePicPreview] = useState<string | null>(null)
+  const [emergencyContacts, setEmergencyContacts] = useState<{
+    name: string
+    relationship: string
+    email: string
+    phoneNumber: string
+  }[]>([])
   const router = useRouter()
 
   // Get business ID from localStorage
@@ -96,7 +127,49 @@ export default function StaffPage() {
     startDate: "",
     servicesProvided: [],
     allowCalendarBooking: true,
+    isAvailableForNewJob: true,
   })
+
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      const formData = new FormData()
+      formData.append('file', file)
+
+      try {
+        setUploadingImage(true)
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
+          body: formData,
+        })
+        
+        const data = await res.json()
+        
+        if (!res.ok || !data.url) {
+          throw new Error(data.message || 'Upload failed')
+        }
+
+        setNewEmployee({ ...newEmployee, profilePicUrl: data.url })
+        setProfilePicPreview(data.url)
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        })
+      } catch (error) {
+        console.error("Error uploading image:", error)
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        })
+      } finally {
+        setUploadingImage(false)
+      }
+    }
+  }
 
   // Fetch employees from API
   const fetchEmployees = async () => {
@@ -177,16 +250,19 @@ export default function StaffPage() {
         return
       }
 
+      const payload = {
+        ...newEmployee,
+        emergencyContacts: emergencyContacts.length > 0 ? emergencyContacts : undefined,
+        servicesProvided: [], // Ensure this is always empty array
+      }
+
       const response = await fetch(`${API_URL}/employee/${businessId}/create`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...newEmployee,
-          servicesProvided: [], // Ensure this is always empty array
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (response.status === 401 || response.status === 403) {
@@ -217,7 +293,10 @@ export default function StaffPage() {
           startDate: "",
           servicesProvided: [],
           allowCalendarBooking: true,
+          isAvailableForNewJob: true,
         })
+        setEmergencyContacts([])
+        setProfilePicPreview(null)
         fetchEmployees() // Refresh the list
       } else {
         toast({
@@ -236,6 +315,93 @@ export default function StaffPage() {
     } finally {
       setCreatingEmployee(false)
     }
+  }
+
+  // Update employee
+  const updateEmployee = async () => {
+    if (!selectedEmployee) return
+
+    try {
+      setUpdatingEmployee(true)
+      const businessId = getBusinessId()
+      
+      if (!businessId) {
+        toast({
+          title: "Error",
+          description: "Business profile not found. Please log in again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const token = localStorage.getItem('token')
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please log in again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const payload = {
+        ...selectedEmployee,
+        emergencyContacts: emergencyContacts.length > 0 ? emergencyContacts : undefined,
+        servicesProvided: [], // Ensure this is always empty array
+      }
+
+      const response = await fetch(`${API_URL}/employee/${selectedEmployee._id}/update`, {
+        method: "PUT",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (response.status === 401 || response.status === 403) {
+        toast({
+          title: "Unauthorized",
+          description: "You are not authorized to update staff.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Employee updated successfully",
+        })
+        setIsEditDialogOpen(false)
+        fetchEmployees() // Refresh the list
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to update employee",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error updating employee:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update employee",
+        variant: "destructive",
+      })
+    } finally {
+      setUpdatingEmployee(false)
+    }
+  }
+
+  // Open edit dialog with employee data
+  const openEditDialog = (employee: Employee) => {
+    setSelectedEmployee(employee)
+    setEmergencyContacts(employee.emergencyContacts || [])
+    setProfilePicPreview(employee.profilePicUrl || null)
+    setIsEditDialogOpen(true)
   }
 
   useEffect(() => {
@@ -287,6 +453,40 @@ export default function StaffPage() {
     createEmployee()
   }
 
+  const handleUpdateEmployee = () => {
+    if (!selectedEmployee?.name || !selectedEmployee?.email || !selectedEmployee?.phoneNumber || !selectedEmployee?.jobTitle) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+    updateEmployee()
+  }
+
+  const addEmergencyContact = () => {
+    setEmergencyContacts([
+      ...emergencyContacts,
+      { name: "", relationship: "", email: "", phoneNumber: "" }
+    ])
+  }
+
+  const updateEmergencyContact = (index: number, field: string, value: string) => {
+    const updatedContacts = [...emergencyContacts]
+    updatedContacts[index] = {
+      ...updatedContacts[index],
+      [field]: value
+    }
+    setEmergencyContacts(updatedContacts)
+  }
+
+  const removeEmergencyContact = (index: number) => {
+    const updatedContacts = [...emergencyContacts]
+    updatedContacts.splice(index, 1)
+    setEmergencyContacts(updatedContacts)
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -305,84 +505,143 @@ export default function StaffPage() {
                   Add Employee
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Add New Employee</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={newEmployee.name}
-                      onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                      placeholder="Enter full name"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      {/* Basic Information */}
+                      <div>
+                        <Label htmlFor="name">Full Name *</Label>
+                        <Input
+                          id="name"
+                          value={newEmployee.name}
+                          onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+                          placeholder="Enter full name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={newEmployee.email}
+                          onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                          placeholder="Enter email address"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="password">Password *</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={newEmployee.password}
+                          onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                          placeholder="Enter password"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          value={newEmployee.phoneNumber}
+                          onChange={(e) => setNewEmployee({ ...newEmployee, phoneNumber: e.target.value })}
+                          placeholder="Enter phone number"
+                        />
+                      </div>
+                      <div>
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={newEmployee.startDate}
+                        onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })}
+                      />
+                    </div>
+                    </div>
+
+                    {/* Profile Picture */}
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Profile Picture</Label>
+                        <div className="flex items-center space-x-4">
+                          <div className="relative">
+                            <Avatar className="h-20 w-20">
+                              {profilePicPreview ? (
+                                <AvatarImage src={profilePicPreview} />
+                              ) : (
+                                <AvatarFallback>
+                                  {newEmployee.name ? newEmployee.name.charAt(0) : "U"}
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
+                            {uploadingImage && (
+                              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <input
+                              type="file"
+                              id="profilePic"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                            <Label htmlFor="profilePic" className="cursor-pointer">
+                              <Button variant="outline" asChild>
+                                <span>{profilePicPreview ? "Change" : "Upload"} Image</span>
+                              </Button>
+                            </Label>
+                            {profilePicPreview && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 mt-2"
+                                onClick={() => {
+                                  setProfilePicPreview(null)
+                                  setNewEmployee({ ...newEmployee, profilePicUrl: undefined })
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="jobTitle">Job Title *</Label>
+                        <Select value={newEmployee.jobTitle} onValueChange={(value) => setNewEmployee({ ...newEmployee, jobTitle: value })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select job title" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Therapist">Therapist</SelectItem>
+                            <SelectItem value="Stylist">Stylist</SelectItem>
+                            <SelectItem value="Manager">Manager</SelectItem>
+                            <SelectItem value="Assistant">Assistant</SelectItem>
+                            <SelectItem value="Receptionist">Receptionist</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="dob">Date of Birth</Label>
+                        <Input
+                          id="dob"
+                          type="date"
+                          value={newEmployee.dob || ""}
+                          onChange={(e) => setNewEmployee({ ...newEmployee, dob: e.target.value })}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newEmployee.email}
-                      onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={newEmployee.password}
-                      onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
-                      placeholder="Enter password"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      value={newEmployee.phoneNumber}
-                      onChange={(e) => setNewEmployee({ ...newEmployee, phoneNumber: e.target.value })}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="jobTitle">Job Title *</Label>
-                    <Select value={newEmployee.jobTitle} onValueChange={(value) => setNewEmployee({ ...newEmployee, jobTitle: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select job title" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Therapist">Therapist</SelectItem>
-                        <SelectItem value="Stylist">Stylist</SelectItem>
-                        <SelectItem value="Manager">Manager</SelectItem>
-                        <SelectItem value="Assistant">Assistant</SelectItem>
-                        <SelectItem value="Receptionist">Receptionist</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={newEmployee.startDate}
-                      onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="allowBooking"
-                      checked={newEmployee.allowCalendarBooking}
-                      onChange={(e) => setNewEmployee({ ...newEmployee, allowCalendarBooking: e.target.checked })}
-                      className="rounded"
-                    />
-                    <Label htmlFor="allowBooking">Allow calendar booking</Label>
-                  </div>
-                  <div className="flex space-x-2">
+
+                  {/* Form Actions */}
+                  <div className="flex space-x-2 pt-4">
                     <Button variant="outline" className="flex-1" onClick={() => setIsCreateDialogOpen(false)}>
                       Cancel
                     </Button>
@@ -449,7 +708,7 @@ export default function StaffPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src="/placeholder.svg" />
+                          <AvatarImage src={employee.profilePicUrl || "/placeholder.svg"} />
                           <AvatarFallback>
                             {employee.name
                               .split(" ")
@@ -497,6 +756,17 @@ export default function StaffPage() {
                             </DialogHeader>
                             {selectedEmployee && (
                               <div className="space-y-4">
+                                <div className="flex justify-center">
+                                  <Avatar className="h-20 w-20">
+                                    <AvatarImage src={selectedEmployee.profilePicUrl || "/placeholder.svg"} />
+                                    <AvatarFallback>
+                                      {selectedEmployee.name
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </div>
                                 <div>
                                   <Label>Name</Label>
                                   <p className="text-sm text-gray-600">{selectedEmployee.name}</p>
@@ -513,6 +783,18 @@ export default function StaffPage() {
                                   <Label>Job Title</Label>
                                   <p className="text-sm text-gray-600">{selectedEmployee.jobTitle}</p>
                                 </div>
+                                {selectedEmployee.dob && (
+                                  <div>
+                                    <Label>Date of Birth</Label>
+                                    <p className="text-sm text-gray-600">{new Date(selectedEmployee.dob).toLocaleDateString()}</p>
+                                  </div>
+                                )}
+                                {selectedEmployee.country && (
+                                  <div>
+                                    <Label>Country</Label>
+                                    <p className="text-sm text-gray-600">{selectedEmployee.country}</p>
+                                  </div>
+                                )}
                                 <div>
                                   <Label>Email Verified</Label>
                                   <p className="text-sm text-gray-600">{selectedEmployee.isEmailVerified ? "Yes" : "No"}</p>
@@ -521,18 +803,36 @@ export default function StaffPage() {
                                   <Label>Role</Label>
                                   <p className="text-sm text-gray-600">{selectedEmployee.isOwner ? "Owner" : "Employee"}</p>
                                 </div>
+                                {selectedEmployee.emergencyContacts && selectedEmployee.emergencyContacts.length > 0 && (
+                                  <div>
+                                    <Label>Emergency Contacts</Label>
+                                    <div className="space-y-2 mt-2">
+                                      {selectedEmployee.emergencyContacts.map((contact, index) => (
+                                        <div key={index} className="border p-2 rounded">
+                                          <p className="text-sm font-medium">{contact.name} ({contact.relationship})</p>
+                                          <p className="text-xs text-gray-600">{contact.email}</p>
+                                          <p className="text-xs text-gray-600">{contact.phoneNumber}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </DialogContent>
                         </Dialog>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => openEditDialog(employee)}
+                        >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                        {/* <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
                           <Trash2 className="h-4 w-4 mr-1" />
                           Remove
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                   </CardContent>
@@ -556,6 +856,220 @@ export default function StaffPage() {
             )}
           </div>
         </div>
+
+        {/* Edit Employee Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Employee</DialogTitle>
+            </DialogHeader>
+            {selectedEmployee && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    {/* Basic Information */}
+                    <div>
+                      <Label htmlFor="edit-name">Full Name *</Label>
+                      <Input
+                        id="edit-name"
+                        value={selectedEmployee.name}
+                        onChange={(e) => setSelectedEmployee({ ...selectedEmployee, name: e.target.value })}
+                        placeholder="Enter full name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-email">Email *</Label>
+                      <Input
+                        id="edit-email"
+                        type="email"
+                        value={selectedEmployee.email}
+                        onChange={(e) => setSelectedEmployee({ ...selectedEmployee, email: e.target.value })}
+                        placeholder="Enter email address"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-phone">Phone Number *</Label>
+                      <Input
+                        id="edit-phone"
+                        value={selectedEmployee.phoneNumber}
+                        onChange={(e) => setSelectedEmployee({ ...selectedEmployee, phoneNumber: e.target.value })}
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-startDate">Start Date</Label>
+                      <Input
+                        id="edit-startDate"
+                        type="date"
+                        value={selectedEmployee.startDate || ""}
+                        onChange={(e) => setSelectedEmployee({ ...selectedEmployee, startDate: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Profile Picture */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Profile Picture</Label>
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <Avatar className="h-20 w-20">
+                            {profilePicPreview ? (
+                              <AvatarImage src={profilePicPreview} />
+                            ) : (
+                              <AvatarFallback>
+                                {selectedEmployee.name ? selectedEmployee.name.charAt(0) : "U"}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          {uploadingImage && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <input
+                            type="file"
+                            id="edit-profilePic"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                          <Label htmlFor="edit-profilePic" className="cursor-pointer">
+                            <Button variant="outline" asChild>
+                              <span>{profilePicPreview ? "Change" : "Upload"} Image</span>
+                            </Button>
+                          </Label>
+                          {profilePicPreview && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 mt-2"
+                              onClick={() => {
+                                setProfilePicPreview(null)
+                                setSelectedEmployee({ ...selectedEmployee, profilePicUrl: undefined })
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-jobTitle">Job Title *</Label>
+                      <Select 
+                        value={selectedEmployee.jobTitle} 
+                        onValueChange={(value) => setSelectedEmployee({ ...selectedEmployee, jobTitle: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select job title" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Therapist">Therapist</SelectItem>
+                          <SelectItem value="Stylist">Stylist</SelectItem>
+                          <SelectItem value="Manager">Manager</SelectItem>
+                          <SelectItem value="Assistant">Assistant</SelectItem>
+                          <SelectItem value="Receptionist">Receptionist</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-dob">Date of Birth</Label>
+                      <Input
+                        id="edit-dob"
+                        type="date"
+                        value={selectedEmployee.dob || ""}
+                        onChange={(e) => setSelectedEmployee({ ...selectedEmployee, dob: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Emergency Contacts */}
+                <div>
+                  <Label>Emergency Contacts</Label>
+                  <div className="space-y-3 mt-2">
+                    {emergencyContacts.map((contact, index) => (
+                      <div key={index} className="border p-3 rounded-lg space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label>Name</Label>
+                            <Input
+                              value={contact.name}
+                              onChange={(e) => updateEmergencyContact(index, "name", e.target.value)}
+                              placeholder="Full name"
+                            />
+                          </div>
+                          <div>
+                            <Label>Relationship</Label>
+                            <Input
+                              value={contact.relationship}
+                              onChange={(e) => updateEmergencyContact(index, "relationship", e.target.value)}
+                              placeholder="Relationship"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label>Email</Label>
+                            <Input
+                              value={contact.email}
+                              onChange={(e) => updateEmergencyContact(index, "email", e.target.value)}
+                              placeholder="Email"
+                              type="email"
+                            />
+                          </div>
+                          <div>
+                            <Label>Phone Number</Label>
+                            <Input
+                              value={contact.phoneNumber}
+                              onChange={(e) => updateEmergencyContact(index, "phoneNumber", e.target.value)}
+                              placeholder="Phone number"
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500"
+                          onClick={() => removeEmergencyContact(index)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove Contact
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addEmergencyContact}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Emergency Contact
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex space-x-2 pt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700"
+                    onClick={handleUpdateEmployee}
+                    disabled={updatingEmployee}
+                  >
+                    {updatingEmployee ? "Updating..." : "Update Employee"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </SidebarInset>
     </SidebarProvider>
   )

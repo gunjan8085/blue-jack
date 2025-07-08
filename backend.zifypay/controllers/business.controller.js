@@ -114,7 +114,7 @@ module.exports = {
       // Optionally update avgReview
       const business = await Business.findById(id).populate('reviews');
       if (business) {
-        const totalStars = business.reviews.reduce((sum, r) => sum + (r.stars || 0), stars);
+        const totalStars = business.reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
         const avg = totalStars / (business.reviews.length || 1);
         business.avgReview = avg;
         await business.save();

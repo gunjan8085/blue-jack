@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { API_URL } from "@/lib/const";
 import { UploadCloud, Loader2 } from "lucide-react";
+import HeaderForCustomer from "@/components/customer/HeaderForCustomer";
 
 export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -149,11 +150,14 @@ export default function ProfilePage() {
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
+      <HeaderForCustomer />
+      <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center py-6">
+        Profile Settings
+      </h1>
 
-      <div className="flex flex-col md:flex-row gap-10 items-start">
+      <div className="flex flex-col md:flex-row gap-10 items-start w-2/3 p-16 mx-auto ">
         {/* Profile Image Upload & Preview */}
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 ">
           <div className="relative h-48 w-48 rounded-full overflow-hidden border shadow-lg">
             {formData.profilePicUrl ? (
               <img

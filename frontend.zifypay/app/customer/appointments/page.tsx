@@ -7,6 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/use-toast";
 import Image from "next/image";
 import { API_URL } from "@/lib/const";
+import HeaderForCustomer from "@/components/customer/HeaderForCustomer";
+import Layout from "@/components/customer/Layout"
+
 
 interface Appointment {
   id: string;
@@ -85,9 +88,11 @@ export default function AppointmentsPage() {
     };
 
     fetchAppointments();
-  }, []);
+  }, []); 
 
   return (
+    <Layout>
+    <HeaderForCustomer />
     <div className="max-w-5xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
         My Appointments
@@ -105,16 +110,16 @@ export default function AppointmentsPage() {
         <div className="space-y-6">
           {appointments.map((appt) => (
             <Card
-              key={appt.id}
-              className="p-5 shadow-md border border-gray-200 rounded-xl flex flex-col sm:flex-row items-start gap-6 hover:shadow-lg transition"
+            key={appt.id}
+            className="p-5 shadow-md border border-gray-200 rounded-xl flex flex-col sm:flex-row items-start gap-6 hover:shadow-lg transition"
             >
               {appt.logo ? (
                 <Image
-                  src={appt.logo}
-                  alt="Business logo"
-                  width={90}
-                  height={90}
-                  className="rounded-md object-cover border border-gray-200"
+                src={appt.logo}
+                alt="Business logo"
+                width={90}
+                height={90}
+                className="rounded-md object-cover border border-gray-200"
                 />
               ) : (
                 <div className="w-[90px] h-[90px] bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-sm">
@@ -131,7 +136,7 @@ export default function AppointmentsPage() {
                     className={`text-sm px-2 py-1 rounded-md capitalize ${getStatusBadgeColor(
                       appt.status
                     )}`}
-                  >
+                    >
                     {appt.status}
                   </span>
                 </div>
@@ -172,5 +177,6 @@ export default function AppointmentsPage() {
         </div>
       )}
     </div>
+    </Layout>
   );
 }

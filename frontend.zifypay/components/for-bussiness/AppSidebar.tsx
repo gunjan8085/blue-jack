@@ -75,6 +75,7 @@ export default function AppSidebar() {
     localStorage.removeItem("jwt")
     localStorage.removeItem("twilio_identity")
     localStorage.clear()
+    localStorage.removeItem('token');
 
     // Clear cookies
     document.cookie.split(";").forEach((c) => {

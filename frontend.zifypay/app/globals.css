@@ -170,3 +170,26 @@
     padding-right: 1rem;
   }
 }
+
+/* For the Select component with custom content */
+[data-radix-select-content] {
+  min-width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+}
+
+/* Custom select items */
+.custom-select-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.custom-select-item[data-highlighted] {
+  background-color: #f3e8ff;
+  color: inherit;
+}
+
+.custom-select-item[data-state="checked"] {
+  background-color: #f3e8ff;
+}

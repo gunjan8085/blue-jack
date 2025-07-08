@@ -167,6 +167,34 @@ module.exports = {
       );
     }
   },
+  updateEmployee: async (employeeId, updateData) => {
+  try {
+    // Remove empty fields to avoid overwriting with empty values
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === '' || updateData[key] === null) {
+        delete updateData[key];
+      }
+    });
+
+    // Handle emergency contacts if provided
+    if (updateData.emergencyContacts) {
+      // This ensures we don't merge arrays but replace them
+      updateData.$set = { emergencyContacts: updateData.emergencyContacts };
+      delete updateData.emergencyContacts;
+    }
+
+    const updatedEmployee = await Employee.findByIdAndUpdate(
+      employeeId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    return updatedEmployee;
+  } catch (error) {
+    console.error("Error in updateEmployee service:", error);
+    throw error;
+  }
+},
 
   archiveEmployee: async (employeeId) => {
     try {
