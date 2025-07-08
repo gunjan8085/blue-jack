@@ -36,7 +36,7 @@ export default function CategoryLandingPage({
   }, []);
 
   return (
-    <main className="relative font-inter">
+    <main className="relative font-inter bg-gradient-to-r from-[#001A39] to-[#001433]">
       <Navbar />
       <Category {...content} />
 

@@ -251,7 +251,7 @@ function Navbar() {
                     return (
                       <Link
                         key={industry}
-                        href={`/${slug}`}
+                        href={`Landing/${slug}`}
                         className="text-gray-500 hover:text-blue-600 hover:text-[18px] rounded px-2 mx-3 transition-all duration-200 text-[17px] hover:scale-[1.04]"
                       >
                         {industry}
@@ -279,14 +279,14 @@ function Navbar() {
 
             <div className="flex items-center px-4 gap-2">
               <Link
-                href="#pricing"
+                href="/Pricing"
                 className="text-white  transition-colors duration-200 px-4 py-2 text-base md:text-lg font-medium"
                 style={{ fontFamily: "'Proxima Nova', sans-serif" }}
               >
                 Pricing
               </Link>
               <Link
-                href="#careers"
+                href="/careers"
                 className="bg-[#001F4D] text-white font- px-4 py-2 rounded-full shadow hover:bg-[#0a1d36] transition text-sm md:text-base"
               >
                 Careers

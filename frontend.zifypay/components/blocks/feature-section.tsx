@@ -45,7 +45,7 @@ export function FeatureSteps({
 
   return (
     <div className={cn("p-8 md:p-12", className)}>
-      <div className="max-w-7xl mx-auto w-full">
+      <div className=" mx-auto w-full">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font- mb-10 text-center">
           {title}
         </h2>
@@ -64,7 +64,7 @@ export function FeatureSteps({
                   className={cn(
                     "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2",
                     index === currentFeature
-                      ? "bg-white border-blue-950 font-bold text-black scale-110"
+                      ? "bg-white border-[#094183] font-bold text-[#094183] scale-110"
                       : "bg-transparent  text-white"
                   )}
                 >
@@ -76,10 +76,10 @@ export function FeatureSteps({
                 </motion.div>
 
                 <div className="flex-1">
-                  <h3 className="text-xl md:text-2xl  mt-12">
+                  <h3 className="text-xl md:text-2xl mt-10 text-[#094183]">
                     {feature.title || feature.step}
                   </h3>
-                  <p className="text-sm md:text-lg text-muted-foreground">
+                  <p className="text-sm md:text-lg text-muted-foreground text-[#094183]">
                     {feature.content}
                   </p>
                 </div>
@@ -109,9 +109,9 @@ export function FeatureSteps({
                         alt={feature.step}
                         className="w-full h-full object-cover transition-transform transform"
                         width={1000}
-                        height={500}
+                        height={1000}
                       />
-                      <div className="absolute bottom-0 left-0 right-0 h-2/3" />
+                      <div className="absolute bottom-0 left-0 right-0 h-full" />
                     </motion.div>
                   )
               )}
@@ -126,24 +126,25 @@ export function FeatureSteps({
 const features = [
   {
     step: "Step 1",
-    title: "Learn the Basics",
-    content: "Start your Web3 journey by learning the basics of blockchain.",
+    title: "Ultra-fast booking that clients love",
+    content:
+      "Clients can book with your team 24/7 in under 30 seconds- no app downloads or forgotten passwords.",
     image:
-      "https://images.unsplash.com/photo-1723958929247-ef054b525153?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1723958929247-ef054b525153?q=80&w=2070&auto=format&fit=",
   },
   {
     step: "Step 2",
-    title: "Deep Dive",
+    title: "Get personalized analytics for your barber business",
     content:
-      "Dive deep into blockchain fundamentals and smart contract development.",
+      "Track client retention rate, average sales value per client, and monthly new barber clients count. Receive personalized insights on how to improve performance.",
     image:
       "https://images.unsplash.com/photo-1723931464622-b7df7c71e380?q=80&w=2070&auto=format&fit=crop",
   },
   {
     step: "Step 3",
-    title: "Build Projects",
+    title: "Total peace of mind from no-shows",
     content:
-      "Graduate with hands-on Web3 experience through building decentralized applications.",
+      "Protect your time and money with deposits, custom cancellation policies, card-on-file booking rules, and client waitlists.",
     image:
       "https://images.unsplash.com/photo-1725961476494-efa87ae3106a?q=80&w=2070&auto=format&fit=crop",
   },

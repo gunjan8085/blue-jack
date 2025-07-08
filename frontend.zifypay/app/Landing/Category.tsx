@@ -4,6 +4,13 @@ import { motion, useAnimation, useInView } from "framer-motion";
 import Image from "next/image";
 import { FeatureSteps } from "@/components/blocks/feature-section";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import Pricing from "@/components/blocks/Pricing";
+import AboutDemoSection from "@/components/blocks/AboutDemoSection";
+import { useParams } from "next/navigation";
+import { categoryContent } from "./categoryContent";
+import { videoContent } from "./videocontent";
+import { FAQSection } from "./FAQSection";
+import FinancialSupportSection from "./FinancialSupportSection";
 
 export type CategoryProps = {
   title: string;
@@ -11,30 +18,11 @@ export type CategoryProps = {
   image: string;
 };
 
-const demoFeatures = [
-  {
-    step: "Step 1",
-    title: "Learn the Basics",
-    content: "Start your Web3 journey by learning the basics of blockchain.",
-    image:
-      "https://images.unsplash.com/photo-1723958929247-ef054b525153?q=80&w=2070&auto=format&fit=crop",
-  },
-  {
-    step: "Step 2",
-    title: "Deep Dive",
-    content:
-      "Dive deep into blockchain fundamentals and smart contract development.",
-    image:
-      "https://images.unsplash.com/photo-1723931464622-b7df7c71e380?q=80&w=2070&auto=format&fit=crop",
-  },
-  {
-    step: "Step 3",
-    title: "Build Projects",
-    content:
-      "Graduate with hands-on Web3 experience through building decentralized applications.",
-    image:
-      "https://images.unsplash.com/photo-1725961476494-efa87ae3106a?q=80&w=2070&auto=format&fit=crop",
-  },
+const aboutDemoImages = [
+  "https://images.unsplash.com/photo-1455849318743-b2233052fcff?q=80&w=2338&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1733680958774-39a0e8a64a54?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1548783307-f63adc3f200b?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1703622377707-29bc9409aaf2?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 ];
 
 const PricingSection = () => (
@@ -58,6 +46,23 @@ const PricingSection = () => (
 );
 
 const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
+  const params = useParams();
+  // Try to get the category from params (case-insensitive)
+  let category = (params?.category as string)?.toLowerCase?.() || "default";
+  // fallback for spaces and dashes
+  if (!(category in categoryContent)) {
+    // Try to match ignoring spaces/dashes
+    const found = Object.keys(categoryContent).find(
+      (key) =>
+        key.replace(/\s|-/g, "").toLowerCase() ===
+        category.replace(/\s|-/g, "").toLowerCase()
+    );
+    if (found) category = found;
+    else category = "default";
+  }
+  const content = categoryContent[category] || categoryContent.default;
+  const videoUrl = videoContent[category] || videoContent.default;
+
   const ref = useRef(null);
   const inView = useInView(ref, { amount: 0.4, once: false });
   const controls = useAnimation();
@@ -134,14 +139,14 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
             </>
           }
         >
-          <Image
-            src={image}
-            alt={title}
+          <video
+            src={videoUrl}
             height={500}
             width={1000}
             className="mx-auto rounded-2xl object-cover h-full object-left-top"
             draggable={false}
-          />
+            controls
+          ></video>
         </ContainerScroll>
         <motion.div
           initial={{ opacity: 0, y: 60 }}
@@ -152,14 +157,24 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           className="bg-gradient-to-r from-[#001A39] to-[#001433] p-12 "
         >
           <FeatureSteps
-            className="bg-[#ebf8ff]  text-black h-screen rounded-3xl"
-            features={demoFeatures}
-            title="Your Journey Starts Here"
+            className="bg-[#ebf8ff]  text-[#094183] h-screen rounded-3xl"
+            features={content.features}
+            title="why you choose Zifypay"
             autoPlayInterval={4000}
             imageHeight="h-[1000px]"
           />
         </motion.div>
-        <PricingSection />
+
+        <FAQSection />
+
+        <AboutDemoSection
+          subtitle={content.subtitle}
+          title={content.title}
+          description={content.description}
+          buttonText={content.buttonText}
+          images={content.images}
+        />
+        <FinancialSupportSection />
       </div>
     </>
   );
