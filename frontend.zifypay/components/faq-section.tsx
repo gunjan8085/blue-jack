@@ -106,71 +106,7 @@ export function FAQSection({ title = "FAQ", items }: FAQSectionProps) {
           </div>
         ))}
       </div>
-      <section className="bg-[#f3f9fb] text-gray-600 text-xs py-12 px-4">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <p>
-              ¹Square, the Square logo, Square Financial Services, Square
-              Capital, and others are trademarks of Block, Inc. and/or its
-              subsidiaries. Square Financial Services, Inc. is a wholly owned
-              subsidiary of Block, Inc.
-            </p>
-            <p>
-              All loans are issued by Square Financial Services, Inc. Actual fee
-              depends upon payment card processing history, loan amount and
-              other eligibility factors. A minimum payment of 1/18th of the
-              initial loan balance is required every 60 days and full loan
-              repayment is required within 18 months. Loan eligibility is not
-              guaranteed. All loans are subject to credit approval.
-            </p>
-            <p>
-              ²Block, Inc. is a financial services platform and not an
-              FDIC-insured bank. FDIC deposit insurance coverage only protects
-              against the failure of an FDIC-insured deposit institution. If you
-              have a Square Checking account, up to $250,000 of your balance may
-              be covered by FDIC insurance on a pass-through basis through
-              Sutton Bank, Member FDIC, subject to aggregation of the account
-              holder’s funds held at Sutton Bank and if certain conditions have
-              been met.
-            </p>
-            <p>
-              Instant availability of Square payments. Funds generated through
-              Square payment processing services are generally available in the
-              Square Checking account balance immediately after a payment is
-              processed. Fund availability times may vary due to technical
-              issues.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <p>
-              ACH transfer fund availability: Instant availability does not
-              apply to funds added to the Square Checking account via ACH
-              transfer. ACH credit transfers to your account may take 1–2
-              business days.
-            </p>
-            <p>
-              ³Savings accounts are provided by Square Financial Services, Inc.
-              Member FDIC. Accrue annual percentage yield (APY) of 1.00% per
-              folder on folder balances over $10. APY subject to change, current
-              as of 2/18/2025. No minimum deposit is required to open an
-              account. Accounts will not be charged monthly fees. Accounts are
-              FDIC-insured up to $2,500,000. Pending balances are not subject to
-              FDIC insurance.
-            </p>
-            <p>
-              The rate of our savings account is more than 3x the national
-              average of 0.45% APY, based on the national average of savings
-              accounts rates published in the FDIC Weekly National Rates and
-              Rate Caps accurate as of 5/20/2024.
-            </p>
-            <p>
-              © 2024 Square, Inc. and/or Square Financial Services, Inc. All
-              rights reserved.
-            </p>
-          </div>
-        </div>
-      </section>
+      
     </section>
   );
 }
