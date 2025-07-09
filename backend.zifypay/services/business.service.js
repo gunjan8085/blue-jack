@@ -59,8 +59,8 @@ module.exports = {
 
   getAllBusinesses: async () => {
     try {
-      // Step 1: Fetch all businesses
-      const businesses = await Business.find({}).lean();
+      // Step 1: Fetch all active businesses
+      const businesses = await Business.find({ isActive: true }).lean();
   
       // Step 2: Get list of all business IDs
       const businessIds = businesses.map(b => b._id);
@@ -97,6 +97,10 @@ module.exports = {
         .populate('serviceCategories', 'name')
         .lean();
 
+      // Ensure isActive is included
+      if (business) {
+        business.isActive = business.isActive;
+      }
       return business;
     } catch (error) {
       throw new Error(`Error finding business by owner: ${error.message}`);
@@ -131,7 +135,8 @@ module.exports = {
       if (!business) {
         throw new Error("Business not found");
       }
-
+      // Ensure isActive is included
+      business.isActive = business.isActive;
       return business;
     } catch (error) {
       throw error;

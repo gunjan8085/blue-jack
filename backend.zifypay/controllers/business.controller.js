@@ -6,6 +6,7 @@ const s3Service = require('../services/s3.service');
 const upload = multer({ storage: multer.memoryStorage() });
 const Review = require("../models/review.model");
 const Business = require("../models/business.model");
+const PricingPlan = require("../models/pricingPlan.model");
 
 module.exports = {
   registerNewBusiness: async (req, res) => {
@@ -197,5 +198,27 @@ module.exports = {
         return res.status(500).json({ success: false, message: error.message });
       }
     }
-  ]
+  ],
+  /**
+   * Purchase a subscription plan for a business (placeholder, no payment integration yet)
+   * Expects: { businessId, pricingPlanId }
+   */
+  purchaseSubscription: async (req, res) => {
+    try {
+      const { businessId, pricingPlanId } = req.body;
+      // Validate business and plan
+      const business = await Business.findById(businessId);
+      const plan = await PricingPlan.findById(pricingPlanId);
+      if (!business || !plan) {
+        return res.status(404).json({ success: false, message: "Business or plan not found" });
+      }
+      // Simulate successful payment and subscription
+      business.subscriptionPlan = plan._id;
+      business.isActive = true;
+      await business.save();
+      return res.status(200).json({ success: true, message: "Subscription purchased and business activated.", data: business });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
 };

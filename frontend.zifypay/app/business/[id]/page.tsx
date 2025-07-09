@@ -197,8 +197,8 @@ export default function BusinessProfilePage() {
       const payload = {
         service: selectedService._id,
         staff: selectedStaff,
-        date: selectedDate,
-        time: selectedTime,
+        date: selectedDate.trim(),
+        time: selectedTime.trim(),
         customer: {
           name: customerInfo.name,
           email: customerInfo.email,

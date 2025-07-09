@@ -1,4 +1,4 @@
-const { Appointment } = require("../models/index");
+const { Appointment, Business, PricingPlan } = require("../models/index");
 const ApiError = require("../utils/apiError.util");
 const mongoose = require("mongoose");
 const cron = require('node-cron');
@@ -7,6 +7,12 @@ const { sendAppointmentReminderMail24h, sendAppointmentReminderMail1h } = requir
 module.exports = {
   createAppointmentByUser: async (userId, data) => {
     try {
+      // Check if business is active
+      const business = await Business.findById(data.businessId);
+      if (!business || !business.isActive) {
+        throw new ApiError(403, "Business is not active or does not exist.");
+      }
+      // Create appointment
       const appointment = await Appointment.create({
         bookedBy: new mongoose.Types.ObjectId(String(userId)),
         bookedByType: "User",
@@ -21,6 +27,13 @@ module.exports = {
         notes: data.notes,
         status: data.status ?? "booked",
       });
+      // Increment appointmentCount and check quota
+      business.appointmentCount = (business.appointmentCount || 0) + 1;
+      // If no subscription and count >= 100, deactivate
+      if (!business.subscriptionPlan && business.appointmentCount >= 100) {
+        business.isActive = false;
+      }
+      await business.save();
       return appointment;
     } catch (error) {
       throw new ApiError(500, error.message, error);
@@ -29,6 +42,12 @@ module.exports = {
 
   createAppointmentByBusiness: async (userId, data) => {
     try {
+      // Check if business is active
+      const business = await Business.findById(data.businessId);
+      if (!business || !business.isActive) {
+        throw new ApiError(403, "Business is not active or does not exist.");
+      }
+      // Create appointment
       const appointment = await Appointment.create({
         bookedBy: new mongoose.Types.ObjectId(String(userId)),
         bookedByType: "Employee",
@@ -43,6 +62,13 @@ module.exports = {
         notes: data.notes,
         status: data.status ?? "booked",
       });
+      // Increment appointmentCount and check quota
+      business.appointmentCount = (business.appointmentCount || 0) + 1;
+      // If no subscription and count >= 100, deactivate
+      if (!business.subscriptionPlan && business.appointmentCount >= 100) {
+        business.isActive = false;
+      }
+      await business.save();
       return appointment;
     } catch (error) {
       throw new ApiError(500, error.message, error);
