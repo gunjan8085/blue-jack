@@ -724,7 +724,7 @@ export default function BusinessProfilePage() {
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
+                      min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                     />
                   </div>
 

@@ -559,7 +559,7 @@ export default function BusinessListingPage() {
                         <h3 className="text-xl font-semibold text-gray-900">{business.brandName}</h3>
                         <div className="flex items-center space-x-1">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-medium">{business.avgReview.toFixed(1)}</span>
+                           {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
                           <span className="text-sm text-gray-500">({business.reviewCount})</span>
                         </div>
                       </div>

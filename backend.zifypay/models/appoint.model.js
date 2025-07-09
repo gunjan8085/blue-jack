@@ -19,6 +19,8 @@ const appointSchema = new mongoose.Schema(
       enum: ["pending", "confirmed", "cancelled", "completed"],
       default: "pending",
     },
+    hasReview: { type: Boolean, default: false },
+    review: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
   },
   { timestamps: true }
 );

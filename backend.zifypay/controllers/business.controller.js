@@ -39,10 +39,10 @@ module.exports = {
   getBusinessByOwnerId: async (req, res) => {
     try {
       const { ownerId } = req.params;
-      
+
       // Get the business without owner verification first
       const business = await businessService.getBusinessByOwnerId(ownerId);
-      
+
       if (!business) {
         return res.status(404).json({
           success: false,
@@ -67,7 +67,7 @@ module.exports = {
     try {
       const { id } = req.params;
       const business = await businessService.getBusinessById(id);
-      
+
       if (!business) {
         return res.status(404).json({
           success: false,
@@ -88,29 +88,46 @@ module.exports = {
       });
     }
   },
+
   addReviewToBusiness: async (req, res) => {
     try {
       const { id } = req.params; // business id
-      const { text, stars } = req.body;
-      const userId = req.user?._id || req.body.userId; // support for both auth and manual userId
+      const { text, stars, appointment } = req.body; // now includes appointment
+      const userId = req.user?._id || req.body.userId;
+
       if (!userId) {
         return res.status(401).json({ success: false, message: "User not authenticated." });
       }
       if (!stars || stars < 1 || stars > 5) {
         return res.status(400).json({ success: false, message: "Stars must be between 1 and 5." });
       }
+
+      const existingReview = await Review.findOne({
+        appointment: appointment,
+        addedBy: userId
+      });
+      if (existingReview) {
+        return res.status(400).json({
+          success: false,
+          message: "You've already submitted a review for this appointment."
+        });
+      }
+
       const review = await Review.create({
         addedBy: userId,
         forBusiness: id,
+        appointment: appointment, // store appointment reference
         text: text || "",
         stars,
       });
+
       // Add review to business
       await Business.findByIdAndUpdate(id, {
         $push: { reviews: review._id },
         $inc: { reviewCount: 1 },
         $set: { updatedAt: new Date() },
       });
+
       // Optionally update avgReview
       const business = await Business.findById(id).populate('reviews');
       if (business) {
@@ -119,6 +136,7 @@ module.exports = {
         business.avgReview = avg;
         await business.save();
       }
+
       return res.status(201).json({ success: true, data: review });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
@@ -128,13 +146,41 @@ module.exports = {
     try {
       const { id } = req.params;
       const reviews = await Review.find({ forBusiness: id })
-        .populate('addedBy', 'name email')
+        .populate('addedBy', 'firstName lastName email')
+        .populate('appointment', 'service staff date time') // populate appointment details
         .sort({ createdAt: -1 });
       return res.status(200).json({ success: true, data: reviews });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
     }
   },
+  checkExistingReview: async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    const { userId, appointmentId } = req.query;
+
+    if (!userId || !appointmentId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "userId and appointmentId are required" 
+      });
+    }
+
+    const review = await Review.findOne({
+      forBusiness: businessId,
+      addedBy: userId,
+      appointment: appointmentId
+    });
+
+    return res.status(200).json({ 
+      success: true, 
+      exists: !!review,
+      data: review || null
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+},
   uploadThumbnail: [
     upload.single('file'),
     async (req, res) => {

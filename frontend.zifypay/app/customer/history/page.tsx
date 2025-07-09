@@ -1,16 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Layout from "@/components/customer/Layout"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Star, Search, Calendar, Clock, DollarSign, CheckCircle, Edit3, RotateCcw } from "lucide-react"
+import { Star, Search, Calendar, Clock, DollarSign, CheckCircle } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
 import axios from "axios"
 import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
+import { format } from "date-fns"
+import { API_URL } from "@/lib/const"
 
 interface Appointment {
   id: string
@@ -28,11 +32,16 @@ interface Appointment {
   location: string
   paymentAmount: number
   paymentStatus: string
-  userRating: number
-  userReview: string
+  hasReview: boolean
   review?: {
-    rating: number
-    comment: string
+    _id: string
+    stars: number
+    text: string
+    createdAt: string
+    addedBy: {
+      name: string
+      email: string
+    }
   }
 }
 
@@ -40,12 +49,19 @@ const StarRating = ({
   rating,
   onRatingChange,
   readonly = false,
+  size = "md"
 }: {
   rating: number
   onRatingChange?: (rating: number) => void
   readonly?: boolean
+  size?: "sm" | "md" | "lg"
 }) => {
   const [hoverRating, setHoverRating] = useState(0)
+  const sizes = {
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6"
+  }
 
   return (
     <div className="flex gap-1">
@@ -62,7 +78,7 @@ const StarRating = ({
           onClick={() => !readonly && onRatingChange?.(star)}
         >
           <Star
-            className={`w-5 h-5 transition-colors ${
+            className={`${sizes[size]} transition-colors ${
               star <= (hoverRating || rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
             }`}
           />
@@ -71,7 +87,6 @@ const StarRating = ({
     </div>
   )
 }
-import { API_URL } from "@/lib/const"
 
 export default function HistoryPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -81,85 +96,113 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [submittingReviews, setSubmittingReviews] = useState<{ [key: string]: boolean }>({})
 
-  // Get email dynamically (replace with your auth/user context as needed)
   const email = typeof window !== 'undefined' ? localStorage.getItem("userEmail") || "prityush@gmail.com" : ""
 
   useEffect(() => {
-    setLoading(true)
-    axios
-      .get(`${API_URL}/appointments/customer/completed?email=${encodeURIComponent(email)}`)
-      .then(async (res) => {
-        if (res.data && res.data.success) {
-          setAppointments(res.data.data)
+    const fetchAppointments = async () => {
+      setLoading(true)
+      try {
+        const res = await axios.get(`${API_URL}/appointments/customer/completed?email=${encodeURIComponent(email)}`)
+        
+        if (res.data?.success) {
+          const appointmentsWithReviews = await Promise.all(
+            res.data.data.map(async (appointment: Appointment) => {
+              try {
+                const token = localStorage.getItem("token") || ""
+                
+                const reviewCheck = await axios.get(
+                  `${API_URL}/businesses/${appointment.businessId}/reviews/check`,
+                  {
+                    params: { appointmentId: appointment.id,
+                              userId: localStorage.getItem("userId") || ""
+                     },
+                    headers: { Authorization: `Bearer ${token}` }
+                  }
+                )
+                
+                if (reviewCheck.data?.success && reviewCheck.data.exists) {
+                  return {
+                    ...appointment,
+                    hasReview: true,
+                    review: reviewCheck.data.data
+                  }
+                }
+                return appointment
+              } catch (error) {
+                return appointment
+              }
+            })
+          )
+          setAppointments(appointmentsWithReviews)
         } else {
           setAppointments([])
         }
-        setLoading(false)
-      })
-      .catch(() => {
+      } catch (error) {
         setAppointments([])
+      } finally {
         setLoading(false)
-      })
-  }, [email])
+      }
+    }
 
-  const handleRebook = (appointment: Appointment) => {
-    const updatedPrice = Math.round(appointment.paymentAmount * 1.1)
-    // Add success feedback
-    const button = document.activeElement as HTMLButtonElement
-    button.textContent = "Booked!"
-    setTimeout(() => {
-      button.textContent = "Rebook"
-    }, 2000)
-  }
+    fetchAppointments()
+  }, [email])
 
   const handleReviewSubmit = async (id: string) => {
     const data = reviewData[id]
     if (!data) return
-    const appointment = appointments.find((a) => a.id === id)
-    if (!appointment) return
+    
+    const appointment = appointments.find(a => a.id === id)
+    if (!appointment || appointment.hasReview) return
     
     setSubmittingReviews(prev => ({ ...prev, [id]: true }))
     
     try {
       const token = localStorage.getItem("token") || ""
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/businesses/${appointment.businessId}/reviews`,
         {
           text: data.comment,
           stars: data.rating,
-          userId: localStorage.getItem("userId") || undefined,
+          appointment: id,
+          userId: localStorage.getItem("userId") || ""
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       )
-      setAppointments((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, review: { rating: data.rating, comment: data.comment } } : a)),
+
+      setAppointments(prev =>
+        prev.map(a =>
+          a.id === id
+            ? {
+                ...a,
+                hasReview: true,
+                review: response.data.data
+              }
+            : a
+        )
       )
-      setEditReview((prev) => ({ ...prev, [id]: false }))
-      setReviewData((prev) => ({ ...prev, [id]: { rating: 5, comment: "" } }))
-    } catch (err) {
-      alert("Failed to submit review. Please try again.")
+      setEditReview(prev => ({ ...prev, [id]: false }))
+      setReviewData(prev => ({ ...prev, [id]: { rating: 5, comment: "" } }))
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to submit review. Please try again.")
     } finally {
       setSubmittingReviews(prev => ({ ...prev, [id]: false }))
     }
   }
 
   const startEditReview = (appointment: Appointment) => {
-    setEditReview((prev) => ({ ...prev, [appointment.id]: true }))
-    setReviewData((prev) => ({
+    if (appointment.hasReview) return
+    setEditReview(prev => ({ ...prev, [appointment.id]: true }))
+    setReviewData(prev => ({
       ...prev,
       [appointment.id]: {
-        rating: appointment.review?.rating || 5,
-        comment: appointment.review?.comment || "",
+        rating: appointment.review?.stars || 5,
+        comment: appointment.review?.text || "",
       },
     }))
   }
 
   const updateReviewData = (id: string, field: "rating" | "comment", value: number | string) => {
-    setReviewData((prev) => ({
+    setReviewData(prev => ({
       ...prev,
       [id]: {
         ...prev[id],
@@ -169,10 +212,10 @@ export default function HistoryPage() {
   }
 
   const filtered = appointments.filter(
-    (a) =>
+    a =>
       a.status === "completed" &&
       (a.businessName.toLowerCase().includes(search.toLowerCase()) ||
-        a.service.toLowerCase().includes(search.toLowerCase())),
+        a.service.toLowerCase().includes(search.toLowerCase()))
   )
 
   if (loading) {
@@ -181,7 +224,7 @@ export default function HistoryPage() {
         <div className="space-y-6">
           <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
           <div className="h-10 bg-gray-200 rounded animate-pulse max-w-md"></div>
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3].map(i => (
             <div key={i} className="h-48 bg-gray-200 rounded animate-pulse"></div>
           ))}
         </div>
@@ -191,26 +234,29 @@ export default function HistoryPage() {
 
   return (
     <Layout>
-    <HeaderForCustomer />
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto py-10 px-4">
-         <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-        Appointments History
-      </h1>
-
-        <motion.div
-          className="relative mb-8 ml-12"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <Input
-            placeholder="Search by business or service..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 max-w-md h-12 border-2 focus:border-blue-500 transition-colors"
-          />
-        </motion.div>
+      <HeaderForCustomer />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto py-6 px-4 max-w-6xl"
+      >
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Appointment History</h1>
+            <p className="text-gray-600">View and manage your past appointments</p>
+          </div>
+          
+          <div className="relative w-full md:w-auto">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Input
+              placeholder="Search appointments..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-10 w-full md:w-64"
+            />
+          </div>
+        </div>
 
         <AnimatePresence>
           {filtered.length === 0 && (
@@ -218,15 +264,18 @@ export default function HistoryPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-12"
+              className="text-center py-12 rounded-lg border border-dashed border-gray-200"
             >
               <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No appointments found.</p>
+              <p className="text-gray-500 text-lg">No completed appointments found</p>
+              <p className="text-gray-400 text-sm mt-2">
+                {search ? "Try a different search term" : "Your completed appointments will appear here"}
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <AnimatePresence>
             {filtered.map((appointment, index) => (
               <motion.div
@@ -234,129 +283,154 @@ export default function HistoryPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
                 whileHover={{ y: -2 }}
-                className="group"
               >
-                <Card className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
+                <Card className="overflow-hidden">
+                  <CardHeader className="bg-gray-50 p-4 border-b">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{appointment.businessName}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-1">
+                          <span>{appointment.service}</span>
+                          <span>•</span>
+                          <span>{appointment.staffName}</span>
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant={appointment.status === "completed" ? "default" : "secondary"}
+                        className="flex items-center gap-1"
+                      >
+                        {appointment.status === "completed" && <CheckCircle className="w-3 h-3" />}
+                        {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
                       <div className="space-y-2">
-                        <h2 className="font-bold text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
-                          {appointment.businessName}
-                        </h2>
-                        <p className="text-gray-600 font-medium">{appointment.service}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {appointment.date}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {appointment.time}
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={appointment.logo} />
+                            <AvatarFallback>{appointment.businessName.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-medium">{appointment.businessName}</h3>
+                            <p className="text-sm text-gray-500">{appointment.category}</p>
                           </div>
                         </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                          <span>{appointment.businessRating.toFixed(1)}</span>
+                          <span className="text-gray-400">•</span>
+                          <span>{appointment.location}</span>
+                        </div>
                       </div>
-                      <div className="text-right space-y-2">
-                        <Badge
-                          variant={appointment.status === "completed" ? "default" : "secondary"}
-                          className={`${
-                            appointment.status === "completed"
-                              ? "bg-green-100 text-green-800 hover:bg-green-200"
-                              : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                          }`}
-                        >
-                          {appointment.status === "completed" && <CheckCircle className="w-3 h-3 mr-1" />}
-                          {appointment.status}
-                        </Badge>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span>{format(new Date(appointment.date), "PPP")}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span>{appointment.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <DollarSign className="w-4 h-4 text-gray-400" />
+                          <span>${appointment.paymentAmount.toFixed(2)}</span>
+                          <Badge variant="outline" className="ml-2">
+                            {appointment.paymentStatus}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Duration:</span>
+                          <span>{appointment.duration} mins</span>
+                        </div>
                       </div>
                     </div>
 
+                    <Separator />
+
                     {/* Review Section */}
-                    <motion.div className="mt-6 p-4 bg-gray-50 rounded-lg" layout>
-                      <AnimatePresence mode="wait">
-                        {appointment.review ? (
-                          <motion.div
-                            key="review-display"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="space-y-3"
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium text-gray-700">Your Review:</span>
-                                  <StarRating rating={appointment.review.rating} readonly />
-                                </div>
-                                <p className="text-gray-700 italic">"{appointment.review.comment}"</p>
-                              </div>
-                            </div>
-                            <div className="text-green-600 font-semibold">Thank you for your review!</div>
-                          </motion.div>
-                        ) : editReview[appointment.id] ? (
-                          <motion.div
-                            key="review-form"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="space-y-4"
-                          >
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-gray-700">Rating</label>
-                              <StarRating
-                                rating={reviewData[appointment.id]?.rating || 5}
-                                onRatingChange={(rating) => updateReviewData(appointment.id, "rating", rating)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-gray-700">Comment</label>
-                              <Textarea
-                                placeholder="Share your experience..."
-                                value={reviewData[appointment.id]?.comment || ""}
-                                onChange={(e) => updateReviewData(appointment.id, "comment", e.target.value)}
-                                className="resize-none focus:ring-2 focus:ring-blue-500"
-                                rows={3}
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleReviewSubmit(appointment.id)}
-                                className="bg-blue-600 hover:bg-blue-700"
-                                disabled={submittingReviews[appointment.id]}
-                              >
-                                {submittingReviews[appointment.id] ? (
-                                  <>
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Submitting...
-                                  </>
-                                ) : "Submit Review"}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditReview((prev) => ({ ...prev, [appointment.id]: false }))}
-                                disabled={submittingReviews[appointment.id]}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <Button
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 mt-2"
-                            onClick={() => startEditReview(appointment)}
-                          >
-                            Leave a Review
-                          </Button>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
+                    <div className="p-6">
+                      {appointment.hasReview && appointment.review ? (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="space-y-3 bg-green-50 p-4 rounded-lg"
+                        >
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-medium text-green-800">Your Review</h3>
+                            <span className="text-xs text-green-600">
+                              {format(new Date(appointment.review.createdAt), "PP")}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <StarRating rating={appointment.review.stars} readonly size="sm" />
+                            <span className="text-sm text-gray-600">
+                              {appointment.review.stars.toFixed(1)} stars
+                            </span>
+                          </div>
+                          <p className="text-gray-700 text-sm">"{appointment.review.text}"</p>
+                        </motion.div>
+                      ) : editReview[appointment.id] ? (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-4 border border-gray-200 rounded-lg p-4"
+                        >
+                          <h3 className="font-medium">Leave a Review</h3>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Rating</label>
+                            <StarRating
+                              rating={reviewData[appointment.id]?.rating || 5}
+                              onRatingChange={rating => updateReviewData(appointment.id, "rating", rating)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Share your experience
+                            </label>
+                            <Textarea
+                              placeholder="What did you like about the service?"
+                              value={reviewData[appointment.id]?.comment || ""}
+                              onChange={e => updateReviewData(appointment.id, "comment", e.target.value)}
+                              className="min-h-[100px]"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleReviewSubmit(appointment.id)}
+                              disabled={submittingReviews[appointment.id]}
+                            >
+                              {submittingReviews[appointment.id] ? "Submitting..." : "Submit Review"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditReview(prev => ({ ...prev, [appointment.id]: false }))}
+                              disabled={submittingReviews[appointment.id]}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => startEditReview(appointment)}
+                        >
+                          Write a Review
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

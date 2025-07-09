@@ -59,6 +59,9 @@ interface Business {
 
 interface ApiResponse {
   data: Business[]
+  message: string
+  success: boolean
+
 }
 
 export default function DashboardPage() {
@@ -119,8 +122,18 @@ export default function DashboardPage() {
         }
 
         const result: ApiResponse = await response.json()
-        setBusinesses(result.data)
-        setFilteredBusinesses(result.data)
+
+        // Process the tags to remove # if needed
+        const processedBusinesses = result.data.map(business => ({
+          ...business,
+          serviceCategories: business.serviceCategories?.map(category => ({
+            ...category,
+            tags: category.tags?.map(tag => tag.startsWith('#') ? tag.substring(1) : tag)
+          })) || []
+        }))
+
+        setBusinesses(processedBusinesses)
+        setFilteredBusinesses(processedBusinesses)
         setError(null)
 
         // Set dynamic price range based on data
@@ -169,9 +182,10 @@ export default function DashboardPage() {
       const matchesRating = business.avgReview >= minRating
 
       // Price filter (check if any service category falls within range)
-      const matchesPrice = business.serviceCategories?.some(cat =>
-        cat.price >= priceRange[0] && cat.price <= priceRange[1]
-      ) ?? false
+      const matchesPrice = business.serviceCategories?.length === 0 ||
+        business.serviceCategories?.some(cat =>
+          cat.price >= priceRange[0] && cat.price <= priceRange[1]
+        )
 
       // Team size filter
       const matchesTeamSize =
@@ -186,11 +200,12 @@ export default function DashboardPage() {
 
       // Tags filter
       const matchesTags = selectedTags.length === 0 ||
-        selectedTags.some(tag =>
-          business.serviceCategories?.some(cat =>
-            cat.tags?.includes(tag)
-          )
-        )
+        (business.serviceCategories?.length > 0 &&
+          selectedTags.some(tag =>
+            business.serviceCategories?.some(cat =>
+              cat.tags?.includes(tag)
+            )
+          ))
 
       return matchesSearch && matchesBusinessType && matchesCity &&
         matchesRating && matchesPrice && matchesTeamSize &&
@@ -349,7 +364,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-              
+
 
                 {/* Tags */}
                 {allTags.length > 0 && (
@@ -582,7 +597,7 @@ export default function DashboardPage() {
                         Reset All Filters
                       </Button>
                     </div>
-                                      </div>
+                  </div>
                 </SheetContent>
               </Sheet>
 
@@ -658,7 +673,7 @@ export default function DashboardPage() {
                     <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading businesses</h3>
                     <p className="text-gray-600 mb-4">{error}</p>
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => window.location.reload()}
                     >
@@ -675,7 +690,7 @@ export default function DashboardPage() {
                     <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No businesses found</h3>
                     <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={resetFilters}
                     >
@@ -715,7 +730,7 @@ export default function DashboardPage() {
                                 <div className="flex items-center">
                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                                   <span className="text-sm font-medium">
-                                    {business.avgReview.toFixed(1)} ({business.reviewCount})
+                                    {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
                                   </span>
                                 </div>
                               </div>
@@ -792,7 +807,7 @@ export default function DashboardPage() {
                                 <div className="flex items-center">
                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                                   <span className="text-sm font-medium">
-                                    {business.avgReview.toFixed(1)} ({business.reviewCount})
+                                     {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
                                   </span>
                                 </div>
                               </div>

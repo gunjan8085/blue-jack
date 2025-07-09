@@ -7,8 +7,9 @@ router.get("/getAllBusiness", businessController.getAllBusinesses);
 router.get("/getAllBusines", businessController.getAllBusinesses);
 router.get("/by-owner/:ownerId", businessController.getBusinessByOwnerId);
 router.get("/:id", businessController.getBusinessById);
-const { addReviewToBusiness, getBusinessReviews } = businessController;
+const { addReviewToBusiness, getBusinessReviews , checkExistingReview } = businessController;
 router.post("/:id/reviews", addReviewToBusiness);
 router.get("/:id/reviews", getBusinessReviews);
+router.get('/:businessId/reviews/check', checkExistingReview);
 
 module.exports = router;

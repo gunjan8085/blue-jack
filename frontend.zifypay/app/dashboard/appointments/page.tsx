@@ -495,7 +495,7 @@ export default function AppointmentsPage() {
           }
 
           {/* Appointments Tabs */}
-          <Tabs defaultValue="calendar" className="w-[84vw]]">
+          <Tabs defaultValue="list" className="w-[84vw]]">
             <TabsList className="grid w-full grid-cols-2 max-w-xs bg-white">
               <TabsTrigger value="list" onClick={() => setIsListViewOpen(true)}>List View</TabsTrigger>
               <TabsTrigger value="calendar" onClick={() => setIsListViewOpen(false)}>Calendar View</TabsTrigger>

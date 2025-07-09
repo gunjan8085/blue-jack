@@ -19,16 +19,27 @@ const createAppointment = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // Normalize date and time
-    const normalizedDate = date.trim();
-    const normalizedTime = time.padStart(5, '0'); // ensures e.g. '09:00'
+    // Validate date format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ success: false, message: "Invalid date format. Use YYYY-MM-DD" });
+    }
 
-    // Logging for debugging
-    console.log("Checking for double booking:", { staff, normalizedDate, normalizedTime });
+    // Validate time format (HH:MM)
+    if (!/^\d{2}:\d{2}$/.test(time)) {
+      return res.status(400).json({ success: false, message: "Invalid time format. Use HH:MM" });
+    }
+
+    // Normalize time (ensure leading zeros)
+    const normalizedTime = time.padStart(5, '0'); // "9:00" -> "09:00"
 
     // Double booking check
-    const existing = await Appoint.findOne({ staff, date: normalizedDate, time: normalizedTime, status: { $ne: "cancelled" } });
-    console.log("Existing appointment found:", existing);
+    const existing = await Appoint.findOne({ 
+      staff, 
+      date, 
+      time: normalizedTime, 
+      status: { $ne: "cancelled" } 
+    });
+    
     if (existing) {
       return res.status(409).json({ success: false, message: "This slot is booked" });
     }
@@ -38,51 +49,38 @@ const createAppointment = async (req, res, next) => {
       service,
       staff,
       user,
-      date: normalizedDate,
+      date,
       time: normalizedTime,
       customer,
     });
 
     // Fetch business, service, staff details for email
-    let business, serviceObj, staffObj;
-    try {
-      business = await require("../models/business.model").findById(businessId);
-      serviceObj = await require("../models/services.model").findById(service);
-      staffObj = await require("../models/employee.model").findById(staff);
-    } catch (e) {}
+    const [business, serviceObj, staffObj] = await Promise.all([
+      Business.findById(businessId),
+      Service.findById(service),
+      Employee.findById(staff)
+    ]);
 
-    // Compose details for email
-    const businessName = business?.brandName || business?.name || "Business";
-    const serviceName = serviceObj?.name || "Service";
-    const staffName = staffObj?.name || "Staff";
-    const location = business?.address?.addressLine1 ? `${business.address.addressLine1}, ${business.address.city}` : "";
-
-    // Send appointment confirmation email (non-blocking)
-    sendAppointmentMail(
-      customer.email,
-      customer.name,
-      businessName,
-      serviceName,
-      staffName,
-      date,
-      time,
-      location
-    ).catch((err) => console.error('Appointment email error:', err));
-
-    // Schedule appointment reminders
-    scheduleAppointmentReminders({
-      customer,
-      businessName,
-      serviceName,
-      staffName,
-      date,
-      time,
-      location
-    });
+    // Schedule reminders only if date is in the future
+    if (new Date(`${date}T${normalizedTime}`) > new Date()) {
+      try {
+        scheduleAppointmentReminders({
+          customer,
+          businessName: business?.brandName || "Business",
+          serviceName: serviceObj?.title || "Service",
+          staffName: staffObj?.name || "Staff",
+          date,
+          time: normalizedTime,
+          location: business?.address ? 
+            `${business.address.addressLine1}, ${business.address.city}` : ""
+        });
+      } catch (schedulingError) {
+        console.error('Failed to schedule reminders:', schedulingError);
+      }
+    }
 
     res.status(201).json({ success: true, message: "Appointment booked", data: appointment });
   } catch (err) {
-    // Handle duplicate key error from unique index
     if (err.code === 11000) {
       return res.status(409).json({ success: false, message: "This slot is booked" });
     }
