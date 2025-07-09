@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar as CalendarIcon, Clock, User, Phone, Mail, Search, Plus, Edit, CheckCircle, XCircle, ChevronDown, ChevronUp, Lock, Unlock, Loader2 } from "lucide-react"
+import { Calendar as CalendarIcon, Clock, User, Phone, Mail, Search, Plus, Edit, CheckCircle, XCircle, ChevronDown, ChevronUp, Lock, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -14,13 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
 
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
+
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
@@ -109,6 +103,18 @@ interface Props {
   end: Date
   resourceId?: string
 }
+
+interface CalendarEvent {
+  id: string
+  title: string
+  start: Date
+  end: Date
+  resourceId: string
+  status: 'confirmed' | 'pending' | 'completed' | 'cancelled' | 'blocked'
+  service?: Service
+  customer: Customer
+  staff: Staff
+}
 export default function AppointmentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -125,7 +131,8 @@ export default function AppointmentsPage() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isBlockingTime, setIsBlockingTime] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+  const [isListViewOpen, setIsListViewOpen] = useState(false)
+
   const [newAppointment, setNewAppointment] = useState({
     customer: { name: "", email: "", phone: "", notes: "" },
     service: "",
@@ -271,6 +278,14 @@ export default function AppointmentsPage() {
       if (!businessProfile) throw new Error('Business profile not found')
 
       const business = JSON.parse(businessProfile)
+      // if(newAppointment.date== format(new Date(), 'yyyy-MM-dd') && newAppointment.time < format(new Date(), 'HH:mm')) {
+      //   toast({
+      //     title: "Error",
+      //     description: "Cannot create appointment in the past",
+      //     variant: "destructive",
+      //   })
+      //   return
+      // }
       const payload = {
         customer: newAppointment.customer,
         service: newAppointment.service,
@@ -288,8 +303,14 @@ export default function AppointmentsPage() {
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) throw new Error("Failed to create appointment")
-
+      if (!res.ok) {
+        toast({
+          title: "Error",
+          description: "Failed to create appointment",
+          variant: "destructive",
+        })
+        throw new Error("Failed to create appointment")
+      }
       const data = await res.json()
       toast({ title: "Success", description: "Appointment created successfully" })
 
@@ -428,55 +449,56 @@ export default function AppointmentsPage() {
         </header>
 
         <div className="flex-1 space-y-6 p-6 bg-gray-50">
-          {/* Filters and Search */}
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search appointments..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+          {isListViewOpen &&
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="Search appointments..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={dateFilter} onValueChange={setDateFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by date" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Dates</SelectItem>
+                      {Array.from(new Set(appointments.map(apt => apt.date))).map(date => (
+                        <SelectItem key={date} value={date}>
+                          {format(parseISO(date), 'MMM dd, yyyy')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={dateFilter} onValueChange={setDateFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by date" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Dates</SelectItem>
-                    {Array.from(new Set(appointments.map(apt => apt.date))).map(date => (
-                      <SelectItem key={date} value={date}>
-                        {format(parseISO(date), 'MMM dd, yyyy')}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          }
 
           {/* Appointments Tabs */}
-          <Tabs defaultValue="calendar" className="w-full">
+          <Tabs defaultValue="calendar" className="w-[84vw]]">
             <TabsList className="grid w-full grid-cols-2 max-w-xs bg-white">
-              <TabsTrigger value="list">List View</TabsTrigger>
-              <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+              <TabsTrigger value="list" onClick={() => setIsListViewOpen(true)}>List View</TabsTrigger>
+              <TabsTrigger value="calendar" onClick={() => setIsListViewOpen(false)}>Calendar View</TabsTrigger>
             </TabsList>
 
             <TabsContent value="list" className="space-y-4">
@@ -612,10 +634,11 @@ export default function AppointmentsPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="calendar" className="space-y-4">
-              <Card className="border-0 shadow-sm">
+
+            <TabsContent value="calendar" className="space-y-4 ">
+              <Card className="border border-gray-100 shadow-sm rounded-lg overflow-hidden">
                 <CardContent className="p-0">
-                  <div style={{ height: 700 }}>
+                  <div style={{ height: 700 }} className="relative">
                     <BigCalendar
                       localizer={localizer}
                       events={events}
@@ -631,28 +654,108 @@ export default function AppointmentsPage() {
                       onSelectSlot={handleSelectSlot}
                       selectable
                       eventPropGetter={eventStyleGetter}
-                      step={15}
+                      step={30}
                       timeslots={2}
                       min={new Date(0, 0, 0, 8, 0, 0)}
-                      max={new Date(0, 0, 0, 20, 0, 0)}
+                      max={new Date(0, 0, 0, 23, 0, 0)}
                       resourceHeader={(resource: CalendarResource) => (
-                        <div className="flex items-center justify-center h-full">
-                          <span className="text-sm font-medium">{resource.resourceTitle}</span>
+                        <div className="flex items-center justify-center h-[150px] bg-gray-50 border-r border-gray-100 last:border-r-0">
+                          <span className="text-sm font-medium text-gray-600">{resource.resourceTitle}</span>
                         </div>
                       )}
                       components={{
-                        timeSlotWrapper: (props: Props) => (
+                        timeSlotWrapper: (props: { children?: React.ReactNode }) => (
                           <div
                             {...props}
-                            className="hover:bg-purple-50 cursor-pointer transition-colors"
+                            className="hover:bg-purple-50 hover:bg-opacity-70 cursor-pointer transition-all duration-150 ease-out border-b border-gray-100"
                           />
                         ),
+                        eventWrapper: ({ event, children }: { event: CalendarEvent; children: React.ReactNode }) => (
+                          <div className="hover:shadow-md hover:border hover:border-purple-200 transition-all duration-200 ease-out">
+                            {children}
+                          </div>
+                        ),
+                        dayHeader: ({ label }: { label: string }) => (
+                          <div className="text-center py-3 bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100">
+                            <span className="text-sm font-medium text-gray-700">{label}</span>
+                          </div>
+                        ),
+                        toolbar: (toolbarProps: {
+                          onNavigate: (action: 'PREV' | 'TODAY' | 'NEXT') => void;
+                          label: string;
+                          views: string[];
+                          view: string;
+                          onView: (view: string) => void;
+                        }) => (
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white border-b border-gray-100">
+                            <div className="flex items-center mb-2 sm:mb-0">
+                              <button
+                                onClick={() => toolbarProps.onNavigate('PREV')}
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                              >
+                                <ChevronLeft className="h-4 w-4 text-gray-500" />
+                              </button>
+                              <button
+                                onClick={() => toolbarProps.onNavigate('TODAY')}
+                                className="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors mx-1"
+                              >
+                                Today
+                              </button>
+                              <button
+                                onClick={() => toolbarProps.onNavigate('NEXT')}
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                              >
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                              </button>
+                              <span className="ml-4 text-md font-medium text-gray-800">
+                                {toolbarProps.label}
+                              </span>
+                            </div>
+                            <div className="flex space-x-1">
+                              {toolbarProps.views.map((view: string) => (
+                                <button
+                                  key={view}
+                                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${toolbarProps.view === view
+                                      ? 'bg-purple-100 text-purple-700'
+                                      : 'hover:bg-gray-100 text-gray-600'
+                                    }`}
+                                  onClick={() => toolbarProps.onView(view)}
+                                >
+                                  {view.charAt(0).toUpperCase() + view.slice(1).replace('_', ' ')}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ),
+                        timeGutterHeader: () => (
+                          <div className="h-[50px] bg-gray-50 border-b border-gray-100 flex items-center justify-center">
+                            <span className="text-xs text-gray-500">Time</span>
+                          </div>
+                        ),
+                        event: ({ event }: { event: CalendarEvent }) => (
+                          <div className="h-full p-1 text-xs overflow-hidden">
+                            <div className="font-medium truncate">{event.title}</div>
+                            <div className="text-gray-500 truncate">
+                              {event.staff.name}
+                            </div>
+                          </div>
+                        ),
                       }}
+                      dayPropGetter={(date: Date) => ({
+                        className: `${date.getDay() === 0 || date.getDay() === 6
+                            ? 'bg-gray-50'
+                            : 'bg-white'
+                          } hover:bg-gray-50 transition-colors duration-150`,
+                      })}
+                      slotPropGetter={() => ({
+                        className: 'border-gray-100',
+                      })}
                     />
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
+
           </Tabs>
         </div>
 
@@ -848,8 +951,9 @@ export default function AppointmentsPage() {
                   <Label>Date</Label>
                   <Input
                     type="date"
-                    value={newAppointment.date}
+                    value={newAppointment.date >= new Date().toISOString().split('T')[0] ? newAppointment.date : format(new Date(), 'yyyy-MM-dd')}
                     onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
+                    min={format(new Date(), 'yyyy-MM-dd')}
                   />
                 </div>
                 <div>
@@ -991,6 +1095,7 @@ export default function AppointmentsPage() {
                     type="date"
                     value={blockDetails.date}
                     onChange={(e) => setBlockDetails({ ...blockDetails, date: e.target.value })}
+                    min={format(new Date(), 'yyyy-MM-dd')}
                   />
                 </div>
                 <div>
