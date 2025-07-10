@@ -500,7 +500,7 @@ const BusinessDashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {filteredAppointments.map((appointment) => (
+                    {filteredAppointments.slice(0, 2).map((appointment)=> (
                       <div
                         key={appointment._id}
                         className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border hover:border-purple-300 transition-all hover:shadow-sm bg-white gap-3 sm:gap-0"
