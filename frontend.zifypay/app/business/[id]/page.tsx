@@ -17,6 +17,7 @@ import { useParams } from "next/navigation"
 import { API_URL } from "@/lib/const"
 import { getUserData } from "@/lib/auth"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 interface BusinessTiming {
   days: number[]
@@ -108,6 +109,7 @@ export default function BusinessProfilePage() {
   const [selectedStaff, setSelectedStaff] = useState("")
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
+  const router = useRouter()
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     email: "",
@@ -123,6 +125,7 @@ export default function BusinessProfilePage() {
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null)
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -147,6 +150,32 @@ export default function BusinessProfilePage() {
 
     fetchBusiness()
   }, [params.id])
+
+  const handleShare = async () => {
+  const shareData = {
+    title: `Check out ${business?.brandName}`,
+    text: `I found this great business: ${business?.brandName}. Check out their services!`,
+    url: window.location.href,
+  };
+
+  try {
+    if (navigator.share) {
+      // Use Web Share API if available (mobile devices)
+      await navigator.share(shareData);
+    } else {
+      // Fallback for desktop browsers
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        shareData.text
+      )}&url=${encodeURIComponent(shareData.url)}`;
+      window.open(url, '_blank');
+    }
+  } catch (err) {
+    console.error('Error sharing:', err);
+    // Fallback to copy link
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied to clipboard!');
+  }
+};
 
   const fetchServices = async () => {
     try {
@@ -247,6 +276,12 @@ export default function BusinessProfilePage() {
   }
 
   const openBookingDialog = (service: Service) => {
+const user = getUserData()
+    if (!user) {
+      // Redirect to login page with current URL as redirect parameter
+      router.push(`/customer/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`)
+      return
+    }
     setSelectedService(service)
     setIsBookingOpen(true)
     setBookingStep(1)
@@ -367,6 +402,7 @@ export default function BusinessProfilePage() {
       </div>
     )
   }
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
@@ -382,18 +418,19 @@ export default function BusinessProfilePage() {
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Heart className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <div className="flex items-center space-x-2">
+<Button 
+  variant="outline" 
+  size="sm" 
+  onClick={() => setIsShareOpen(true)}
+  className="flex items-center"
+>
+  <Share2 className="h-4 w-4 mr-2" />
+  Share
+</Button>
             </div>
           </div>
-        </div>
+        </div>  
       </header>
 
       <div className="container mx-auto px-4 py-8">
@@ -826,6 +863,81 @@ export default function BusinessProfilePage() {
         </DialogContent>
       </Dialog>
       <div className="h-96"></div>
+
+      {/* Share Dialog */}
+<Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle>Share {business?.brandName}</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4">
+      <div className="flex justify-center space-x-4">
+        {/* Twitter */}
+        <button
+          onClick={() => {
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+              `Check out ${business?.brandName}`
+            )}&url=${encodeURIComponent(window.location.href)}`;
+            window.open(url, '_blank');
+          }}
+          className="p-3 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors"
+        >
+          <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+          </svg>
+        </button>
+
+        {/* Facebook */}
+        <button
+          onClick={() => {
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+              window.location.href
+            )}`;
+            window.open(url, '_blank');
+          }}
+          className="p-3 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors"
+        >
+          <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+          </svg>
+        </button>
+
+        {/* LinkedIn */}
+        <button
+          onClick={() => {
+            const url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+              window.location.href
+            )}&title=${encodeURIComponent(business?.brandName || '')}&summary=${encodeURIComponent(
+              business?.about || ''
+            )}`;
+            window.open(url, '_blank');
+          }}
+          className="p-3 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors"
+        >
+          <svg className="w-6 h-6 text-blue-700" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Input
+          value={window.location.href}
+          readOnly
+          className="flex-1"
+        />
+        <Button
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+          }}
+        >
+          Copy
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
     </div>
   )
 }

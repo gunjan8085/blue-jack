@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { setAuthToken, setUserData } from "@/lib/auth";
 import { API_URL } from "@/lib/const";
@@ -25,12 +25,16 @@ interface LoginResponse {
 
 export default function CustomerLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Get redirect URL from query parameters
+  const redirectUrl = searchParams.get("redirect") || "/customer/home";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +65,7 @@ export default function CustomerLoginPage() {
         throw new Error("Invalid login response structure");
       }
 
+      // Save user data and token
       localStorage.setItem("userData", JSON.stringify(responseData.data.user));
       localStorage.setItem("token", responseData.data.token);
       localStorage.setItem("userId", responseData.data.user._id);
@@ -70,7 +75,8 @@ export default function CustomerLoginPage() {
       setAuthToken(responseData.data.token);
       setUserData(responseData.data.user);
 
-      router.push("/customer/home");
+      // Redirect to the original URL or fallback
+      router.push(redirectUrl);
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "Something went wrong");

@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { Search, Filter, Star, MapPin, Clock, SlidersHorizontal, Grid, List, AlertCircle, X } from "lucide-react"
+import { Search, Filter, Star, MapPin, Clock, SlidersHorizontal, Grid, List, AlertCircle, X, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { API_URL } from "@/lib/const"
 import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
 import { Separator } from "@/components/ui/separator"
@@ -60,7 +61,12 @@ interface ApiResponse {
 }
 
 export default function BusinessListingPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const searchParams = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('query') || "")
+  const [locationQuery, setLocationQuery] = useState(searchParams.get('location') || "")
+  const [dateQuery, setDateQuery] = useState(searchParams.get('date') || "")
+  const [timeQuery, setTimeQuery] = useState(searchParams.get('time') || "")
+  
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState("rating")
   const [isLoading, setIsLoading] = useState(true)
@@ -89,8 +95,22 @@ export default function BusinessListingPage() {
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch(`${API_URL}/business/getAllBusiness`)
+        let url = `${API_URL}/business/getAllBusiness`
+        
+        // Add search params to the URL if they exist
+        const params = new URLSearchParams()
+        if (searchQuery) params.append('search', searchQuery)
+        if (locationQuery) params.append('location', locationQuery)
+        if (dateQuery) params.append('date', dateQuery)
+        if (timeQuery) params.append('time', timeQuery)
+        
+        if (params.toString()) {
+          url += `?${params.toString()}`
+        }
+
+        const response = await fetch(url)
         const result: ApiResponse = await response.json()
+        
         setBusinesses(result.data)
         setFilteredBusinesses(result.data)
         setError(null)
@@ -116,7 +136,7 @@ export default function BusinessListingPage() {
     }
 
     fetchBusinesses()
-  }, [])
+  }, [searchQuery, locationQuery, dateQuery, timeQuery])
 
   // Apply filters whenever filter criteria change
   useEffect(() => {
@@ -126,8 +146,16 @@ export default function BusinessListingPage() {
         business.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         business.about.toLowerCase().includes(searchQuery.toLowerCase()) ||
         business.serviceCategories?.some(cat =>
-          cat.title.toLowerCase().includes(searchQuery.toLowerCase())
+          cat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          cat.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
         )
+
+      // Location filter
+      const matchesLocation = locationQuery === "" ||
+        business.address.city.toLowerCase().includes(locationQuery.toLowerCase()) ||
+        business.address.state.toLowerCase().includes(locationQuery.toLowerCase()) ||
+        (locationQuery.toLowerCase() === 'current location' && 
+          (business.address.city || business.address.state))
 
       // Business type filter
       const matchesBusinessType = selectedBusinessTypes.length === 0 ||
@@ -164,7 +192,7 @@ export default function BusinessListingPage() {
           )
         )
 
-      return matchesSearch && matchesBusinessType && matchesCity &&
+      return matchesSearch && matchesLocation && matchesBusinessType && matchesCity &&
         matchesRating && matchesPrice && matchesTeamSize &&
         matchesOnline && matchesTags
     })
@@ -191,7 +219,7 @@ export default function BusinessListingPage() {
 
     setFilteredBusinesses(filtered)
   }, [
-    searchQuery, selectedBusinessTypes, selectedCities, minRating,
+    searchQuery, locationQuery, selectedBusinessTypes, selectedCities, minRating,
     priceRange, teamSizeRange, onlineOnly, selectedTags, sortBy, businesses
   ])
 
@@ -280,6 +308,72 @@ export default function BusinessListingPage() {
 
       <Separator />
 
+      {/* Price Range */}
+      <div>
+        <h3 className="font-semibold mb-3">Price Range</h3>
+        <Slider
+          min={0}
+          max={priceRange[1]}
+          step={10}
+          value={priceRange}
+          onValueChange={(value) => setPriceRange(value as [number, number])}
+          className="mb-4"
+        />
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>${priceRange[0]}</span>
+          <span>${priceRange[1]}</span>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Team Size */}
+      <div>
+        <h3 className="font-semibold mb-3">Team Size</h3>
+        <Slider
+          min={0}
+          max={teamSizeRange[1]}
+          step={1}
+          value={teamSizeRange}
+          onValueChange={(value) => setTeamSizeRange(value as [number, number])}
+          className="mb-4"
+        />
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>{teamSizeRange[0]}</span>
+          <span>{teamSizeRange[1]}+</span>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Online Only */}
+      <div>
+        <h3 className="font-semibold mb-3">Business Mode</h3>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="online-only"
+              checked={onlineOnly === true}
+              onCheckedChange={(checked) => setOnlineOnly(checked ? true : null)}
+            />
+            <label htmlFor="online-only" className="text-sm">
+              Online Only
+            </label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="physical-location"
+              checked={onlineOnly === false}
+              onCheckedChange={(checked) => setOnlineOnly(checked ? false : null)}
+            />
+            <label htmlFor="physical-location" className="text-sm">
+              Physical Location
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Tags */}
       {allTags.length > 0 && (
@@ -317,6 +411,58 @@ export default function BusinessListingPage() {
       <HeaderForCustomer />
 
       <div className="container mx-auto px-4 py-8">
+        {/* Search Summary */}
+        {(searchQuery || locationQuery || dateQuery || timeQuery) && (
+          <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <h2 className="text-lg font-semibold mb-2">Search Results For:</h2>
+            <div className="flex flex-wrap gap-2">
+              {searchQuery && (
+                <Badge className="flex items-center gap-1 bg-purple-100 text-purple-700">
+                  "{searchQuery}"
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
+                    onClick={() => setSearchQuery("")}
+                  />
+                </Badge>
+              )}
+              {locationQuery && (
+                <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700">
+                  <MapPin className="h-3 w-3" />
+                  {locationQuery}
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
+                    onClick={() => setLocationQuery("")}
+                  />
+                </Badge>
+              )}
+              {dateQuery && (
+                <Badge className="flex items-center gap-1 bg-green-100 text-green-700">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(dateQuery).toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
+                    onClick={() => setDateQuery("")}
+                  />
+                </Badge>
+              )}
+              {timeQuery && (
+                <Badge className="flex items-center gap-1 bg-orange-100 text-orange-700">
+                  <Clock className="h-3 w-3" />
+                  {timeQuery}
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
+                    onClick={() => setTimeQuery("")}
+                  />
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Filters Sidebar */}
           <div className="hidden lg:block w-80">
@@ -346,7 +492,9 @@ export default function BusinessListingPage() {
             {/* Controls Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-gray-900">{filteredBusinesses.length} businesses found</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {filteredBusinesses.length} {filteredBusinesses.length === 1 ? 'business' : 'businesses'} found
+                </h1>
 
                 {/* Mobile Filter Button */}
                 <Sheet>
@@ -536,84 +684,81 @@ export default function BusinessListingPage() {
             {!isLoading && !error && (
               <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "space-y-4"}>
                 {filteredBusinesses.map((business) => (
-                  <Card
-                    key={business._id}
-                    className={`group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1 ${viewMode === "list" ? "flex" : ""}`}
-                  >
-                    <div
-                      className={`relative overflow-hidden ${viewMode === "list" ? "w-48 flex-shrink-0" : "rounded-t-lg"}`}
+                  <Link href={`/business/${business._id}`} key={business._id} className="no-underline">
+                    <Card
+                      key={business._id}
+                      className={`group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:shadow-md hover:-translate-y-1 flex flex-col h-full ${viewMode === "list" ? "flex-row" : ""}`}
                     >
-                      <img
-                        src={business.thumbnail || "/placeholder.svg"}
-                        alt={business.brandName}
-                        className={`object-cover group-hover:scale-105 transition-transform duration-300 ${viewMode === "list" ? "w-full h-full" : "w-full h-48"}`}
-                      />
-                      {business.isOnlineOnly && (
-                        <Badge className="absolute top-2 left-2 bg-green-600 hover:bg-green-700">
-                          Online Only
-                        </Badge>
-                      )}
-                    </div>
-                    <CardContent className={`${viewMode === "list" ? "flex-1" : ""} p-6`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{business.brandName}</h3>
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                           {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
-                          <span className="text-sm text-gray-500">({business.reviewCount})</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span className="text-sm">
-                          {business.address.city}, {business.address.state}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center text-gray-600 mb-3">
-                        <Clock className="h-4 w-4 mr-1" />
-                        <span className="text-sm">
-                          {business.timings[0]?.time[0]?.open.hour.toString().padStart(2, '0')}:
-                          {business.timings[0]?.time[0]?.open.minute.toString().padStart(2, '0')} -
-                          {business.timings[0]?.time[0]?.close.hour.toString().padStart(2, '0')}:
-                          {business.timings[0]?.time[0]?.close.minute.toString().padStart(2, '0')}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {business.serviceCategories?.slice(0, 3).map((category) => (
-                          <Badge key={category.title} variant="secondary" className="bg-purple-100 text-purple-700">
-                            {category.title} (${category.price})
-                          </Badge>
-                        ))}
-                        {business.serviceCategories?.length > 3 && (
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-600">
-                            +{business.serviceCategories.length - 3} more
+                      <div className={`relative ${viewMode === "list" ? "w-48 flex-shrink-0" : ""}`}>
+                        <img
+                          src={business.thumbnail || "/placeholder.svg"}
+                          alt={business.brandName}
+                          className={`object-cover w-full ${viewMode === "list" ? "h-full" : "h-48 rounded-t-lg"}`}
+                        />
+                        {business.isOnlineOnly && (
+                          <Badge className="absolute top-2 left-2 bg-green-600 hover:bg-green-700">
+                            Online Only
                           </Badge>
                         )}
+                        <div className="absolute bottom-2 left-2 flex items-center bg-white/90 px-2 py-1 rounded">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                          <span className="text-sm font-medium">
+                            {business.avgReview ? business.avgReview.toFixed(1) : 0}
+                            <span className="text-gray-500 text-xs"> ({business.reviewCount})</span>
+                          </span>
+                        </div>
                       </div>
-
-                      {business.serviceCategories?.[0]?.tags?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          {business.serviceCategories[0].tags.slice(0, 5).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
+                      <CardContent className={`p-4 flex flex-col flex-1 ${viewMode === "list" ? "" : ""}`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{business.brandName}</h3>
+                        </div>
+                        <div className="flex items-center text-gray-600 mb-2 text-sm">
+                          <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="line-clamp-1">
+                            {business.address.city}, {business.address.state}
+                          </span>
+                        </div>
+                        <div className="flex items-center text-gray-600 mb-3 text-sm">
+                          <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span>
+                            {business.timings[0]?.time[0]?.open.hour.toString().padStart(2, '0')}:
+                            {business.timings[0]?.time[0]?.open.minute.toString().padStart(2, '0')} - 
+                            {business.timings[0]?.time[0]?.close.hour.toString().padStart(2, '0')}:
+                            {business.timings[0]?.time[0]?.close.minute.toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {business.serviceCategories?.slice(0, 3).map((category) => (
+                            <Badge key={category.title} variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
+                              {category.title} (${category.price})
                             </Badge>
                           ))}
+                          {business.serviceCategories?.length > 3 && (
+                            <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                              +{business.serviceCategories.length - 3} more
+                            </Badge>
+                          )}
                         </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">{business.about.substring(0, 50)}...</span>
-                        <Link href={`/business/${business._id}`}>
-                          <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
+                        {business.serviceCategories?.[0]?.tags?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {business.serviceCategories[0].tags.slice(0, 5).map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-auto">
+                          <Button 
+                            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                            size="sm"
+                          >
                             View Profile
                           </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}
