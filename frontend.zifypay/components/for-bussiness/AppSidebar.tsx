@@ -64,6 +64,11 @@ const sidebarItems = [
     url: "/dashboard/customers",
     icon: Users,
   },
+  {
+    title: "Plans",
+    url: "/dashboard/plans",
+    icon: Users,
+  }
  
 ]
 
