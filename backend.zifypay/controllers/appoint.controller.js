@@ -297,7 +297,6 @@ const getTotalBookings = async (req, res, next) => {
   }
 };
 
-// Get monthly revenue for a business
 const getMonthlyRevenue = async (req, res, next) => {
   try {
     const { businessId } = req.params;
@@ -318,25 +317,26 @@ const getMonthlyRevenue = async (req, res, next) => {
       status: "completed",
     });
 
+    // Create a map of service IDs to their prices for quick lookup
+    const servicePriceMap = {};
+    appointments.forEach(appointment => {
+      const serviceId = appointment.service.toString();
+      const price = business.serviceCategories.find(s => s._id?.toString() === serviceId)?.price;
+      if (price !== undefined) {
+        servicePriceMap[serviceId] = price;
+      }
+      });
+
     // Calculate revenue by summing the price of each appointment's service
     let revenue = 0;
-    appointments.forEach((appointment) => {
-      // Find the service in business.serviceCategories
-      let price = 0;
-      if (appointment.service) {
-        // Try to match by index (if stored as index)
-        if (typeof appointment.service === 'number' && business.serviceCategories[appointment.service]) {
-          price = business.serviceCategories[appointment.service].price || 0;
-        } else {
-          // Try to match by ObjectId string (if stored as ObjectId)
-          const serviceObj = business.serviceCategories.find((cat, idx) => {
-            return idx.toString() === appointment.service.toString();
-          });
-          if (serviceObj) price = serviceObj.price || 0;
-        }
+    for (const appointment of appointments) {
+      
+      const serviceId = appointment.service.toString();
+      const price = servicePriceMap[serviceId];
+      if (price !== undefined) {
+        revenue += price;
       }
-      revenue += price;
-    });
+    }
 
     res.status(200).json({ success: true, monthlyRevenue: revenue });
   } catch (err) {
@@ -567,33 +567,48 @@ const getTodaysRevenue = async (req, res, next) => {
     const { businessId } = req.params;
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
+    
+    // Fetch business to get serviceCategories (for price lookup)
     const business = await Business.findById(businessId);
     if (!business) {
       return res.status(404).json({ success: false, message: "Business not found" });
     }
-    // Find all non-cancelled appointments for today
+
+    // Find all completed appointments for today
     const appointments = await Appoint.find({
       business: businessId,
       date: todayStr,
-      status: { $ne: "cancelled" },
+      status: "completed",
     });
+
+    console.log(`Today's appointments:`, appointments);
+
+    // Create a map of service IDs to their prices for quick lookup
+    const servicePriceMap = {};
+    business.serviceCategories.forEach(category => {
+      category.services.forEach(service => {
+        servicePriceMap[service._id.toString()] = service.price;
+      });
+    });
+
+    // Calculate revenue by summing the price of each appointment's service
     let revenue = 0;
-    appointments.forEach((appointment) => {
-      let price = 0;
-      if (appointment.service) {
-        // Try to match by index (if stored as index)
-        if (typeof appointment.service === 'number' && business.serviceCategories[appointment.service]) {
-          price = business.serviceCategories[appointment.service].price || 0;
-        } else {
-          // Try to match by ObjectId string (if stored as ObjectId)
-          const serviceObj = business.serviceCategories.find((cat, idx) => {
-            return idx.toString() === appointment.service.toString();
-          });
-          if (serviceObj) price = serviceObj.price || 0;
-        }
+    for (const appointment of appointments) {
+      console.log(`[DEBUG] Processing Today's Appointment ID: ${appointment._id}`);
+      console.log(` - Customer: ${appointment.customer.name}`);
+      
+      const serviceId = appointment.service.toString();
+      const price = servicePriceMap[serviceId];
+      
+      if (price !== undefined) {
+        revenue += price;
+        console.log(` - Service Price: ${price}`);
+      } else {
+        console.log(` - Warning: No price found for service ID ${serviceId}`);
       }
-      revenue += price;
-    });
+    }
+
+    console.log(`[INFO] Total today's revenue: ${revenue}`);
     res.status(200).json({ success: true, todaysRevenue: revenue });
   } catch (err) {
     console.error("Error calculating today's revenue:", err);

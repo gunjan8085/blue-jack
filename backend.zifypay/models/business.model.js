@@ -29,7 +29,7 @@ const businessSchema = new mongoose.Schema(
         description: {
           type: String,
         },
-        hashtags: {
+        hashtags: { 
           type: [String], // example: ["#spa", "#relax"]
           default: [],
         },
