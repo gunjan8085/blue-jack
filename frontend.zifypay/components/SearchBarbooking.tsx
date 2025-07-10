@@ -125,27 +125,30 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
+    <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
       {/* Search Bar Container */}
-      <div className="bg-white rounded-full shadow-lg p-2 flex items-center gap-2 relative">
+      <div className="bg-white rounded-2xl sm:rounded-full shadow-lg p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 relative">
         {/* Main Search Input */}
-        <div className="flex-1 flex items-center px-4 py-3">
-          <Search className="text-gray-400 h-5 w-5 mr-3" />
+        <div className="flex-1 flex items-center px-4 py-3 min-w-0">
+          <Search className="text-gray-400 h-5 w-5 mr-3 flex-shrink-0" />
           <input
             type="text"
             placeholder="All treatments and venues"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none text-sm font-medium"
+            className="flex-1 text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none text-sm font-medium min-w-0"
           />
         </div>
 
-        {/* Divider */}
-        <div className="h-8 w-px bg-gray-200"></div>
+        {/* Divider - Hidden on mobile */}
+        <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
+
+        {/* Mobile divider */}
+        <div className="block sm:hidden h-px w-full bg-gray-200 mx-4"></div>
 
         {/* Location Filter */}
-        <div className="relative" ref={locationRef}>
+        <div className="relative flex-1 sm:flex-initial" ref={locationRef}>
           <div 
             className="flex items-center px-4 py-3 min-w-0 cursor-pointer"
             onClick={() => setShowLocationDropdown(!showLocationDropdown)}
@@ -157,9 +160,9 @@ const SearchBar = () => {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none text-sm font-medium min-w-0"
+              className="flex-1 text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none text-sm font-medium min-w-0"
             />
-            <ChevronDown className="text-gray-400 h-4 w-4 ml-2" />
+            <ChevronDown className="text-gray-400 h-4 w-4 ml-2 flex-shrink-0" />
           </div>
           
           {showLocationDropdown && (
@@ -178,91 +181,103 @@ const SearchBar = () => {
           )}
         </div>
 
-        {/* Divider */}
-        <div className="h-8 w-px bg-gray-200"></div>
+        {/* Divider - Hidden on mobile */}
+        <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
 
-        {/* Date Filter */}
-        <div className="relative" ref={calendarRef}>
-          <div 
-            className="flex items-center px-4 py-3 min-w-0 cursor-pointer"
-            onClick={() => setShowCalendar(!showCalendar)}
-          >
-            <Calendar className="text-gray-400 h-4 w-4 mr-3 flex-shrink-0" />
-            <span className="text-gray-700 text-sm font-medium min-w-0">
-              {selectedDate ? formatDate(new Date(selectedDate)) : 'Any date'}
-            </span>
-            <ChevronDown className="text-gray-400 h-4 w-4 ml-2" />
-          </div>
-          
-          {showCalendar && (
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border z-50 p-4 w-80">
-              <div className="grid grid-cols-7 gap-2 text-center text-sm">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="font-medium text-gray-400 py-2">{day}</div>
-                ))}
-                {generateCalendarDays().map((date, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSelectedDate(date.toISOString().split('T')[0]);
-                      setShowCalendar(false);
-                    }}
-                    className={`py-2 rounded-md hover:bg-blue-100 ${
-                      selectedDate === date.toISOString().split('T')[0] 
-                        ? 'bg-blue-500 text-white' 
-                        : 'text-gray-700'
-                    }`}
-                  >
-                    {date.getDate()}
-                  </button>
-                ))}
-              </div>
+        {/* Mobile divider */}
+        <div className="block sm:hidden h-px w-full bg-gray-200 mx-4"></div>
+
+        {/* Date and Time Container - Side by side on mobile */}
+        <div className="flex flex-1 sm:flex-initial gap-2 sm:gap-0">
+          {/* Date Filter */}
+          <div className="relative flex-1 sm:flex-initial" ref={calendarRef}>
+            <div 
+              className="flex items-center px-4 py-3 min-w-0 cursor-pointer"
+              onClick={() => setShowCalendar(!showCalendar)}
+            >
+              <Calendar className="text-gray-400 h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-gray-700 text-sm font-medium min-w-0 truncate">
+                {selectedDate ? formatDate(new Date(selectedDate)) : 'Any date'}
+              </span>
+              <ChevronDown className="text-gray-400 h-4 w-4 ml-2 flex-shrink-0" />
             </div>
-          )}
+            
+            {showCalendar && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border z-50 p-4 w-80 max-w-[90vw]">
+                <div className="grid grid-cols-7 gap-2 text-center text-sm">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="font-medium text-gray-400 py-2">{day}</div>
+                  ))}
+                  {generateCalendarDays().map((date, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSelectedDate(date.toISOString().split('T')[0]);
+                        setShowCalendar(false);
+                      }}
+                      className={`py-2 rounded-md hover:bg-blue-100 ${
+                        selectedDate === date.toISOString().split('T')[0] 
+                          ? 'bg-blue-500 text-white' 
+                          : 'text-gray-700'
+                      }`}
+                    >
+                      {date.getDate()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile divider between date and time */}
+          <div className="block sm:hidden w-px bg-gray-200 self-stretch my-2"></div>
+
+          {/* Divider - Hidden on mobile */}
+          <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
+
+          {/* Time Filter */}
+          <div className="relative flex-1 sm:flex-initial" ref={timeRef}>
+            <div 
+              className="flex items-center px-4 py-3 min-w-0 cursor-pointer"
+              onClick={() => setShowTimeSelector(!showTimeSelector)}
+            >
+              <Clock className="text-gray-400 h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-gray-700 text-sm font-medium min-w-0 truncate">
+                {selectedTime ? generateTimeSlots().find(slot => slot.value === selectedTime)?.display : 'Any time'}
+              </span>
+              <ChevronDown className="text-gray-400 h-4 w-4 ml-2 flex-shrink-0" />
+            </div>
+            
+            {showTimeSelector && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border z-50 w-48 max-h-60 overflow-y-auto">
+                <div className="p-2">
+                  {generateTimeSlots().map((slot) => (
+                    <button
+                      key={slot.value}
+                      onClick={() => {
+                        setSelectedTime(slot.value);
+                        setShowTimeSelector(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100 ${
+                        selectedTime === slot.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                      }`}
+                    >
+                      {slot.display}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-8 w-px bg-gray-200"></div>
-
-        {/* Time Filter */}
-        <div className="relative" ref={timeRef}>
-          <div 
-            className="flex items-center px-4 py-3 min-w-0 cursor-pointer"
-            onClick={() => setShowTimeSelector(!showTimeSelector)}
-          >
-            <Clock className="text-gray-400 h-4 w-4 mr-3 flex-shrink-0" />
-            <span className="text-gray-700 text-sm font-medium min-w-0">
-              {selectedTime ? generateTimeSlots().find(slot => slot.value === selectedTime)?.display : 'Any time'}
-            </span>
-            <ChevronDown className="text-gray-400 h-4 w-4 ml-2" />
-          </div>
-          
-          {showTimeSelector && (
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border z-50 w-48 max-h-60 overflow-y-auto">
-              <div className="p-2">
-                {generateTimeSlots().map((slot) => (
-                  <button
-                    key={slot.value}
-                    onClick={() => {
-                      setSelectedTime(slot.value);
-                      setShowTimeSelector(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100 ${
-                      selectedTime === slot.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                    }`}
-                  >
-                    {slot.display}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Mobile divider */}
+        <div className="block sm:hidden h-px w-full bg-gray-200 mx-4"></div>
 
         {/* Search Button */}
         <button 
           onClick={handleSearch}
-          className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+          className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 w-full sm:w-auto"
         >
           <span className="text-sm font-medium">Search</span>
         </button>
