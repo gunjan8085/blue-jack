@@ -178,12 +178,24 @@ function Navbar() {
           <Menu setActive={setActive} className="text-sm">
             <MenuItem setActive={setActive} active={active} item="Features">
               <div className="flex flex-col space-y-2 text-sm min-w-[220px]">
-                <HoveredLink href="#">Appointment calendar</HoveredLink>
-                <HoveredLink href="#">Point of sale</HoveredLink>
-                <HoveredLink href="#">Online bookings</HoveredLink>
-                <HoveredLink href="#">Payments</HoveredLink>
-                <HoveredLink href="#">Check-in app</HoveredLink>
-                <HoveredLink href="#">Financial support</HoveredLink>
+                <HoveredLink href="/Landing/feature/appointmentCalendar">
+                  Appointment calendar
+                </HoveredLink>
+                <HoveredLink href="/Landing/feature/pointOfSale">
+                  Point of sale
+                </HoveredLink>
+                <HoveredLink href="/Landing/feature/onlineBookings">
+                  Online bookings
+                </HoveredLink>
+                <HoveredLink href="/Landing/feature/payments">
+                  Payments
+                </HoveredLink>
+                <HoveredLink href="/Landing/feature/checkInApp">
+                  Check-in app
+                </HoveredLink>
+                <HoveredLink href="/Landing/feature/cloudDashboard">
+                  Cloud Dashboard
+                </HoveredLink>
               </div>
             </MenuItem>
             <MenuItem setActive={setActive} active={active} item="Use Case">
@@ -191,22 +203,22 @@ function Navbar() {
                 {[
                   {
                     label: "Fuel Pumps",
-                    href: "/usecase/fuel-pumps",
+                    href: "/Landing/usecase/FuelPumps",
                     icon: Fuel,
                   },
                   {
                     label: "Retail POS",
-                    href: "/usecase/retail-pos",
+                    href: "/Landing/usecase/RetailPOS",
                     icon: MonitorSmartphone,
                   },
                   {
-                    label: "Cloud Dashboard",
-                    href: "/usecase/cloud-dashboard",
+                    label: " financial Support ",
+                    href: "/Landing/usecase/CloudDashboard",
                     icon: Cloud,
                   },
                   {
-                    label: "Secure Payments",
-                    href: "/usecase/secure-payments",
+                    label: "Secure Payment",
+                    href: "/Landing/usecase/SecurePayment",
                     icon: ShieldCheck,
                   },
                 ].map((item) => {

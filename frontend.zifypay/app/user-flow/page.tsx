@@ -16,12 +16,12 @@ export default function SignUp() {
 
         <h1 className="text-2xl font-bold mb-8 text-white">Sign up / Log in</h1>
 
-        {/* Option 1 */}
+        {/* Option 1 - Customers */}
         <Link href="/customer/auth/signup">
-          <button className="w-full flex justify-between items-center bg-white text-black border border-gray-300 rounded-lg p-4 mb-4 hover:shadow-md transition">
+          <button className="w-full flex justify-between items-center bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-xl p-4 mb-4 hover:bg-white/20 hover:scale-[1.02] transition-all">
             <div>
-              <p className="font-medium">Zifypay For customers</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-medium">ZifyPay for Customers</p>
+              <p className="text-sm text-gray-300">
                 Book salons and spas near you
               </p>
             </div>
@@ -29,12 +29,12 @@ export default function SignUp() {
           </button>
         </Link>
 
-        {/* Option 2 */}
+        {/* Option 2 - Professionals */}
         <Link href="/auth/signup">
-          <button className="w-full flex justify-between items-center bg-white text-black border border-gray-300 rounded-lg p-4 hover:shadow-md transition">
+          <button className="w-full flex justify-between items-center bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-xl p-4 hover:bg-white/20 hover:scale-[1.02] transition-all">
             <div>
-              <p className="font-medium">Fresha for professionals</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-medium">ZifyPay for Professionals</p>
+              <p className="text-sm text-gray-300">
                 Manage and grow your business
               </p>
             </div>
