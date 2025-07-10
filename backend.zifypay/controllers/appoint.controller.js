@@ -585,39 +585,45 @@ const updateAppointmentStatus = async (req, res, next) => {
 };
 
 // Get today's revenue for a business
+// Get today's revenue for a business
 const getTodaysRevenue = async (req, res, next) => {
   try {
     const { businessId } = req.params;
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
     
     // Fetch business to get serviceCategories (for price lookup)
     const business = await Business.findById(businessId);
     if (!business) {
       return res.status(404).json({ success: false, message: "Business not found" });
     }
-
-    // Find all completed appointments for today
+    
+    // Find all appointments for this business for today with status 'completed'
     const appointments = await Appoint.find({
       business: businessId,
-      date: todayStr,
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
       status: "completed",
     });
-
+    
     console.log(`Today's appointments:`, appointments);
-
+    
     // Create a map of service IDs to their prices for quick lookup
     const servicePriceMap = {};
-    business.serviceCategories.forEach(category => {
-      category.services.forEach(service => {
-        servicePriceMap[service._id.toString()] = service.price;
-      });
+    appointments.forEach(appointment => {
+      const serviceId = appointment.service.toString();
+      const price = business.serviceCategories.find(s => s._id?.toString() === serviceId)?.price;
+      if (price !== undefined) {
+        servicePriceMap[serviceId] = price;
+      }
     });
-
+    
+    console.log(`servicePriceMap:`, servicePriceMap);
+    
     // Calculate revenue by summing the price of each appointment's service
     let revenue = 0;
     for (const appointment of appointments) {
-      console.log(`[DEBUG] Processing Today's Appointment ID: ${appointment._id}`);
+      console.log(`[DEBUG] Processing Appointment ID: ${appointment._id}`);
       console.log(` - Customer: ${appointment.customer.name}`);
       
       const serviceId = appointment.service.toString();
@@ -630,7 +636,7 @@ const getTodaysRevenue = async (req, res, next) => {
         console.log(` - Warning: No price found for service ID ${serviceId}`);
       }
     }
-
+    
     console.log(`[INFO] Total today's revenue: ${revenue}`);
     res.status(200).json({ success: true, todaysRevenue: revenue });
   } catch (err) {
