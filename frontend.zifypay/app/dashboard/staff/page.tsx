@@ -10,26 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { API_URL } from "@/lib/const"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Sidebar,
-  SidebarContent, 
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
   SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
 
@@ -128,102 +115,110 @@ export default function StaffPage() {
     servicesProvided: [],
     allowCalendarBooking: true,
     isAvailableForNewJob: true,
+    profilePicUrl: undefined,
   })
 
   // Handle image upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      const formData = new FormData()
-      formData.append('file', file)
+ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0]
+    const formData = new FormData()
+    formData.append('file', file)
 
-      try {
-        setUploadingImage(true)
-        const token = localStorage.getItem('token')
-        const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
-          method: 'POST',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-          body: formData,
-        })
-        
-        const data = await res.json()
-        
-        if (!res.ok || !data.url) {
-          throw new Error(data.message || 'Upload failed')
-        }
-
-        setNewEmployee({ ...newEmployee, profilePicUrl: data.url })
-        setProfilePicPreview(data.url)
-        toast({
-          title: "Success",
-          description: "Image uploaded successfully",
-        })
-      } catch (error) {
-        console.error("Error uploading image:", error)
-        toast({
-          title: "Error",
-          description: "Failed to upload image",
-          variant: "destructive",
-        })
-      } finally {
-        setUploadingImage(false)
+    try {
+      setUploadingImage(true)
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
+        body: formData,
+      })
+      
+      const data = await res.json()
+      
+      if (!res.ok || !data.url) {
+        throw new Error(data.message || 'Upload failed')
       }
+
+      // Update the appropriate state based on whether we're creating or editing
+      if (isEditDialogOpen && selectedEmployee) {
+        setSelectedEmployee({ ...selectedEmployee, profilePicUrl: data.url })
+      } else {
+        setNewEmployee({ ...newEmployee, profilePicUrl: data.url })
+      }
+      
+      setProfilePicPreview(data.url)
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      })
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      })
+    } finally {
+      setUploadingImage(false)
     }
   }
+}
 
   // Fetch employees from API
   const fetchEmployees = async () => {
-    try {
-      setLoading(true)
-      const businessId = getBusinessId()
-      
-      if (!businessId) {
-        toast({
-          title: "Error",
-          description: "Business profile not found. Please log in again.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const token = localStorage.getItem('token')
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "Authentication token not found. Please log in again.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const response = await fetch(`${API_URL}/employee/business/${businessId}/all`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+  try {
+    setLoading(true)
+    const businessId = getBusinessId()
+    
+    if (!businessId) {
+      toast({
+        title: "Error",
+        description: "Business profile not found. Please log in again.",
+        variant: "destructive",
       })
-      const data = await response.json()
-      
-      if (data.success) {
-        setEmployees(data.data)
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to fetch employees",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching employees:", error)
+      return
+    }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "Authentication token not found. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const response = await fetch(`${API_URL}/employee/business/${businessId}/all`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    const data = await response.json()
+    
+    if (data.success) {
+      // Filter out owners from the employee list
+      setEmployees(data.data.filter((emp: Employee) => !emp.isOwner))
+    } else {
       toast({
         title: "Error",
         description: "Failed to fetch employees",
         variant: "destructive",
       })
-    } finally {
-      setLoading(false)
     }
+  } catch (error) {
+    console.error("Error fetching employees:", error)
+    toast({
+      title: "Error",
+      description: "Failed to fetch employees",
+      variant: "destructive",
+    })
+  } finally {
+    setLoading(false)
   }
+}
 
   // Create new employee
   const createEmployee = async () => {
@@ -397,12 +392,23 @@ export default function StaffPage() {
   }
 
   // Open edit dialog with employee data
-  const openEditDialog = (employee: Employee) => {
-    setSelectedEmployee(employee)
-    setEmergencyContacts(employee.emergencyContacts || [])
-    setProfilePicPreview(employee.profilePicUrl || null)
-    setIsEditDialogOpen(true)
-  }
+const openEditDialog = (employee: Employee) => {
+  setSelectedEmployee(employee)
+  setEmergencyContacts(employee.emergencyContacts || [])
+  setProfilePicPreview(employee.profilePicUrl || null)
+  setIsEditDialogOpen(true)
+}
+
+const handleEditDialogClose = () => {
+  setIsEditDialogOpen(false)
+  setProfilePicPreview(null)
+}
+
+// When closing the create dialog, reset the preview
+const handleCreateDialogClose = () => {
+  setIsCreateDialogOpen(false)
+  setProfilePicPreview(null)
+}
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -505,7 +511,7 @@ export default function StaffPage() {
                   Add Employee
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl" onInteractOutside={handleCreateDialogClose}>
                 <DialogHeader>
                   <DialogTitle>Add New Employee</DialogTitle>
                 </DialogHeader>
@@ -859,7 +865,7 @@ export default function StaffPage() {
 
         {/* Edit Employee Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl" onInteractOutside={handleCreateDialogClose}>
             <DialogHeader>
               <DialogTitle>Edit Employee</DialogTitle>
             </DialogHeader>
