@@ -83,6 +83,7 @@ export default function StaffPage() {
   const [updatingEmployee, setUpdatingEmployee] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [profilePicPreview, setProfilePicPreview] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [emergencyContacts, setEmergencyContacts] = useState<{
     name: string
     relationship: string
@@ -119,113 +120,113 @@ export default function StaffPage() {
   })
 
   // Handle image upload
- const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files && e.target.files[0]) {
-    const file = e.target.files[0]
-    const formData = new FormData()
-    formData.append('file', file)
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      const formData = new FormData()
+      formData.append('file', file)
 
-    try {
-      setUploadingImage(true)
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
-        method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-        body: formData,
-      })
-      
-      const data = await res.json()
-      
-      if (!res.ok || !data.url) {
-        throw new Error(data.message || 'Upload failed')
-      }
+      try {
+        setUploadingImage(true)
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
+          body: formData,
+        })
 
-      // Update the appropriate state based on whether we're creating or editing
-      if (isEditDialogOpen && selectedEmployee) {
-        setSelectedEmployee({ ...selectedEmployee, profilePicUrl: data.url })
-      } else {
-        setNewEmployee({ ...newEmployee, profilePicUrl: data.url })
+        const data = await res.json()
+
+        if (!res.ok || !data.url) {
+          throw new Error(data.message || 'Upload failed')
+        }
+
+        // Update the appropriate state based on whether we're creating or editing
+        if (isEditDialogOpen && selectedEmployee) {
+          setSelectedEmployee({ ...selectedEmployee, profilePicUrl: data.url })
+        } else {
+          setNewEmployee({ ...newEmployee, profilePicUrl: data.url })
+        }
+
+        setProfilePicPreview(data.url)
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        })
+      } catch (error) {
+        console.error("Error uploading image:", error)
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        })
+      } finally {
+        setUploadingImage(false)
       }
-      
-      setProfilePicPreview(data.url)
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      })
-    } catch (error) {
-      console.error("Error uploading image:", error)
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      })
-    } finally {
-      setUploadingImage(false)
     }
   }
-}
 
   // Fetch employees from API
   const fetchEmployees = async () => {
-  try {
-    setLoading(true)
-    const businessId = getBusinessId()
-    
-    if (!businessId) {
-      toast({
-        title: "Error",
-        description: "Business profile not found. Please log in again.",
-        variant: "destructive",
-      })
-      return
-    }
+    try {
+      setLoading(true)
+      const businessId = getBusinessId()
 
-    const token = localStorage.getItem('token')
-    if (!token) {
-      toast({
-        title: "Error",
-        description: "Authentication token not found. Please log in again.",
-        variant: "destructive",
-      })
-      return
-    }
+      if (!businessId) {
+        toast({
+          title: "Error",
+          description: "Business profile not found. Please log in again.",
+          variant: "destructive",
+        })
+        return
+      }
 
-    const response = await fetch(`${API_URL}/employee/business/${businessId}/all`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-    const data = await response.json()
-    
-    if (data.success) {
-      // Filter out owners from the employee list
-      setEmployees(data.data.filter((emp: Employee) => !emp.isOwner))
-    } else {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please log in again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const response = await fetch(`${API_URL}/employee/business/${businessId}/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        // Filter out owners from the employee list
+        setEmployees(data.data.filter((emp: Employee) => !emp.isOwner))
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to fetch employees",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error)
       toast({
         title: "Error",
         description: "Failed to fetch employees",
         variant: "destructive",
       })
+    } finally {
+      setLoading(false)
     }
-  } catch (error) {
-    console.error("Error fetching employees:", error)
-    toast({
-      title: "Error",
-      description: "Failed to fetch employees",
-      variant: "destructive",
-    })
-  } finally {
-    setLoading(false)
   }
-}
 
   // Create new employee
   const createEmployee = async () => {
     try {
       setCreatingEmployee(true)
       const businessId = getBusinessId()
-      
+
       if (!businessId) {
         toast({
           title: "Error",
@@ -250,7 +251,6 @@ export default function StaffPage() {
         emergencyContacts: emergencyContacts.length > 0 ? emergencyContacts : undefined,
         servicesProvided: [], // Ensure this is always empty array
       }
-
       const response = await fetch(`${API_URL}/employee/${businessId}/create`, {
         method: "POST",
         headers: {
@@ -258,17 +258,37 @@ export default function StaffPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      })
+      });
 
-      if (response.status === 401 || response.status === 403) {
-        toast({
-          title: "Unauthorized",
-          description: "You are not authorized to create staff. Please log in as a business owner.",
-          variant: "destructive",
-        })
-        router.push('/auth/login')
-        return
+      if (!response.ok) {
+        const data = await response.json();
+
+        if (response.status === 401 || response.status === 403) {
+          toast({
+            title: "Unauthorized",
+            description: "You are not authorized to create staff. Please log in as a business owner.",
+            variant: "destructive",
+          });
+          router.push('/auth/login');
+          return;
+        }
+
+        if (response.status === 500) {
+          if (data.message.includes('E11000 duplicate key error') && data.message.includes('email_1')) {
+            setError("An employee with this email already exists. Please use a different email.");
+          } else {
+            setError("Failed to create employee due to a server error. Please try again.");
+          }
+          return;
+        }
+
+        // Handle other 4xx errors
+        if (response.status >= 400 && response.status < 500) {
+          setError(data.message || "Invalid request. Please check your input and try again.");
+          return;
+        }
       }
+
 
       const data = await response.json()
 
@@ -319,7 +339,7 @@ export default function StaffPage() {
     try {
       setUpdatingEmployee(true)
       const businessId = getBusinessId()
-      
+
       if (!businessId) {
         toast({
           title: "Error",
@@ -392,23 +412,23 @@ export default function StaffPage() {
   }
 
   // Open edit dialog with employee data
-const openEditDialog = (employee: Employee) => {
-  setSelectedEmployee(employee)
-  setEmergencyContacts(employee.emergencyContacts || [])
-  setProfilePicPreview(employee.profilePicUrl || null)
-  setIsEditDialogOpen(true)
-}
+  const openEditDialog = (employee: Employee) => {
+    setSelectedEmployee(employee)
+    setEmergencyContacts(employee.emergencyContacts || [])
+    setProfilePicPreview(employee.profilePicUrl || null)
+    setIsEditDialogOpen(true)
+  }
 
-const handleEditDialogClose = () => {
-  setIsEditDialogOpen(false)
-  setProfilePicPreview(null)
-}
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false)
+    setProfilePicPreview(null)
+  }
 
-// When closing the create dialog, reset the preview
-const handleCreateDialogClose = () => {
-  setIsCreateDialogOpen(false)
-  setProfilePicPreview(null)
-}
+  // When closing the create dialog, reset the preview
+  const handleCreateDialogClose = () => {
+    setIsCreateDialogOpen(false)
+    setProfilePicPreview(null)
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -515,6 +535,7 @@ const handleCreateDialogClose = () => {
                 <DialogHeader>
                   <DialogTitle>Add New Employee</DialogTitle>
                 </DialogHeader>
+                {error && (<p className="text-red-500">{error}</p>)}
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4">
@@ -558,14 +579,14 @@ const handleCreateDialogClose = () => {
                         />
                       </div>
                       <div>
-                      <Label htmlFor="startDate">Start Date</Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={newEmployee.startDate}
-                        onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })}
-                      />
-                    </div>
+                        <Label htmlFor="startDate">Start Date</Label>
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={newEmployee.startDate}
+                          onChange={(e) => setNewEmployee({ ...newEmployee, startDate: e.target.value })}
+                        />
+                      </div>
                     </div>
 
                     {/* Profile Picture */}
@@ -651,7 +672,7 @@ const handleCreateDialogClose = () => {
                     <Button variant="outline" className="flex-1" onClick={() => setIsCreateDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700"
                       onClick={handleCreateEmployee}
                       disabled={creatingEmployee}
@@ -747,8 +768,8 @@ const handleCreateDialogClose = () => {
                       <div className="flex items-center space-x-2">
                         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => setSelectedEmployee(employee)}
                             >
@@ -827,8 +848,8 @@ const handleCreateDialogClose = () => {
                             )}
                           </DialogContent>
                         </Dialog>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => openEditDialog(employee)}
                         >
@@ -850,7 +871,7 @@ const handleCreateDialogClose = () => {
                   <User className="h-16 w-16 mx-auto text-gray-400 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No employees found</h3>
                   <p className="text-gray-600 mb-4">Try adjusting your search or add your first employee</p>
-                  <Button 
+                  <Button
                     className="bg-gradient-to-r from-purple-600 to-purple-700"
                     onClick={() => setIsCreateDialogOpen(true)}
                   >
@@ -966,8 +987,8 @@ const handleCreateDialogClose = () => {
 
                     <div>
                       <Label htmlFor="edit-jobTitle">Job Title *</Label>
-                      <Select 
-                        value={selectedEmployee.jobTitle} 
+                      <Select
+                        value={selectedEmployee.jobTitle}
                         onValueChange={(value) => setSelectedEmployee({ ...selectedEmployee, jobTitle: value })}
                       >
                         <SelectTrigger>
@@ -1064,7 +1085,7 @@ const handleCreateDialogClose = () => {
                   <Button variant="outline" className="flex-1" onClick={() => setIsEditDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700"
                     onClick={handleUpdateEmployee}
                     disabled={updatingEmployee}

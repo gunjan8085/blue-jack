@@ -39,6 +39,7 @@ import {
 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
+import CalendarComponent from "./Calender"
 
 // Types for API response
 interface Customer {
@@ -69,6 +70,7 @@ interface Staff {
   phoneNumber: string
   country: string
   jobTitle: string
+  profilePicUrl?: string
 }
 
 interface Appointment {
@@ -196,6 +198,7 @@ export default function AppointmentsPage() {
 
         setAppointments(appointmentsData.data)
         setServices(servicesData.data)
+        staffData.data = staffData.data.filter((staff: Staff) => !staff.isOwner)
         setStaffMembers(staffData.data)
       } catch (err: any) {
         console.error('Error fetching data:', err)
@@ -388,10 +391,13 @@ export default function AppointmentsPage() {
     ...apt,
   }))
 
-  const resources = staffMembers.map((staff) => ({
+const resources = staffMembers
+  .filter(staff => staff.jobTitle !== "Owner")  // Only include employees
+  .map(staff => ({
     resourceId: staff._id,
     resourceTitle: staff.name,
-  }))
+    resourceImage: staff.profilePicUrl || "",
+  }));
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date; resourceId?: string }) => {
     setSelectedTimeSlot({
@@ -495,7 +501,7 @@ export default function AppointmentsPage() {
           }
 
           {/* Appointments Tabs */}
-          <Tabs defaultValue="calendar" className="w-[84vw] overflow-scroll">
+          <Tabs defaultValue="list" className="w-[84vw] overflow-scroll">
             <TabsList className="grid w-full grid-cols-2 max-w-xs bg-white">
               <TabsTrigger value="list" onClick={() => setIsListViewOpen(true)}>List View</TabsTrigger>
               <TabsTrigger value="calendar" onClick={() => setIsListViewOpen(false)}>Calendar View</TabsTrigger>
@@ -633,129 +639,19 @@ export default function AppointmentsPage() {
                 ))
               )}
             </TabsContent>
-
-
-            <TabsContent value="calendar" className="space-y-4 ">
+            <TabsContent value="calendar" className="space-y-4">
               <Card className="border border-gray-100 shadow-sm rounded-lg overflow-hidden">
                 <CardContent className="p-0">
-                  <div style={{ height: 700 }} className="relative">
-                    <BigCalendar
-                      localizer={localizer}
-                      events={events}
-                      startAccessor="start"
-                      endAccessor="end"
-                      resources={resources}
-                      resourceIdAccessor="resourceId"
-                      resourceTitleAccessor="resourceTitle"
-                      defaultView="day"
-                      views={["day", "week", "work_week", "month", "agenda"]}
-                      style={{ height: "100%" }}
-                      onSelectEvent={handleSelectEvent}
-                      onSelectSlot={handleSelectSlot}
-                      selectable
-                      eventPropGetter={eventStyleGetter}
-                      step={30}
-                      timeslots={2}
-                      min={new Date(0, 0, 0, 8, 0, 0)}
-                      max={new Date(0, 0, 0, 23, 0, 0)}
-                      resourceHeader={(resource: CalendarResource) => (
-                        <div className="flex items-center justify-center h-[150px] bg-gray-50 border-r border-gray-100 last:border-r-0">
-                          <span className="text-sm font-medium text-gray-600">{resource.resourceTitle}</span>
-                        </div>
-                      )}
-                      components={{
-                        timeSlotWrapper: (props: { children?: React.ReactNode }) => (
-                          <div
-                            {...props}
-                            className="hover:bg-purple-50 hover:bg-opacity-70 cursor-pointer transition-all duration-150 ease-out border-b border-gray-100"
-                          />
-                        ),
-                        eventWrapper: ({ event, children }: { event: CalendarEvent; children: React.ReactNode }) => (
-                          <div className="hover:shadow-md hover:border hover:border-purple-200 transition-all duration-200 ease-out">
-                            {children}
-                          </div>
-                        ),
-                        dayHeader: ({ label }: { label: string }) => (
-                          <div className="text-center py-3 bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100">
-                            <span className="text-sm font-medium text-gray-700">{label}</span>
-                          </div>
-                        ),
-                        toolbar: (toolbarProps: {
-                          onNavigate: (action: 'PREV' | 'TODAY' | 'NEXT') => void;
-                          label: string;
-                          views: string[];
-                          view: string;
-                          onView: (view: string) => void;
-                        }) => (
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white border-b border-gray-100">
-                            <div className="flex items-center mb-2 sm:mb-0">
-                              <button
-                                onClick={() => toolbarProps.onNavigate('PREV')}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                              >
-                                <ChevronLeft className="h-4 w-4 text-gray-500" />
-                              </button>
-                              <button
-                                onClick={() => toolbarProps.onNavigate('TODAY')}
-                                className="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors mx-1"
-                              >
-                                Today
-                              </button>
-                              <button
-                                onClick={() => toolbarProps.onNavigate('NEXT')}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                              >
-                                <ChevronRight className="h-4 w-4 text-gray-500" />
-                              </button>
-                              <span className="ml-4 text-md font-medium text-gray-800">
-                                {toolbarProps.label}
-                              </span>
-                            </div>
-                            <div className="flex space-x-1">
-                              {toolbarProps.views.map((view: string) => (
-                                <button
-                                  key={view}
-                                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${toolbarProps.view === view
-                                      ? 'bg-purple-100 text-purple-700'
-                                      : 'hover:bg-gray-100 text-gray-600'
-                                    }`}
-                                  onClick={() => toolbarProps.onView(view)}
-                                >
-                                  {view.charAt(0).toUpperCase() + view.slice(1).replace('_', ' ')}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ),
-                        timeGutterHeader: () => (
-                          <div className="h-[50px] bg-gray-50 border-b border-gray-100 flex items-center justify-center">
-                            <span className="text-xs text-gray-500">Time</span>
-                          </div>
-                        ),
-                        event: ({ event }: { event: CalendarEvent }) => (
-                          <div className="h-full p-1 text-xs overflow-hidden">
-                            <div className="font-medium truncate">{event.title}</div>
-                            <div className="text-gray-500 truncate">
-                              {event.staff.name}
-                            </div>
-                          </div>
-                        ),
-                      }}
-                      dayPropGetter={(date: Date) => ({
-                        className: `${date.getDay() === 0 || date.getDay() === 6
-                            ? 'bg-gray-50'
-                            : 'bg-white'
-                          } hover:bg-gray-50 transition-colors duration-150`,
-                      })}
-                      slotPropGetter={() => ({
-                        className: 'border-gray-100',
-                      })}
-                    />
-                  </div>
+                  <CalendarComponent
+                    events={events}
+                    resources={resources}
+                    onSelectEvent={handleSelectEvent}
+                    onSelectSlot={handleSelectSlot}
+                    loading={loading}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
-
           </Tabs>
         </div>
 
@@ -782,43 +678,46 @@ export default function AppointmentsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Service</Label>
-                    <Input value={selectedAppointment.service?.title || 'Service'} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Service</Label>
+                    <p className="text-sm font-medium">{selectedAppointment.service?.title || 'N/A'}</p>
                   </div>
-                  <div>
-                    <Label>Staff</Label>
-                    <Input value={selectedAppointment.staff.name} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Staff</Label>
+                    <p className="text-sm font-medium">{selectedAppointment.staff.name}</p>
                   </div>
-                  <div>
-                    <Label>Date</Label>
-                    <Input value={format(parseISO(selectedAppointment.date), 'PPP')} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Date</Label>
+                    <p className="text-sm font-medium">
+                      {format(parseISO(selectedAppointment.date), 'PPP')}
+                    </p>
                   </div>
-                  <div>
-                    <Label>Time</Label>
-                    <Input value={selectedAppointment.time} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Time</Label>
+                    <p className="text-sm font-medium">{selectedAppointment.time}</p>
                   </div>
-                  <div>
-                    <Label>Phone</Label>
-                    <Input value={selectedAppointment.customer.phone} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Phone</Label>
+                    <p className="text-sm font-medium">
+                      {selectedAppointment.customer.phone || 'N/A'}
+                    </p>
                   </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input value={selectedAppointment.customer.email} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Email</Label>
+                    <p className="text-sm font-medium">
+                      {selectedAppointment.customer.email || 'N/A'}
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <Label>Notes</Label>
-                  <Textarea
-                    value={selectedAppointment.customer.notes || ''}
-                    readOnly
-                    rows={3}
-                    className="resize-none"
-                  />
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Notes</Label>
+                  <div className="p-3 rounded-md border bg-muted/50 text-sm">
+                    {selectedAppointment.customer.notes || 'No notes provided'}
+                  </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 pt-4">
                   {selectedAppointment.status === "pending" && (
                     <>
                       <Button
@@ -870,6 +769,7 @@ export default function AppointmentsPage() {
             )}
           </DialogContent>
         </Dialog>
+
 
         {/* Create Appointment Modal */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

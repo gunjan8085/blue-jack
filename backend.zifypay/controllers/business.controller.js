@@ -1,7 +1,7 @@
 const businessService = require("../services/business.service");
 const logger = require("../utils/logger.util");
-const multer = require('multer');
-const s3Service = require('../services/s3.service');
+const multer = require("multer");
+const s3Service = require("../services/s3.service");
 
 const upload = multer({ storage: multer.memoryStorage() });
 const Review = require("../models/review.model");
@@ -34,7 +34,9 @@ module.exports = {
       });
     } catch (error) {
       logger.error("Error fetching businesses:", error);
-      return res.status(500).send({ success: false, message: "Internal Server Error" });
+      return res
+        .status(500)
+        .send({ success: false, message: "Internal Server Error" });
     }
   },
   getBusinessByOwnerId: async (req, res) => {
@@ -47,20 +49,20 @@ module.exports = {
       if (!business) {
         return res.status(404).json({
           success: false,
-          message: "No business found for this owner"
+          message: "No business found for this owner",
         });
       }
 
       return res.status(200).json({
         success: true,
         data: business,
-        message: "Business retrieved successfully"
+        message: "Business retrieved successfully",
       });
     } catch (error) {
       logger.error("Error fetching business by owner:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || "Internal Server Error"
+        message: error.message || "Internal Server Error",
       });
     }
   },
@@ -72,20 +74,20 @@ module.exports = {
       if (!business) {
         return res.status(404).json({
           success: false,
-          message: "Business not found"
+          message: "Business not found",
         });
       }
 
       return res.status(200).json({
         success: true,
         data: business,
-        message: "Business retrieved successfully"
+        message: "Business retrieved successfully",
       });
     } catch (error) {
       logger.error("Error fetching business by ID:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || "Internal Server Error"
+        message: error.message || "Internal Server Error",
       });
     }
   },
@@ -95,11 +97,16 @@ module.exports = {
       const { id } = req.params; // business id
       const { text, stars, appointment } = req.body; // now includes appointment
       const userId = req.user?._id || req.body.userId;
-if (!userId) {
-        return res.status(401).json({ success: false, message: "User not authenticated." });
+
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "User not authenticated." });
       }
       if (!stars || stars < 1 || stars > 5) {
-        return res.status(400).json({ success: false, message: "Stars must be between 1 and 5." });
+        return res
+          .status(400)
+          .json({ success: false, message: "Stars must be between 1 and 5." });
       }
 
       const existingReview = await Review.findOne({
@@ -129,7 +136,7 @@ if (!userId) {
       });
 
       // Optionally update avgReview
-      const business = await Business.findById(id).populate('reviews');
+      const business = await Business.findById(id).populate("reviews");
       if (business) {
         const totalStars = business.reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
         const avg = totalStars / (business.reviews.length || 1);
@@ -182,26 +189,49 @@ if (!userId) {
   }
 },
   uploadThumbnail: [
-    upload.single('file'),
+    upload.single("file"),
     async (req, res) => {
       try {
         if (!req.file) {
-          return res.status(400).json({ success: false, message: 'No file uploaded' });
+          return res
+            .status(400)
+            .json({ success: false, message: "No file uploaded" });
         }
         const result = await s3Service.uploadFile(req.file);
         if (!result || !result.Location) {
-          return res.status(500).json({ success: false, message: 'Failed to upload image' });
+          return res
+            .status(500)
+            .json({ success: false, message: "Failed to upload image" });
         }
         return res.status(200).json({ success: true, url: result.Location });
       } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
       }
-    }
+    },
   ],
-  /**
-   * Purchase a subscription plan for a business (placeholder, no payment integration yet)
-   * Expects: { businessId, pricingPlanId }
-   */
+  updateBusiness: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const business = await Business.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
+      if (!business) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Business not found" });
+      }
+      return res
+        .status(200)
+        .json({
+          success: true,
+          data: business,
+          message: "Business updated successfully",
+        });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
   purchaseSubscription: async (req, res) => {
     try {
       const { businessId, pricingPlanId } = req.body;

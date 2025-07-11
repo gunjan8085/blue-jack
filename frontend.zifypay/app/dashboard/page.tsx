@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect, useMemo } from "react"
 import {
@@ -173,13 +173,13 @@ const BusinessDashboard = () => {
 
   useEffect(() => {
     const fetchToday = async () => {
-      setLoadingToday(true)
+      setLoadingToday(true);
       try {
-        let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
+        let businessId = null;
+        if (typeof window !== "undefined") {
+          const businessProfile = localStorage.getItem("businessProfile");
           if (businessProfile) {
-            businessId = JSON.parse(businessProfile)._id
+            businessId = JSON.parse(businessProfile)._id;
           }
         }
         if (!businessId) return
@@ -188,23 +188,23 @@ const BusinessDashboard = () => {
         const data = await res.json()
         setTodaysAppointments(data.data || [])
       } catch (err) {
-        setTodaysAppointments([])
+        setTodaysAppointments([]);
       } finally {
-        setLoadingToday(false)
+        setLoadingToday(false);
       }
-    }
-    fetchToday()
-  }, [])
+    };
+    fetchToday();
+  }, []);
 
   useEffect(() => {
     const fetchRecent = async () => {
-      setLoadingRecent(true)
+      setLoadingRecent(true);
       try {
-        let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
+        let businessId = null;
+        if (typeof window !== "undefined") {
+          const businessProfile = localStorage.getItem("businessProfile");
           if (businessProfile) {
-            businessId = JSON.parse(businessProfile)._id
+            businessId = JSON.parse(businessProfile)._id;
           }
         }
         if (!businessId) return
@@ -213,13 +213,13 @@ const BusinessDashboard = () => {
         const data = await res.json()
         setRecentBookings(data.data || [])
       } catch (err) {
-        setRecentBookings([])
+        setRecentBookings([]);
       } finally {
-        setLoadingRecent(false)
+        setLoadingRecent(false);
       }
-    }
-    fetchRecent()
-  }, [])
+    };
+    fetchRecent();
+  }, []);
 
   useEffect(() => {
     const fetchQuickStats = async () => {
@@ -336,15 +336,15 @@ const BusinessDashboard = () => {
       case "confirmed":
         return "bg-blue-100 text-blue-800"
       case "pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "cancelled":
         return "bg-red-100 text-red-800"
       case "completed":
         return "bg-green-100 text-green-800"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {
     setStatusLoading((prev) => ({ ...prev, [appointmentId]: true }))
@@ -395,8 +395,12 @@ const BusinessDashboard = () => {
           <SidebarTrigger className="-ml-1" />
           <div className="flex items-center justify-between w-full">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-              <p className="text-gray-600">Welcome back! Here's what's happening today.</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Dashboard Overview
+              </h1>
+              <p className="text-gray-600">
+                Welcome back! Here's what's happening today.
+              </p>
             </div>
           </div>
         </header>
@@ -575,7 +579,7 @@ const BusinessDashboard = () => {
                   <div className="flex justify-between text-sm mb-2">
                     <span>Today's Revenue</span>
                     <span className="font-medium">
-                      {loadingQuickStats ? '...' : `$${todaysRevenue}`}
+                      {loadingQuickStats ? "..." : `$${todaysRevenue}`}
                     </span>
                   </div>
                   <Progress value={todaysRevenue && todaysRevenue > 0 ? Math.min(100, Math.round((todaysRevenue / 650) * 100)) : 0} className="h-2" />
@@ -585,7 +589,7 @@ const BusinessDashboard = () => {
                   <div className="flex justify-between text-sm mb-2">
                     <span>Bookings Today</span>
                     <span className="font-medium">
-                      {loadingQuickStats ? '...' : bookingsToday}
+                      {loadingQuickStats ? "..." : bookingsToday}
                     </span>
                   </div>
                   <Progress value={bookingsToday && bookingsToday > 0 ? Math.min(100, Math.round((bookingsToday / 12) * 100)) : 0} className="h-2" />
@@ -739,7 +743,7 @@ const BusinessDashboard = () => {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
 
 interface StatusDropdownProps {
