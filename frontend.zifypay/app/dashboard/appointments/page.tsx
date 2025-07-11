@@ -70,6 +70,7 @@ interface Staff {
   phoneNumber: string
   country: string
   jobTitle: string
+  profilePicUrl?: string
 }
 
 interface Appointment {
@@ -197,6 +198,7 @@ export default function AppointmentsPage() {
 
         setAppointments(appointmentsData.data)
         setServices(servicesData.data)
+        staffData.data = staffData.data.filter((staff: Staff) => !staff.isOwner)
         setStaffMembers(staffData.data)
       } catch (err: any) {
         console.error('Error fetching data:', err)
@@ -389,10 +391,13 @@ export default function AppointmentsPage() {
     ...apt,
   }))
 
-  const resources = staffMembers.map((staff) => ({
+const resources = staffMembers
+  .filter(staff => staff.jobTitle !== "Owner")  // Only include employees
+  .map(staff => ({
     resourceId: staff._id,
     resourceTitle: staff.name,
-  }))
+    resourceImage: staff.profilePicUrl || "",
+  }));
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date; resourceId?: string }) => {
     setSelectedTimeSlot({
@@ -673,43 +678,46 @@ export default function AppointmentsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Service</Label>
-                    <Input value={selectedAppointment.service?.title || 'Service'} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Service</Label>
+                    <p className="text-sm font-medium">{selectedAppointment.service?.title || 'N/A'}</p>
                   </div>
-                  <div>
-                    <Label>Staff</Label>
-                    <Input value={selectedAppointment.staff.name} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Staff</Label>
+                    <p className="text-sm font-medium">{selectedAppointment.staff.name}</p>
                   </div>
-                  <div>
-                    <Label>Date</Label>
-                    <Input value={format(parseISO(selectedAppointment.date), 'PPP')} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Date</Label>
+                    <p className="text-sm font-medium">
+                      {format(parseISO(selectedAppointment.date), 'PPP')}
+                    </p>
                   </div>
-                  <div>
-                    <Label>Time</Label>
-                    <Input value={selectedAppointment.time} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Time</Label>
+                    <p className="text-sm font-medium">{selectedAppointment.time}</p>
                   </div>
-                  <div>
-                    <Label>Phone</Label>
-                    <Input value={selectedAppointment.customer.phone} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Phone</Label>
+                    <p className="text-sm font-medium">
+                      {selectedAppointment.customer.phone || 'N/A'}
+                    </p>
                   </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input value={selectedAppointment.customer.email} readOnly />
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Email</Label>
+                    <p className="text-sm font-medium">
+                      {selectedAppointment.customer.email || 'N/A'}
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <Label>Notes</Label>
-                  <Textarea
-                    value={selectedAppointment.customer.notes || ''}
-                    readOnly
-                    rows={3}
-                    className="resize-none"
-                  />
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Notes</Label>
+                  <div className="p-3 rounded-md border bg-muted/50 text-sm">
+                    {selectedAppointment.customer.notes || 'No notes provided'}
+                  </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 pt-4">
                   {selectedAppointment.status === "pending" && (
                     <>
                       <Button
@@ -761,6 +769,7 @@ export default function AppointmentsPage() {
             )}
           </DialogContent>
         </Dialog>
+
 
         {/* Create Appointment Modal */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
