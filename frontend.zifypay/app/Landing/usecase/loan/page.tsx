@@ -1,5 +1,5 @@
 "use client";
-
+import CTASection from "../../CTASection";
 import { useRef, useEffect } from "react";
 import Navbar from "../../Navbar";
 import Footer from "@/components/Footer";
@@ -215,6 +215,7 @@ export default function Loan() {
       <section className="py-16 px-4 min-h-screen bg-gradient-to-r from-[#001A39] to-[#001433]">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Heading */}
             <div>
               <h2
                 className="text-5xl md:text-6xl text-white font-extrabold mb-12"
@@ -227,26 +228,45 @@ export default function Loan() {
                 What our <br /> customers <br /> say
               </h2>
             </div>
+
+            {/* Testimonials */}
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[1, 2, 3, 4].map((_, idx) => (
+                {[
+                  {
+                    name: "Monica Patel",
+                    feedback:
+                      "ZifyPay approved our working capital loan in under 48 hours! No hidden fees, no complicated paperwork—just pure efficiency. This helped us stock up inventory ahead of peak season.",
+                  },
+                  {
+                    name: "Jason Reed",
+                    feedback:
+                      "We didn't have perfect credit, but ZifyPay looked at our business performance instead. We received $150,000 for equipment financing—fast, fair, and completely digital.",
+                  },
+                  {
+                    name: "Alicia Gomez",
+                    feedback:
+                      "We’ve grown from a 3-person construction company to 12 employees, all thanks to ZifyPay’s flexible funding. I’ve never seen such seamless repayment and transparent terms.",
+                  },
+                  {
+                    name: "Marcus Lee",
+                    feedback:
+                      "As a restaurant owner, cash flow matters. ZifyPay gave us a line of credit that we could draw from anytime. Same-day funding saved us more than once. Highly recommend!",
+                  },
+                ].map((review, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-2xl shadow-sm p-6 flex flex-col justify-between min-h-[180px]"
+                    className="bg-white rounded-2xl shadow-sm p-6 flex flex-col justify-between min-h-[200px]"
                     style={{
                       fontFamily: "'Proxima Nova', 'Montserrat', sans-serif",
                     }}
                   >
                     <p className="text-gray-700 text-base mb-6">
-                      They make it super easy and safe to find a room for rent,
-                      prioritizing both convenience and safety. The customer
-                      support team is exceptionally responsive and genuinely
-                      helpful, ensuring a smooth experience. I wholeheartedly
-                      endorse this platform.
+                      {review.feedback}
                     </p>
                     <div className="flex items-center justify-between mt-auto">
                       <span className="font-semibold text-[#001A39] text-lg">
-                        Ashley Cooper
+                        {review.name}
                       </span>
                       <span className="flex items-center ml-2">
                         {[...Array(5)].map((_, i) => (
@@ -268,7 +288,150 @@ export default function Loan() {
           </div>
         </div>
       </section>
+
       <FeaturesSectionWithHoverEffects />
+
+      {/* Loan Types Offered by ZifyPay Section */}
+      <section
+        className="w-full py-16 px-4 bg-[#001A39]"
+        style={{ fontFamily: "'Proxima Nova', 'Montserrat', sans-serif" }}
+      >
+        <h2
+          className="text-5xl md:text-6xl font-extrabold text-center md:mb-24 mb-12 w-full"
+          style={{
+            color: "#fff",
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          ZifyPay Business Loan Program
+        </h2>
+        <div className="max-w-6xl mx-auto">
+          <div className="overflow-x-auto rounded-2xl shadow-2xl bg-white/90">
+            <table className="min-w-full text-left text-base text-[#001A39] rounded-2xl overflow-hidden">
+              <thead className="bg-[#f7f8fa] sticky top-0 z-10">
+                <tr>
+                  <th className="py-5 px-4 font-semibold text-lg">Loan Type</th>
+                  <th className="py-5 px-4 font-semibold text-lg">Purpose</th>
+                  <th className="py-5 px-4 font-semibold text-lg">
+                    Max Amount
+                  </th>
+                  <th className="py-5 px-4 font-semibold text-lg">
+                    Credit/FICO Required
+                  </th>
+                  <th className="py-5 px-4 font-semibold text-lg">
+                    Funding Speed
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  [
+                    "Working Capital Loan",
+                    "Day-to-day expenses like payroll, rent, inventory",
+                    "$5M",
+                    "No minimum",
+                    "Same-day",
+                  ],
+                  [
+                    "Franchise Financing",
+                    "Purchase franchise, equipment, setup",
+                    "$5M",
+                    "No minimum",
+                    "2 days",
+                  ],
+                  [
+                    "Equipment Financing",
+                    "Lease/purchase equipment, tech, office tools",
+                    "$5M",
+                    "580+ (low acceptable)",
+                    "2 days",
+                  ],
+                  [
+                    "SBA Loan",
+                    "Government-backed funding with long terms",
+                    "$5M",
+                    "675+ FICO",
+                    "24–48 hrs",
+                  ],
+                  [
+                    "Line of Credit",
+                    "Revolving fund like a credit card for emergencies, cash flow",
+                    "$5M",
+                    "600+ FICO",
+                    "Same-day",
+                  ],
+                  [
+                    "Term Loan",
+                    "Lump sum for business expansion or major purchases",
+                    "$5M",
+                    "660+ FICO",
+                    "1–3 days",
+                  ],
+                  [
+                    "Bridge Loan",
+                    "Short-term loan to fill financial gaps",
+                    "$5M",
+                    "No minimum",
+                    "Same-day",
+                  ],
+                  [
+                    "Accounts Receivable Loan",
+                    "Advance funds based on pending invoices",
+                    "$5M",
+                    "No minimum",
+                    "2 days",
+                  ],
+                  [
+                    "Commercial Real Estate Loan",
+                    "For business properties (warehouses, offices, stores)",
+                    "$5M",
+                    "650+ FICO",
+                    "Custom timing",
+                  ],
+                  [
+                    "Investment Property Loan",
+                    "Buy and rent/flip properties",
+                    "$5M",
+                    "650+ + Property Docs",
+                    "20 days",
+                  ],
+                  [
+                    "Purchase Order Financing",
+                    "Finance large product orders before payment from customers",
+                    "Based on PO",
+                    "No minimum",
+                    "Flexible",
+                  ],
+                  [
+                    "Cannabis Business Loan",
+                    "Specialized loans for cannabis-based businesses",
+                    "$5M",
+                    "No minimum",
+                    "1–3 days",
+                  ],
+                ].map((row, idx) => (
+                  <tr
+                    key={idx}
+                    className={`transition hover:bg-[#f7f8fa] ${
+                      idx % 2 === 0 ? "bg-white/80" : "bg-[#f7f8fa]"
+                    }`}
+                  >
+                    {row.map((cell, i) => (
+                      <td
+                        key={i}
+                        className="py-5 px-4 align-top text-[1rem] md:text-base leading-snug"
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section (as in image) */}
       <div className="px-16">
@@ -314,14 +477,17 @@ export default function Loan() {
           {/* Right Content: Image */}
           <div className="flex-1 w-full flex justify-center">
             <img
-              src=""
+              src="https://zifypay.com/logo.png"
               alt="Dashboard Preview"
               className="max-w-full h-auto rounded-3xl"
             />
           </div>
         </section>
       </div>
-      
+
+      <div className="bg-white min-h-screen">
+        <CTASection />
+      </div>
 
       <Footer />
     </div>

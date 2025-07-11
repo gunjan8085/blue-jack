@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { motion } from "framer-motion";
-
+import FinancialSupportSection from "../FinancialSupportSection"
 import Navbar from "../Navbar";
 import HeroSection from "../HeroSection";
 import FeaturesSection from "../FeaturesSection";
@@ -64,9 +64,6 @@ export default function LandingPage() {
       {/* Main sections */}
       <Navbar />
       <Pricing />
-      <FeaturesSection />
-      <YieldSection />
-      <Testimonial />
 
       {/* Scroll-sensitive background color section */}
       <div ref={ctaRef} className="relative min-h-screen overflow-hidden">
@@ -80,10 +77,12 @@ export default function LandingPage() {
         />
 
         {/* Content above animated background */}
-        <div className="relative z-[1]">
+        <div className="relative z-[1] px-16">
+          <FinancialSupportSection />
           <ForWhomSection />
-          <CTASection />
         </div>
+
+        <CTASection />
       </div>
 
       <Footer />
