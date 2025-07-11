@@ -28,6 +28,8 @@ module.exports = {
       // Aggregate to get customer visit history
       const customers = await Appointment.aggregate([
         { $match: { business: new mongoose.Types.ObjectId(businessId) } },
+
+        // Group by customer email
         {
           $group: {
             _id: "$customer.email",
@@ -36,14 +38,25 @@ module.exports = {
             firstVisit: { $min: "$createdAt" },
             visitCount: { $sum: 1 },
             totalSpent: { $sum: "$service.price" },
-            favoriteService: {
-              $first: "$service.title"
-            }
           }
         },
+
+        // Join with User collection using customer email
+        {
+          $lookup: {
+            from: "users", // collection name in MongoDB
+            localField: "_id", // _id is customer email
+            foreignField: "email",
+            as: "userInfo"
+          }
+        },
+        { $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true } },
+
         { $sort: sortOption },
         { $skip: skip },
         { $limit: limit },
+
+        // Final projection
         {
           $project: {
             _id: 0,
@@ -51,6 +64,7 @@ module.exports = {
             name: "$customer.name",
             email: "$customer.email",
             phone: "$customer.phone",
+            profilePicUrl: "$userInfo.profilePicUrl", // 💡 from User model
             lastVisit: 1,
             firstVisit: 1,
             visitCount: 1,

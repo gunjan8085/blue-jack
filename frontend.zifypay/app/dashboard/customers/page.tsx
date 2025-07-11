@@ -29,6 +29,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
 import { API_URL } from "@/lib/const"
+import Image from "next/image"
 
 interface Customer {
   _id: string;
@@ -40,6 +41,7 @@ interface Customer {
   totalVisits: number;
   totalSpent: number;
   favoriteService: string;
+  profilePicUrl: string;
 }
 
 interface ApiResponse {
@@ -56,7 +58,13 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const business= localStorage.getItem("businessProfile")
+
+  const [business, setBusiness] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("businessProfile")
+    }
+    return null
+  })
   const businessid = business ? JSON.parse(business)._id : null 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -173,16 +181,17 @@ export default function CustomersPage() {
           {/* Customers List */}
           <div className="space-y-4">
             {filteredCustomers.map((customer) => (
-              <Card key={customer._id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <Card key={customer.email} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-12 w-12">
                         <AvatarFallback>
-                          {customer.name
+                          <Image width={100} height={100} src={customer.profilePicUrl} alt={customer.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
+                          />
                         </AvatarFallback>
                       </Avatar>
                       <div>
