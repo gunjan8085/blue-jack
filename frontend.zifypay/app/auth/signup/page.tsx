@@ -132,7 +132,7 @@ export default function SignupPage() {
                       <div className="animate-pulse text-gray-500">Uploading...</div>
                     ) : previewImage ? (
                       <img
-                        src={previewImage}
+                        src={previewImage} 
                         alt="Profile preview"
                         className="w-full h-full object-cover"
                       />

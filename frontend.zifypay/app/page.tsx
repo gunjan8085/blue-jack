@@ -1,15 +1,13 @@
-import Home from "@/components/landingPage/Landingpage";
-import React from 'react';
+import React from "react";
+import Hero from "@/app/booking-engine/Hero";
+import HeaderForCustomer from "@/components/customer/HeaderForCustomer";
 
-// 👇 This makes sure the page is rendered on every request
-export const dynamic = 'force-dynamic';
 
-function Page() {
+export default function Page() {
   return (
     <div>
-      <Home />
+     
+      <Hero />
     </div>
   );
 }
-
-export default Page;
