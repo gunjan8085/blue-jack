@@ -70,7 +70,7 @@ export default function DashboardSubscriptionPlans() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Something went wrong!');
       
-      alert(`✅ Subscription successful for plan: ${pricingPlanId}`);
+      alert(`✅ Subscription successful`);
       router.push('/dashboard');
     } catch (err: any) {
       console.error(err);
