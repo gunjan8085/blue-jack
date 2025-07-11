@@ -95,8 +95,7 @@ module.exports = {
       const { id } = req.params; // business id
       const { text, stars, appointment } = req.body; // now includes appointment
       const userId = req.user?._id || req.body.userId;
-
-      if (!userId) {
+if (!userId) {
         return res.status(401).json({ success: false, message: "User not authenticated." });
       }
       if (!stars || stars < 1 || stars > 5) {

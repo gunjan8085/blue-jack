@@ -438,23 +438,42 @@ export default function BusinessProfilePage() {
         <div className="gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Image Gallery */}
+            {/* Image Carousel */}
             <div className="space-y-4">
               <div className="relative overflow-hidden rounded-lg">
                 <img
-                  src={business.media[selectedImage]?.url || business.thumbnail || "/placeholder.svg"}
+                  src={business.media.length > 0 ? business.media[selectedImage]?.url : (business.thumbnail || "/placeholder.svg")}
                   alt={business.brandName}
                   className="w-full h-96 object-cover"
                 />
+                {/* Carousel Arrows */}
+                {business.media.length > 1 && (
+                  <>
+                    <button
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white rounded-full p-2 shadow-md z-10"
+                      onClick={() => setSelectedImage((selectedImage - 1 + business.media.length) % business.media.length)}
+                      aria-label="Previous image"
+                    >
+                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <button
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white rounded-full p-2 shadow-md z-10"
+                      onClick={() => setSelectedImage((selectedImage + 1) % business.media.length)}
+                      aria-label="Next image"
+                    >
+                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </>
+                )}
               </div>
               {business.media.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {business.media.map((media, index) => (
+                <div className="grid grid-cols-5 gap-2">
+                  {business.media.slice(0, 4).map((media, index) => (
                     <button
-                      key={media._id}
+                      key={media.url || index}
                       onClick={() => setSelectedImage(index)}
-                      className={`relative overflow-hidden rounded-lg border-2 transition-all ${selectedImage === index ? "border-purple-500" : "border-transparent"
-                        }`}
+                      className={`relative overflow-hidden rounded-lg border-2 transition-all ${selectedImage === index ? "border-purple-500" : "border-transparent"}`}
+                      aria-label={`Show image ${index + 1}`}
                     >
                       <img
                         src={media.url || "/placeholder.svg"}
@@ -463,6 +482,35 @@ export default function BusinessProfilePage() {
                       />
                     </button>
                   ))}
+                  {business.media.length > 5 && (
+                    <button
+                      key={business.media[4].url || 4}
+                      onClick={() => setSelectedImage(4)}
+                      className={`relative overflow-hidden rounded-lg border-2 transition-all ${selectedImage === 4 ? "border-purple-500" : "border-transparent"}`}
+                      aria-label={`Show image 5 and more`}
+                    >
+                      <img
+                        src={business.media[4].url || "/placeholder.svg"}
+                        alt={`${business.brandName} 5`}
+                        className="w-full h-20 object-cover hover:scale-105 transition-transform opacity-70"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/60 text-white font-semibold text-lg">+{business.media.length - 4}</span>
+                    </button>
+                  )}
+                  {business.media.length === 5 && (
+                    <button
+                      key={business.media[4].url || 4}
+                      onClick={() => setSelectedImage(4)}
+                      className={`relative overflow-hidden rounded-lg border-2 transition-all ${selectedImage === 4 ? "border-purple-500" : "border-transparent"}`}
+                      aria-label={`Show image 5`}
+                    >
+                      <img
+                        src={business.media[4].url || "/placeholder.svg"}
+                        alt={`${business.brandName} 5`}
+                        className="w-full h-20 object-cover hover:scale-105 transition-transform"
+                      />
+                    </button>
+                  )}
                 </div>
               )}
             </div>

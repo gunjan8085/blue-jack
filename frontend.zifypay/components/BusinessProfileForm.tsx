@@ -102,6 +102,9 @@ export function BusinessProfileForm() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [media, setMedia] = useState<{ url: string; type: "photo" }[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const mediaInputRef = useRef<HTMLInputElement | null>(null);
 
   const stepFields: string[][] = [
     ["brandName", "businessType", "thumbnail", "about"],
@@ -138,7 +141,7 @@ export function BusinessProfileForm() {
       const payload = {
         ...data,
         owner: userId,
-        media: [],
+        media: media, // include uploaded images
         timings: [
           {
             days: [1, 2, 3, 4, 5],
@@ -331,6 +334,80 @@ export function BusinessProfileForm() {
                       </div>
                     </div>
                     {errors.thumbnail && <p className="text-red-500 text-sm mt-1">{errors.thumbnail.message}</p>}
+                  </div>
+                  
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Business Images (Gallery)</Label>
+                    <div className="flex flex-wrap gap-4 mb-2">
+                      {media.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={img.url} alt="Business Media" className="w-24 h-24 object-cover rounded-lg border" />
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 bg-white/80 rounded-full p-1 text-gray-700 hover:text-red-600"
+                            onClick={() => setMedia(media.filter((_, i) => i !== idx))}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      ref={mediaInputRef}
+                      style={{ display: 'none' }}
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (!files.length) return;
+                        setMediaUploading(true);
+                        try {
+                          const token = localStorage.getItem('token');
+                          for (const file of files) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
+                              method: 'POST',
+                              headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
+                              body: formData,
+                            });
+                            const data = await res.json();
+                            if (!res.ok || !data.url) throw new Error(data.message || 'Upload failed');
+                            setMedia((prev) => [...prev, { url: data.url, type: 'photo' }]);
+                          }
+                        } catch (err) {
+                          toast({
+                            title: 'Error',
+                            description: 'One or more images failed to upload. Please try again.',
+                            variant: 'destructive',
+                          });
+                        } finally {
+                          setMediaUploading(false);
+                          if (mediaInputRef.current) mediaInputRef.current.value = '';
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => mediaInputRef.current?.click()}
+                      disabled={mediaUploading}
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      {mediaUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-4 h-4" />
+                          {media.length ? 'Add More Images' : 'Upload Images'}
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2">You can upload multiple images (JPG or PNG).</p>
                   </div>
                   
                   <div className="space-y-2 md:col-span-2">

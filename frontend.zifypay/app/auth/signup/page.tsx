@@ -58,7 +58,7 @@ export default function SignupPage() {
         const imageFormData = new FormData();
         imageFormData.append("file", formData.profileImage);
 
-        const uploadResponse = await fetch(`${API_URL}/upload`, {
+        const uploadResponse = await fetch(`${API_URL}/business/upload-thumbnail`, {
           method: "POST",
           body: imageFormData,
         });
