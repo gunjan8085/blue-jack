@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 @import "react-big-calendar/lib/css/react-big-calendar.css";
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/proxima-nova-600.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -50,7 +57,10 @@
   .btn-green {
     @apply bg-green-600 hover:bg-green-700;
   }
-  
+   .hexagon {
+     clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+     background: white;
+   }
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -125,7 +135,8 @@
 }
 
 .shadow-purple-lg {
-  box-shadow: 0 10px 25px -3px rgba(106, 13, 173, 0.1), 0 4px 6px -2px rgba(106, 13, 173, 0.05);
+  box-shadow: 0 10px 25px -3px rgba(106, 13, 173, 0.1),
+    0 4px 6px -2px rgba(106, 13, 173, 0.05);
 }
 
 /* Shimmer loading effect */
