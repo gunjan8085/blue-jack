@@ -53,12 +53,12 @@ function HeaderForCustomer() {
         </Link>
         {/* Right side: View Businesses + Auth Actions */}
         <div className="flex items-center gap-4">
-          <Link href="/businesses">
+          <Link href="/list-your-business">
             <Button
               variant="outline"
               className="text-white bg-black border border-black rounded-full hover:bg-white hover:text-black transition-colors duration-200"
             >
-              View Businesses
+              List you bussiness
             </Button>
           </Link>
           {isLoggedIn ? (
