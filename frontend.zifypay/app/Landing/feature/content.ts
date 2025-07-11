@@ -24,10 +24,10 @@ export const featureContent = {
         image: "/images/feature-calendar-sync.png",
       },
       {
-        title: "Staff Management",
+        title: "Team Scheduling",
         description:
-          "Assign appointments to staff, track performance, and optimize schedules.",
-        image: "/images/feature-staff.png",
+          "Easily coordinate shifts, manage team availability, and ensure seamless service coverage across all hours.",
+        image: "/images/feature-team-scheduling.png",
       },
     ],
   },

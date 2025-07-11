@@ -62,7 +62,7 @@ function TwoSectionCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-[#9b87f5]/10">
         <div className="grid lg:grid-cols-2 gap-0 min-h-[400px]">
           {/* Left Section */}
           <motion.div
@@ -104,10 +104,10 @@ function TwoSectionCard({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
-                <button className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                <button className="px-6 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1e40af] transition-colors">
                   Learn More
                 </button>
-                <button className="px-6 py-3 border border-gray-300 text-black rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                <button className="px-6 py-3 border border-[#9b87f5] text-[#2563EB] rounded-lg font-medium hover:bg-[#f3f4f6] transition-colors">
                   Get Started
                 </button>
               </motion.div>
@@ -141,9 +141,9 @@ function TwoSectionCard({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+                  <div className="w-16 h-16 bg-[#9b87f5] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
                     <Play
-                      className="w-6 h-6 text-black ml-1"
+                      className="w-6 h-6 text-white ml-1"
                       fill="currentColor"
                     />
                   </div>
@@ -161,8 +161,11 @@ function TwoSectionCard({
 
 export default function TwoSectionCardDemo() {
   return (
-    <div className="px-12 bg-gradient-to-r from-[#001A39] to-[#001433] py-12">
-      <div className="p-8 bg-white min-h-screen flex items-center justify-center rounded-2xl ">
+    <div
+      className="px-12 bg-gradient-to-r from-[#001A39] to-[#001433] py-12"
+      style={{ fontFamily: "'Proxima Nova', sans-serif" }}
+    >
+      <div className="p-8 bg-white min-h-screen flex items-center justify-center rounded-2xl border-2 border-[#9b87f5]/10 shadow-xl">
         <TwoSectionCard />
       </div>
     </div>

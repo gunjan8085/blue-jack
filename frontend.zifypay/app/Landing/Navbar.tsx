@@ -213,7 +213,7 @@ function Navbar() {
                   },
                   {
                     label: " financial Support ",
-                    href: "/Landing/usecase/CloudDashboard",
+                    href: "/Landing/usecase/loan",
                     icon: Cloud,
                   },
                   {
