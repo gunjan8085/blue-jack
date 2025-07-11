@@ -73,7 +73,7 @@ export default function CTAsection() {
                 </span>
               </ShimmerButton>
             </Link>
-            <Link href="/for-bussiness">
+            <Link href="/list-your-business">
               <ShimmerButton className="shadow-2xl w-[230px] h-[60px] flex items-center justify-center">
                 <span className="whitespace-pre-wrap text-center text-2xl font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
                   List the business
