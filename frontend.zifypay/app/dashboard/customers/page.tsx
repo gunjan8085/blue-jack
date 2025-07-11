@@ -56,13 +56,15 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const business= localStorage.getItem("businessProfile")
+  const businessid = business ? JSON.parse(business)._id : null 
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
         // Replace with your actual API endpoint
-        const response = await fetch(`${API_URL}/appointments/68652722209db192d721ad57/visit-history`)
+        const response = await fetch(`${API_URL}/appointments/${businessid}/visit-history`)
         const data: ApiResponse = await response.json()
-        
+
         if (data.success) {
           setCustomers(data.data)
         } else {
@@ -81,8 +83,8 @@ export default function CustomersPage() {
 
   const filteredCustomers = customers.filter((customer) => {
     return customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
+      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
   }).sort((a, b) => {
     switch (sortBy) {
       case "name":
@@ -204,7 +206,7 @@ export default function CustomersPage() {
 
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                       
+
                         <div className="text-sm text-purple-600">{customer.favoriteService}</div>
                       </div>
 
@@ -240,7 +242,7 @@ export default function CustomersPage() {
                                     <p className="text-purple-600">{selectedCustomer.favoriteService}</p>
                                   </div>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <Label>Email</Label>
@@ -267,13 +269,13 @@ export default function CustomersPage() {
                                     <p>{selectedCustomer.favoriteService}</p>
                                   </div>
                                 </div>
-                                
+
                                 {selectedCustomer.notes && (
                                   <div>
                                     <Label>Notes</Label>
-                                    <Textarea 
-                                      className="mt-1" 
-                                      value={selectedCustomer.notes} 
+                                    <Textarea
+                                      className="mt-1"
+                                      value={selectedCustomer.notes}
                                       readOnly
                                     />
                                   </div>
