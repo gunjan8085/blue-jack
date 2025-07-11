@@ -314,7 +314,7 @@ export default function Loan() {
           {/* Right Content: Image */}
           <div className="flex-1 w-full flex justify-center">
             <img
-              src=""
+              src="logo.png"
               alt="Dashboard Preview"
               className="max-w-full h-auto rounded-3xl"
             />
