@@ -291,7 +291,7 @@ function Navbar() {
 
             <div className="flex items-center px-4 gap-2">
               <Link
-                href="/Pricing"
+                href="/pricing"
                 className="text-white  transition-colors duration-200 px-4 py-2 text-base md:text-lg font-medium"
                 style={{ fontFamily: "'Proxima Nova', sans-serif" }}
               >

@@ -6,6 +6,7 @@ import {
   YoutubeIcon,
   LinkedinIcon,
 } from "lucide-react";
+import { Button } from "./ui/button";
 
 const socialLinks = [
   {
@@ -52,7 +53,7 @@ function Footer() {
             <h4 className="font-semibold text-lg mb-4">For Customers</h4>
             <ul className="space-y-3 text-gray-400">
               <li>
-                <Link href="#" className="hover:text-white transition-colors block">
+                <Link href="/businesses" className="hover:text-white transition-colors block">
                   Find Services
                 </Link>
               </li>
@@ -62,9 +63,13 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-white transition-colors block">
-                  Reviews
-                </Link>
+              <button
+                onClick={() => window.scroll({ top: 2900, left: 0, behavior: 'smooth' })}
+                className="hover:text-white transition-colors block"
+              >
+                Reviews
+              </button>
+
               </li>
             </ul>
           </div>
@@ -75,7 +80,7 @@ function Footer() {
             <ul className="space-y-3 text-gray-400">
               <li>
                 <Link 
-                  href="/for-bussiness" 
+                  href="/auth/signup" 
                   className="hover:text-white transition-colors block"
                 >
                   List Your Business
@@ -86,19 +91,19 @@ function Footer() {
                   Dashboard
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="#" className="hover:text-white transition-colors block">
                   Analytics
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           
           {/* Support */}
           <div>
-            <h4 className="font-semibold text-lg mb-4">Support</h4>
+            {/* <h4 className="font-semibold text-lg mb-4">Support</h4> */}
             <ul className="space-y-3 text-gray-400">
-              <li>
+              {/* <li>
                 <Link href="#" className="hover:text-white transition-colors block">
                   Help Center
                 </Link>
@@ -112,7 +117,7 @@ function Footer() {
                 <Link href="#" className="hover:text-white transition-colors block">
                   Privacy Policy
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

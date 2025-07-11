@@ -75,7 +75,7 @@ const footerConfig = {
     { label: "Cookie Policy", href: "/cookies" },
     { label: "Security", href: "/security" },
   ],
-  copyright: "© 2024 Pyxis. All rights reserved.",
+  copyright: "© 2025 Pyxis. All rights reserved.",
 }
 
 export function Footer() {

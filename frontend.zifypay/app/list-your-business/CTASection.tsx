@@ -20,11 +20,14 @@ const HeroCardSection = () => {
               </span>
             </h1>
             <a
-              href="#"
+              href="https://www.youtube.com/watch?v=qjCH13g3wqY"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-4 inline-block bg-[#1e40af] text-white px-6 py-3 rounded-md shadow-md hover:bg-[#1e3a8a] transition font-medium text-lg"
             >
               See a demo
             </a>
+
           </div>
         </div>
 

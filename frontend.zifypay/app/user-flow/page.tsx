@@ -44,7 +44,7 @@ export default function SignUp() {
 
         {/* Footer */}
         <div className="mt-auto text-sm text-gray-300 flex gap-4 pt-12">
-          All rights reserved © 2024 ZifyPay
+          All rights reserved © 2025 ZifyPay
         </div>
       </div>
 

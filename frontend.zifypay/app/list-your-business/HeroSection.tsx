@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, useAnimation, useInView } from "framer-motion";
+import Link from "next/link";
 
 const HeroSection = () => {
   const ref = useRef(null);
@@ -46,9 +47,11 @@ const HeroSection = () => {
               placeholder="What's your work email?"
               className="bg-transparent flex-1 text-white placeholder-white/70 text-sm md:text-base outline-none px-2 py-2"
             />
-            <button className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition">
+            <Link href="/user-flow">
+            <button  className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition">
               Get started
             </button>
+            </Link>
           </div>
         </div>
 

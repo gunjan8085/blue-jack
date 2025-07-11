@@ -228,7 +228,7 @@ export default function SquareSection({ className = "" }: SquareSectionProps) {
               usage guidelines.
             </p>
             <p className="mt-4">
-              © 2024 ZifyPay Inc. and/or ZifyPay Financial Services, Inc. All
+              © 2025 ZifyPay Inc. and/or ZifyPay Financial Services, Inc. All
               rights reserved. Unauthorized use is prohibited.
             </p>
           </div>
