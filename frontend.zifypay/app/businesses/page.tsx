@@ -110,9 +110,22 @@ export default function BusinessListingPage() {
 
         const response = await fetch(url)
         const result: ApiResponse = await response.json()
+        console.log('Fetched businesses:', result.data.length)
+
         
-        setBusinesses(result.data)
-        setFilteredBusinesses(result.data)
+        // Process the tags to remove # if needed
+        const processedBusinesses = result.data.map(business => ({
+          ...business,
+          serviceCategories: business.serviceCategories?.map(category => ({
+            ...category,
+            tags: category.tags?.map(tag => tag.startsWith('#') ? tag.substring(1) : tag)
+          })) || []
+        }))
+
+        console.log('Processed businesses:', processedBusinesses.length)
+
+        setBusinesses(processedBusinesses)
+        setFilteredBusinesses(processedBusinesses)
         setError(null)
 
         // Set dynamic price range based on data
@@ -141,61 +154,62 @@ export default function BusinessListingPage() {
   // Apply filters whenever filter criteria change
   useEffect(() => {
     const filtered = businesses.filter((business) => {
-      // Search filter
-      const matchesSearch = searchQuery === "" ||
-        business.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.about.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.serviceCategories?.some(cat =>
-          cat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          cat.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
+  // Search filter
+  const matchesSearch = searchQuery === "" ||
+    business.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    business.about.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    business.serviceCategories?.some(cat =>
+      cat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cat.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
 
-      // Location filter
-      const matchesLocation = locationQuery === "" ||
-        business.address.city.toLowerCase().includes(locationQuery.toLowerCase()) ||
-        business.address.state.toLowerCase().includes(locationQuery.toLowerCase()) ||
-        (locationQuery.toLowerCase() === 'current location' && 
-          (business.address.city || business.address.state))
+  // Location filter
+  const matchesLocation = locationQuery === "" ||
+    business.address.city.toLowerCase().includes(locationQuery.toLowerCase()) ||
+    business.address.state.toLowerCase().includes(locationQuery.toLowerCase()) ||
+    (locationQuery.toLowerCase() === 'current location' && 
+      (business.address.city || business.address.state))
 
-      // Business type filter
-      const matchesBusinessType = selectedBusinessTypes.length === 0 ||
-        selectedBusinessTypes.includes(business.businessType)
+  // Business type filter
+  const matchesBusinessType = selectedBusinessTypes.length === 0 ||
+    selectedBusinessTypes.includes(business.businessType)
 
-      // City filter
-      const matchesCity = selectedCities.length === 0 ||
-        selectedCities.includes(business.address.city)
+  // City filter
+  const matchesCity = selectedCities.length === 0 ||
+    selectedCities.includes(business.address.city)
 
-      // Rating filter
-      const matchesRating = business.avgReview >= minRating
+  // Rating filter
+  const matchesRating = business.avgReview >= minRating
 
-      // Price filter (check if any service category falls within range)
-      const matchesPrice = business.serviceCategories?.some(cat =>
-        cat.price >= priceRange[0] && cat.price <= priceRange[1]
-      ) ?? false
+  // Price filter (check if any service category falls within range or if no categories exist)
+  const matchesPrice = business.serviceCategories?.length === 0 || 
+    business.serviceCategories?.some(cat =>
+      cat.price >= priceRange[0] && cat.price <= priceRange[1]
+    )
 
-      // Team size filter
-      const matchesTeamSize =
-        (business.teamSize.min >= teamSizeRange[0] ||
-          business.teamSize.max >= teamSizeRange[0]) &&
-        (business.teamSize.max <= teamSizeRange[1] ||
-          business.teamSize.min <= teamSizeRange[1])
+  // Team size filter
+  const matchesTeamSize =
+    (business.teamSize.min >= teamSizeRange[0] ||
+      business.teamSize.max >= teamSizeRange[0]) &&
+    (business.teamSize.max <= teamSizeRange[1] ||
+      business.teamSize.min <= teamSizeRange[1])
 
-      // Online only filter
-      const matchesOnline = onlineOnly === null ||
-        business.isOnlineOnly === onlineOnly
+  // Online only filter
+  const matchesOnline = onlineOnly === null ||
+    business.isOnlineOnly === onlineOnly
 
-      // Tags filter
-      const matchesTags = selectedTags.length === 0 ||
-        selectedTags.some(tag =>
-          business.serviceCategories?.some(cat =>
-            cat.tags?.includes(tag)
-          )
-        )
+  // Tags filter
+  const matchesTags = selectedTags.length === 0 ||
+    selectedTags.some(tag =>
+      business.serviceCategories?.some(cat =>
+        cat.tags?.includes(tag)
+      )
+    )
 
-      return matchesSearch && matchesLocation && matchesBusinessType && matchesCity &&
-        matchesRating && matchesPrice && matchesTeamSize &&
-        matchesOnline && matchesTags
-    })
+  return matchesSearch && matchesLocation && matchesBusinessType && matchesCity &&
+    matchesRating && matchesPrice && matchesTeamSize &&
+    matchesOnline && matchesTags
+})
 
     // Apply sorting
     filtered.sort((a, b) => {

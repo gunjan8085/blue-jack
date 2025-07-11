@@ -16,6 +16,8 @@ import HeaderForCustomer from "@/components/customer/HeaderForCustomer"
 import { useRouter } from 'next/navigation';
 import { Separator } from "@/components/ui/separator"
 
+type ViewMode = "grid" | "list";
+
 interface BusinessTiming {
   days: number[]
   time: {
@@ -61,18 +63,15 @@ interface ApiResponse {
   data: Business[]
   message: string
   success: boolean
-
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [sortBy, setSortBy] = useState("rating")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [hasToken, setHasToken] = useState(false)
-  const [authChecked, setAuthChecked] = useState(false)
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([])
 
@@ -99,65 +98,52 @@ export default function DashboardPage() {
       router.push('/customer/auth/login');
       return;
     }
-    setHasToken(true);
-    setAuthChecked(true);
+    fetchBusinesses();
   }, [router]);
 
-  // Fetch businesses only after auth check
-  useEffect(() => {
-    if (!authChecked) return;
+  const fetchBusinesses = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`${API_URL}/business/getAllBusiness`)
 
-    const fetchBusinesses = async () => {
-      try {
-        setIsLoading(true)
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/business/getAllBusiness`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch businesses')
-        }
-
-        const result: ApiResponse = await response.json()
-
-        // Process the tags to remove # if needed
-        const processedBusinesses = result.data.map(business => ({
-          ...business,
-          serviceCategories: business.serviceCategories?.map(category => ({
-            ...category,
-            tags: category.tags?.map(tag => tag.startsWith('#') ? tag.substring(1) : tag)
-          })) || []
-        }))
-
-        setBusinesses(processedBusinesses)
-        setFilteredBusinesses(processedBusinesses)
-        setError(null)
-
-        // Set dynamic price range based on data
-        const prices = result.data.flatMap(b =>
-          b.serviceCategories?.map(cat => cat.price) || []
-        )
-        const maxPrice = Math.max(...prices, 1000)
-        setPriceRange([0, maxPrice])
-
-        // Set dynamic team size range
-        const teamSizes = result.data.flatMap(b => [b.teamSize.min, b.teamSize.max])
-        const maxTeamSize = Math.max(...teamSizes, 50)
-        setTeamSizeRange([0, maxTeamSize])
-
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch businesses')
-        console.error('Error fetching businesses:', err)
-      } finally {
-        setIsLoading(false)
+      if (!response.ok) {
+        throw new Error('Failed to fetch businesses')
       }
-    }
 
-    fetchBusinesses()
-  }, [authChecked])
+      const result: ApiResponse = await response.json()
+
+      // Process the tags to remove # if needed
+      const processedBusinesses = result.data.map(business => ({
+        ...business,
+        serviceCategories: business.serviceCategories?.map(category => ({
+          ...category,
+          tags: category.tags?.map(tag => tag.startsWith('#') ? tag.substring(1) : tag)
+        })) || []
+      }))
+
+      setBusinesses(processedBusinesses)
+      setFilteredBusinesses(processedBusinesses)
+      setError(null)
+
+      // Set dynamic price range based on data
+      const prices = result.data.flatMap(b =>
+        b.serviceCategories?.map(cat => cat.price) || []
+      )
+      const maxPrice = Math.max(...prices, 1000)
+      setPriceRange([0, maxPrice])
+
+      // Set dynamic team size range
+      const teamSizes = result.data.flatMap(b => [b.teamSize.min, b.teamSize.max])
+      const maxTeamSize = Math.max(...teamSizes, 50)
+      setTeamSizeRange([0, maxTeamSize])
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch businesses')
+      console.error('Error fetching businesses:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Apply filters whenever filter criteria change
   useEffect(() => {
@@ -204,8 +190,7 @@ export default function DashboardPage() {
           selectedTags.some(tag =>
             business.serviceCategories?.some(cat =>
               cat.tags?.includes(tag)
-            )
-          ))
+            )))
 
       return matchesSearch && matchesBusinessType && matchesCity &&
         matchesRating && matchesPrice && matchesTeamSize &&
@@ -242,23 +227,10 @@ export default function DashboardPage() {
     setSelectedBusinessTypes([])
     setSelectedCities([])
     setMinRating(0)
+    setPriceRange([0, Math.max(...businesses.flatMap(b => b.serviceCategories?.map(c => c.price) || [1000]))])
+    setTeamSizeRange([0, Math.max(...businesses.flatMap(b => [b.teamSize.min, b.teamSize.max]) || [50])])
     setOnlineOnly(null)
     setSelectedTags([])
-  }
-
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!hasToken) {
-    return null;
   }
 
   return (
@@ -281,20 +253,6 @@ export default function DashboardPage() {
                   >
                     Reset all
                   </Button>
-                </div>
-
-                {/* Search */}
-                <div className="mb-6">
-                  <h4 className="font-medium mb-2">Search</h4>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search businesses..."
-                      className="pl-9"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
                 </div>
 
                 {/* Business Type */}
@@ -363,8 +321,6 @@ export default function DashboardPage() {
                     <span className="text-sm w-8">{minRating}</span>
                   </div>
                 </div>
-
-
 
                 {/* Tags */}
                 {allTags.length > 0 && (
@@ -644,19 +600,58 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold">
                   {filteredBusinesses.length} {filteredBusinesses.length === 1 ? "Business" : "Businesses"} Found
                 </h2>
-                <div className="hidden lg:block">
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rating">Rating</SelectItem>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="hidden lg:flex items-center justify-between gap-4 mb-6">
+  {/* Search Input */}
+  <div className="flex-1 max-w-md">
+    <div className="relative">
+      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+      <Input
+        placeholder="Search businesses..."
+        className="pl-9"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+  </div>
+
+  {/* Sort Dropdown */}
+  <div className="w-48">
+    <Select value={sortBy} onValueChange={setSortBy}>
+      <SelectTrigger className="w-full">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-gray-500" />
+          <SelectValue placeholder="Sort by" />
+        </div>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="rating" className="cursor-pointer">
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            Rating
+          </div>
+        </SelectItem>
+        <SelectItem value="name" className="cursor-pointer">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">A-Z</span>
+            Name
+          </div>
+        </SelectItem>
+        <SelectItem value="price-high" className="cursor-pointer">
+          <div className="flex items-center gap-2">
+            <span>$</span>
+            Price: High to Low
+          </div>
+        </SelectItem>
+        <SelectItem value="price-low" className="cursor-pointer">
+          <div className="flex items-center gap-2">
+            <span>$</span>
+            Price: Low to High
+          </div>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+</div>
               </div>
 
               {/* Loading State */}
@@ -675,7 +670,7 @@ export default function DashboardPage() {
                     <p className="text-gray-600 mb-4">{error}</p>
                     <Button
                       variant="outline"
-                      onClick={() => window.location.reload()}
+                      onClick={fetchBusinesses}
                     >
                       Try Again
                     </Button>
@@ -704,71 +699,76 @@ export default function DashboardPage() {
               {!isLoading && !error && filteredBusinesses.length > 0 && viewMode === "grid" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredBusinesses.map((business) => (
-                    <Link key={business._id} href={`/business/${business._id}`}>
-                      <Card className="h-full transition-all hover:shadow-md hover:border-purple-200 cursor-pointer">
-                        <CardContent className="p-6">
-                          <div className="flex flex-col h-full">
-                            {/* Business Image */}
-                            <div className="relative aspect-video rounded-lg overflow-hidden mb-4 bg-gray-100">
-                              {business.thumbnail ? (
-                                <img
-                                  src={business.thumbnail}
-                                  alt={business.brandName}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                                  <span>No Image</span>
-                                </div>
-                              )}
+                    <Link href={`/business/${business._id}`} key={business._id} className="no-underline">
+                      <Card
+                        className={`group hover:shadow-xl transition-all duration-300 border-0 shadow-sm hover:shadow-md hover:-translate-y-1 flex flex-col h-full`}
+                      >
+                        <div className={`relative`}>
+                          <img
+                            src={business.thumbnail || "/placeholder.svg"}
+                            alt={business.brandName}
+                            className={`object-cover w-full h-48 rounded-t-lg`}
+                          />
+                          {business.isOnlineOnly && (
+                            <Badge className="absolute top-2 left-2 bg-green-600 hover:bg-green-700">
+                              Online Only
+                            </Badge>
+                          )}
+                          <div className="absolute bottom-2 left-2 flex items-center bg-white/90 px-2 py-1 rounded">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                            <span className="text-sm font-medium">
+                              {business.avgReview ? business.avgReview.toFixed(1) : 0}
+                              <span className="text-gray-500 text-xs"> ({business.reviewCount})</span>
+                            </span>
+                          </div>
+                        </div>
+                        <CardContent className="p-4 flex flex-col flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{business.brandName}</h3>
+                          </div>
+                          <div className="flex items-center text-gray-600 mb-2 text-sm">
+                            <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="line-clamp-1">
+                              {business.address.city}, {business.address.state}
+                            </span>
+                          </div>
+                          <div className="flex items-center text-gray-600 mb-3 text-sm">
+                            <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span>
+                              {business.timings[0]?.time[0]?.open.hour.toString().padStart(2, '0')}:
+                              {business.timings[0]?.time[0]?.open.minute.toString().padStart(2, '0')} -
+                              {business.timings[0]?.time[0]?.close.hour.toString().padStart(2, '0')}:
+                              {business.timings[0]?.time[0]?.close.minute.toString().padStart(2, '0')}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {business.serviceCategories?.slice(0, 3).map((category) => (
+                              <Badge key={category.title} variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
+                                {category.title} (${category.price})
+                              </Badge>
+                            ))}
+                            {business.serviceCategories?.length > 3 && (
+                              <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                                +{business.serviceCategories.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                          {business.serviceCategories?.[0]?.tags?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {business.serviceCategories[0].tags.slice(0, 5).map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
                             </div>
-
-                            {/* Business Info */}
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-2">
-                                <h3 className="text-lg font-semibold line-clamp-1">{business.brandName}</h3>
-                                <div className="flex items-center">
-                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                                  <span className="text-sm font-medium">
-                                    {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
-                                  </span>
-                                </div>
-                              </div>
-
-                              <p className="text-sm text-gray-600 line-clamp-2 mb-3">{business.about}</p>
-
-                              <div className="flex items-center text-sm text-gray-500 mb-3">
-                                <MapPin className="h-4 w-4 mr-1" />
-                                <span className="line-clamp-1">
-                                  {business.address.city}, {business.address.state}
-                                </span>
-                              </div>
-
-                              {/* Price Range */}
-                              <div className="mt-auto">
-                                <div className="text-sm text-gray-600 mb-2">
-                                  {business.serviceCategories?.length > 0 && (
-                                    <span>
-                                      From ${Math.min(...business.serviceCategories.map(c => c.price))}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {/* Tags */}
-                                <div className="flex flex-wrap gap-2">
-                                  {business.serviceCategories?.slice(0, 3).map((category) => (
-                                    <Badge key={category.title} variant="outline" className="text-xs">
-                                      {category.title}
-                                    </Badge>
-                                  ))}
-                                  {business.serviceCategories?.length > 3 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{business.serviceCategories.length - 3} more
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                          )}
+                          <div className="mt-auto">
+                            <Button
+                              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                              size="sm"
+                            >
+                              View Profile
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -781,7 +781,7 @@ export default function DashboardPage() {
               {!isLoading && !error && filteredBusinesses.length > 0 && viewMode === "list" && (
                 <div className="space-y-4">
                   {filteredBusinesses.map((business) => (
-                    <Link key={business._id} href={`/customer/business/${business._id}`}>
+                    <Link key={business._id} href={`/business/${business._id}`}>
                       <Card className="transition-all hover:shadow-md hover:border-purple-200 cursor-pointer">
                         <CardContent className="p-6">
                           <div className="flex flex-col sm:flex-row gap-6">
@@ -807,7 +807,7 @@ export default function DashboardPage() {
                                 <div className="flex items-center">
                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                                   <span className="text-sm font-medium">
-                                     {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
+                                    {business.avgReview ? business.avgReview.toFixed(1) : 0} ({business.reviewCount})
                                   </span>
                                 </div>
                               </div>
