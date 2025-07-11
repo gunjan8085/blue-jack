@@ -16,6 +16,7 @@ const jobRoutes = require("./routes/job.route");
 const applicationRoutes = require("./routes/application.route");
 const adminRoutes = require("./routes/admin.route");
 const pricingPlanRoutes = require("./routes/pricingPlan.route");
+const paymentRoutes = require('./routes/payment.route');
 
 
 // Base Routes
@@ -37,6 +38,7 @@ router.use("/api/v1/jobs", jobRoutes);
 router.use("/api/v1/applications", applicationRoutes);
 router.use("/api/v1/admin", adminRoutes);
 router.use("/api/pricing-plan", pricingPlanRoutes);
+router.use(paymentRoutes);
 
 module.exports = router;
 

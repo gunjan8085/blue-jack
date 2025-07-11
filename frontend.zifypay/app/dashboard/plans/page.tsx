@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { API_URL } from '@/lib/const';
 import AppSidebar from '@/components/for-bussiness/AppSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import PaymentModal from '@/components/PaymentModal';
 
 const plans = [
   {
@@ -38,6 +39,8 @@ export default function DashboardSubscriptionPlans() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [modalPlan, setModalPlan] = useState<any>(null);
 
   useEffect(() => {
     const business = localStorage.getItem('businessProfile');
@@ -53,31 +56,39 @@ export default function DashboardSubscriptionPlans() {
     }
   }, [router]);
 
-  async function handlePurchase(pricingPlanId: string) {
+  async function handlePurchase(pricingPlanId: string, plan: any) {
     try {
       if (!businessId) throw new Error("Missing business ID");
-
-      setLoadingPlan(pricingPlanId);
-      const res = await fetch(`${API_URL}/business/purchase-subscription`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ businessId, pricingPlanId }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Something went wrong!');
-      
-      alert(`✅ Subscription successful`);
-      router.push('/dashboard');
+      setSelectedPlan(pricingPlanId);
+      if (plan.price === '$0') {
+        setLoadingPlan(pricingPlanId);
+        const res = await fetch(`${API_URL}/business/purchase-subscription`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ businessId, pricingPlanId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Something went wrong!');
+        alert(`✅ Subscription successful`);
+        router.push('/dashboard');
+      } else {
+        setModalPlan(plan);
+        setShowPaymentModal(true);
+      }
     } catch (err: any) {
       console.error(err);
       alert(`❌ Error: ${err.message}`);
     } finally {
       setLoadingPlan(null);
     }
+  }
+
+  function handlePaymentSuccess() {
+    alert('✅ Subscription successful');
+    router.push('/dashboard');
   }
 
   return (
@@ -124,9 +135,9 @@ export default function DashboardSubscriptionPlans() {
                       </ul>
                       <Button
                         className="w-full"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
-                          handlePurchase(plan.pricingPlanId);
+                          handlePurchase(plan.pricingPlanId, plan);
                         }}
                         disabled={loadingPlan === plan.pricingPlanId}
                       >
@@ -143,6 +154,15 @@ export default function DashboardSubscriptionPlans() {
             </div>
           </div>
         </main>
+        {showPaymentModal && modalPlan && businessId && (
+          <PaymentModal
+            open={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            onSuccess={handlePaymentSuccess}
+            plan={modalPlan}
+            businessId={businessId}
+          />
+        )}
       </div>
     </SidebarProvider>
   );
