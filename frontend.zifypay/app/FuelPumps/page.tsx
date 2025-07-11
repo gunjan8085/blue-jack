@@ -3,7 +3,7 @@ import Image from "next/image";
 import {
   TestimonialSection,
   TestimonialItem,
-} from "../Landing/usecase/Testimonial";
+} from "../list-your-business/usecase/Testimonial";
 
 const features = [
   {

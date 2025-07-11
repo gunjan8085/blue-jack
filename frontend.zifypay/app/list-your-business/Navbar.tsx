@@ -178,22 +178,22 @@ function Navbar() {
           <Menu setActive={setActive} className="text-sm">
             <MenuItem setActive={setActive} active={active} item="Features">
               <div className="flex flex-col space-y-2 text-sm min-w-[220px]">
-                <HoveredLink href="/Landing/feature/appointmentCalendar">
+                <HoveredLink href="/list-your-business/feature/appointmentCalendar">
                   Appointment calendar
                 </HoveredLink>
-                <HoveredLink href="/Landing/feature/pointOfSale">
+                <HoveredLink href="/list-your-business/feature/pointOfSale">
                   Point of sale
                 </HoveredLink>
-                <HoveredLink href="/Landing/feature/onlineBookings">
+                <HoveredLink href="/list-your-business/feature/onlineBookings">
                   Online bookings
                 </HoveredLink>
-                <HoveredLink href="/Landing/feature/payments">
+                <HoveredLink href="/list-your-business/feature/payments">
                   Payments
                 </HoveredLink>
-                <HoveredLink href="/Landing/feature/checkInApp">
+                <HoveredLink href="/list-your-business/feature/checkInApp">
                   Check-in app
                 </HoveredLink>
-                <HoveredLink href="/Landing/feature/cloudDashboard">
+                <HoveredLink href="/list-your-business/feature/cloudDashboard">
                   Cloud Dashboard
                 </HoveredLink>
               </div>
@@ -203,22 +203,22 @@ function Navbar() {
                 {[
                   {
                     label: "Fuel Pumps",
-                    href: "/Landing/usecase/FuelPumps",
+                    href: "/list-your-business/usecase/FuelPumps",
                     icon: Fuel,
                   },
                   {
                     label: "Retail POS",
-                    href: "/Landing/usecase/RetailPOS",
+                    href: "/list-your-business/usecase/RetailPOS",
                     icon: MonitorSmartphone,
                   },
                   {
                     label: " financial Support ",
-                    href: "/Landing/usecase/loan",
+                    href: "/list-your-business/usecase/loan",
                     icon: Cloud,
                   },
                   {
                     label: "Secure Payment",
-                    href: "/Landing/usecase/SecurePayment",
+                    href: "/list-your-business/usecase/SecurePayment",
                     icon: ShieldCheck,
                   },
                 ].map((item) => {
@@ -263,7 +263,7 @@ function Navbar() {
                     return (
                       <Link
                         key={industry}
-                        href={`Landing/${slug}`}
+                        href={`/list-your-business/${slug}`}
                         className="text-gray-500 hover:text-blue-600 hover:text-[18px] rounded px-2 mx-3 transition-all duration-200 text-[17px] hover:scale-[1.04]"
                       >
                         {industry}
