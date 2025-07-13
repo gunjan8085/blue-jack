@@ -8,10 +8,11 @@ export type AboutDemoContent = {
 
 export const aboutDemoContent: Record<string, AboutDemoContent> = {
   salons: {
-    subtitle: "For Salons",
-    title: "Transform Your Salon Experience",
+    subtitle: "For Modern Salons",
+    title:
+      "Elevate your salon’s potential with a complete digital solution that simplifies appointment scheduling, enhances client engagement, and streamlines daily operations. Whether you're managing a boutique salon or a multi-location brand, our intelligent tools help you focus more on delivering exceptional service while we take care of the rest.",
     description:
-      "Empower your salon with seamless online booking, client management, and marketing tools.",
+      "Elevate your salon’s potential with a complete digital solution that simplifies appointment scheduling, enhances client engagement, and streamlines daily operations. Whether you're managing a boutique salon or a multi-location brand, our intelligent tools help you focus more on delivering exceptional service while we take care of the rest.",
     buttonText: "Book a Demo",
     images: [
       "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
@@ -20,6 +21,7 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
     ],
   },
+
   "hair salons": {
     subtitle: "For Hair Salons",
     title: "Style Meets Technology",

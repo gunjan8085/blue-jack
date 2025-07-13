@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  ContainerAnimated,
-  ContainerStagger,
-  GalleryGrid,
-  GalleryGridCell,
-} from "./galllery";
+import { ContainerAnimated, ContainerStagger } from "./galllery";
 import { Button } from "@/components/ui/button";
 
 export type AboutDemoSectionProps = {
@@ -22,15 +17,16 @@ export const AboutDemoSection: React.FC<AboutDemoSectionProps> = ({
   title,
   description,
   buttonText,
-  buttonColor = "bg-rose-500",
+  buttonColor = "bg-blue-500",
   images,
   onButtonClick,
 }) => {
   return (
-    <section className="px-12 min-h-screen ">
-      <div className=" px-10   grid w-full rounded-3xl  grid-cols-1 items-center gap-8 py-12 md:grid-cols-2 bg-[#ebf8ff]">
-        <ContainerStagger>
-          <ContainerAnimated className="mb-4  text-xs font-medium   text-black md:text-sm">
+    <section className="px-6 md:px-12 min-h-screen">
+      <div className="grid w-full rounded-3xl grid-cols-1 items-center gap-8 py-12 md:grid-cols-2 bg-[#ebf8ff]">
+        {/* Left Text Content */}
+        <ContainerStagger className="px-6 md:px-10">
+          <ContainerAnimated className="mb-4 text-xs font-medium text-black md:text-sm">
             {subtitle}
           </ContainerAnimated>
           <ContainerAnimated className="text-4xl text-black font-semibold md:text-[2.4rem] tracking-tight">
@@ -40,25 +36,27 @@ export const AboutDemoSection: React.FC<AboutDemoSectionProps> = ({
             {description}
           </ContainerAnimated>
           <ContainerAnimated>
-            <Button className="bg-blue-500" onClick={onButtonClick}>
+            <Button className={buttonColor} onClick={onButtonClick}>
               {buttonText}
             </Button>
           </ContainerAnimated>
         </ContainerStagger>
 
-        <GalleryGrid>
-          {images.map((imageUrl, index) => (
-            <GalleryGridCell index={index} key={index}>
+        {/* Right 2x2 Image Grid */}
+        <div className="grid grid-cols-2 grid-rows-2 gap-4 px-6 md:px-10">
+          {images.slice(0, 4).map((imageUrl, index) => (
+            <div
+              key={index}
+              className="w-full aspect-square overflow-hidden rounded-xl shadow-md"
+            >
               <img
-                className="size-full object-cover object-center"
-                width="100%"
-                height="100%"
                 src={imageUrl}
-                alt={title + " image " + (index + 1)}
+                alt={`${title} image ${index + 1}`}
+                className="w-full h-full object-cover object-center"
               />
-            </GalleryGridCell>
+            </div>
           ))}
-        </GalleryGrid>
+        </div>
       </div>
     </section>
   );
