@@ -24,12 +24,12 @@ jobs:
         run: |
           ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd ~/blue-jack
+            sudo su 
 
             echo "📦 Pulling latest code..."
             git pull origin main
 
-            sudo su 
-            
+
             echo "🔧 Installing backend deps..."
             cd backend.zifypay && npm install
 
