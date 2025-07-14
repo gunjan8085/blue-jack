@@ -6,12 +6,22 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-// -----------------------------
-// ✅ Type Definitions
-// -----------------------------
+// Icons (replacing react-icons for simplicity)
+const ArrowLeft = ({ size = 24, color = "#fff" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+  </svg>
+);
+
+const ArrowRight = ({ size = 24, color = "#fff" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+  </svg>
+);
+
+// Type Definitions
 type Testimonial = {
   quote: string;
   name: string;
@@ -37,9 +47,7 @@ type CircularTestimonialsProps = {
   };
 };
 
-// -----------------------------
-// ✅ Sample Data
-// -----------------------------
+// Sample Data
 const testimonials: Testimonial[] = [
   {
     quote:
@@ -64,45 +72,47 @@ const testimonials: Testimonial[] = [
   },
 ];
 
-// -----------------------------
-// ✅ Gap Calculation Utility
-// -----------------------------
+// Gap Calculation Utility
 function calculateGap(width: number): number {
+  // Mobile-first approach
+  if (width <= 480) return 30; // Very small screens
+  if (width <= 640) return 40; // Small screens
+  if (width <= 768) return 50; // Medium screens
+
+  // Desktop calculations
   const minWidth = 1024;
   const maxWidth = 1456;
   const minGap = 60;
   const maxGap = 86;
+
   if (width <= minWidth) return minGap;
   if (width >= maxWidth)
     return Math.max(minGap, maxGap + 0.06018 * (width - maxWidth));
+
   return (
     minGap + (maxGap - minGap) * ((width - minWidth) / (maxWidth - minWidth))
   );
 }
 
-// -----------------------------
-// ✅ Core Component
-// -----------------------------
+// Core Component
 const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
   testimonials,
   autoplay = true,
   colors = {},
   fontSizes = {},
 }) => {
-  const colorName = colors.name ?? "#000";
-  const colorDesignation = colors.designation ?? "#6b7280";
-  const colorTestimony = colors.testimony ?? "#4b5563";
+  const colorName = colors.name ?? "#fff";
+  const colorDesignation = colors.designation ?? "#cbd5e1";
+  const colorTestimony = colors.testimony ?? "#e2e8f0";
   const colorArrowBg = colors.arrowBackground ?? "#141414";
   const colorArrowFg = colors.arrowForeground ?? "#f1f1f7";
   const colorArrowHoverBg = colors.arrowHoverBackground ?? "#00a6fb";
-  const fontSizeName = fontSizes.name ?? "1.5rem";
-  const fontSizeDesignation = fontSizes.designation ?? "0.925rem";
-  const fontSizeQuote = fontSizes.quote ?? "1.125rem";
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoverPrev, setHoverPrev] = useState(false);
   const [hoverNext, setHoverNext] = useState(false);
   const [containerWidth, setContainerWidth] = useState(1200);
+  const [isMobile, setIsMobile] = useState(false);
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -118,6 +128,7 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
       if (imageContainerRef.current) {
         setContainerWidth(imageContainerRef.current.offsetWidth);
       }
+      setIsMobile(window.innerWidth < 768);
     }
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -159,7 +170,10 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
 
   function getImageStyle(index: number): React.CSSProperties {
     const gap = calculateGap(containerWidth);
-    const maxStickUp = gap * 0.8;
+    const maxStickUp = isMobile ? gap * 0.5 : gap * 0.8;
+    const scale = isMobile ? 0.75 : 0.85;
+    const rotateY = isMobile ? 8 : 15;
+
     const isActive = index === activeIndex;
     const isLeft =
       (activeIndex - 1 + testimonialsLength) % testimonialsLength === index;
@@ -177,18 +191,18 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
     if (isLeft) {
       return {
         zIndex: 2,
-        opacity: 1,
+        opacity: isMobile ? 0.7 : 1,
         pointerEvents: "auto",
-        transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(15deg)`,
+        transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(${scale}) rotateY(${rotateY}deg)`,
         transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
       };
     }
     if (isRight) {
       return {
         zIndex: 2,
-        opacity: 1,
+        opacity: isMobile ? 0.7 : 1,
         pointerEvents: "auto",
-        transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(-15deg)`,
+        transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(${scale}) rotateY(-${rotateY}deg)`,
         transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
       };
     }
@@ -207,11 +221,18 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
     exit: { opacity: 0, y: -20 },
   };
 
+  // Responsive font sizes
+  const responsiveFontSizes = {
+    name: isMobile ? "1.25rem" : fontSizes.name ?? "1.5rem",
+    designation: isMobile ? "0.875rem" : fontSizes.designation ?? "0.925rem",
+    quote: isMobile ? "1rem" : fontSizes.quote ?? "1.125rem",
+  };
+
   return (
-    <div className="testimonial-container min-h-screen flex items-center justify-center">
+    <div className="testimonial-container">
       <div className="testimonial-grid">
         {/* Images */}
-        <div className="image-container text-white" ref={imageContainerRef}>
+        <div className="image-container" ref={imageContainerRef}>
           {testimonials.map((testimonial, index) => (
             <img
               key={testimonial.src}
@@ -225,11 +246,12 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
         </div>
 
         {/* Content */}
-        <div className="testimonial-content relative">
+        <div className="testimonial-content">
           {/* Glow background */}
-          <div className="absolute inset-0 -z-10 flex items-center justify-center">
-            <div className="w-80 h-40 md:w-[28rem] md:h-56 bg-blue-400 opacity-30 blur-3xl rounded-2xl mx-auto" />
+          <div className="glow-background">
+            <div className="glow-effect bg-blue-400" />
           </div>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -241,7 +263,7 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
             >
               <h3
                 className="name"
-                style={{ color: "#fff", fontSize: fontSizeName }}
+                style={{ color: colorName, fontSize: responsiveFontSizes.name }}
               >
                 {activeTestimonial.name}
               </h3>
@@ -249,16 +271,21 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
                 className="designation"
                 style={{
                   color: colorDesignation,
-                  fontSize: fontSizeDesignation,
+                  fontSize: responsiveFontSizes.designation,
                 }}
               >
                 {activeTestimonial.designation}
               </p>
-              {/* Glow background for quote */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500 opacity-20 blur-3xl rounded-full z-0 pointer-events-none" />
+
+              {/* Quote glow background */}
+              <div className="quote-glow bg-blue-500" />
+
               <motion.p
-                className="quote relative z-10"
-                style={{ color: "#fff", fontSize: fontSizeQuote }}
+                className="quote"
+                style={{
+                  color: colorTestimony,
+                  fontSize: responsiveFontSizes.quote,
+                }}
               >
                 {activeTestimonial.quote.split(" ").map((word, i) => (
                   <motion.span
@@ -289,7 +316,7 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
 
           <div className="arrow-buttons">
             <button
-              className="arrow-button prev-button"
+              className="arrow-button"
               onClick={handlePrev}
               style={{
                 backgroundColor: hoverPrev ? colorArrowHoverBg : colorArrowBg,
@@ -298,10 +325,10 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
               onMouseLeave={() => setHoverPrev(false)}
               aria-label="Previous testimonial"
             >
-              <FaArrowLeft size={28} color={colorArrowFg} />
+              <ArrowLeft size={isMobile ? 20 : 28} color={colorArrowFg} />
             </button>
             <button
-              className="arrow-button next-button"
+              className="arrow-button"
               onClick={handleNext}
               style={{
                 backgroundColor: hoverNext ? colorArrowHoverBg : colorArrowBg,
@@ -310,7 +337,7 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
               onMouseLeave={() => setHoverNext(false)}
               aria-label="Next testimonial"
             >
-              <FaArrowRight size={28} color={colorArrowFg} />
+              <ArrowRight size={isMobile ? 20 : 28} color={colorArrowFg} />
             </button>
           </div>
         </div>
@@ -320,63 +347,219 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
         .testimonial-container {
           width: 100%;
           max-width: 56rem;
-          padding: 2rem;
+          padding: 1rem;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
+
         .testimonial-grid {
           display: grid;
-          gap: 5rem;
+          gap: 3rem;
+          width: 100%;
         }
+
         .image-container {
           position: relative;
           width: 100%;
-          height: 24rem;
+          height: 16rem;
           perspective: 1000px;
         }
+
         .testimonial-image {
           position: absolute;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          border-radius: 1.5rem;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          border-radius: 1rem;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
+
         .testimonial-content {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          position: relative;
+          text-align: center;
         }
+
+        .glow-background {
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .glow-effect {
+          width: 20rem;
+          height: 10rem;
+          opacity: 0.3;
+          filter: blur(3rem);
+          border-radius: 1rem;
+        }
+
+        .quote-glow {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translateX(-50%) translateY(-50%);
+          width: 25rem;
+          height: 25rem;
+          opacity: 0.2;
+          filter: blur(3rem);
+          border-radius: 50%;
+          z-index: 0;
+          pointer-events: none;
+        }
+
         .name {
           font-weight: bold;
-          margin-bottom: 0.25rem;
+          margin-bottom: 0.5rem;
+          z-index: 10;
+          position: relative;
         }
+
         .designation {
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
+          z-index: 10;
+          position: relative;
         }
+
         .quote {
-          line-height: 1.75;
+          line-height: 1.6;
+          z-index: 10;
+          position: relative;
+          margin-bottom: 1.5rem;
         }
+
         .arrow-buttons {
           display: flex;
-          gap: 1.5rem;
-          padding-top: 3rem;
+          gap: 1rem;
+          justify-content: center;
+          z-index: 10;
+          position: relative;
         }
+
         .arrow-button {
-          width: 2.7rem;
-          height: 2.7rem;
+          width: 2.5rem;
+          height: 2.5rem;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: background-color 0.3s;
+          transition: all 0.3s ease;
           border: none;
+          outline: none;
         }
+
+        .arrow-button:active {
+          transform: scale(0.95);
+        }
+
+        /* Mobile styles */
+        @media (max-width: 480px) {
+          .testimonial-container {
+            padding: 0.75rem;
+          }
+
+          .testimonial-grid {
+            gap: 2rem;
+          }
+
+          .image-container {
+            height: 14rem;
+          }
+
+          .testimonial-image {
+            border-radius: 0.75rem;
+          }
+
+          .glow-effect {
+            width: 16rem;
+            height: 8rem;
+          }
+
+          .quote-glow {
+            width: 20rem;
+            height: 20rem;
+          }
+
+          .quote {
+            line-height: 1.5;
+          }
+
+          .arrow-button {
+            width: 2.25rem;
+            height: 2.25rem;
+          }
+        }
+
+        /* Tablet and desktop styles */
         @media (min-width: 768px) {
+          .testimonial-container {
+            padding: 2rem;
+          }
+
           .testimonial-grid {
             grid-template-columns: 1fr 1fr;
+            gap: 5rem;
           }
+
+          .image-container {
+            height: 24rem;
+          }
+
+          .testimonial-image {
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          }
+
+          .testimonial-content {
+            text-align: left;
+          }
+
+          .glow-effect {
+            width: 28rem;
+            height: 14rem;
+          }
+
+          .quote-glow {
+            width: 37.5rem;
+            height: 37.5rem;
+          }
+
+          .quote {
+            line-height: 1.75;
+            margin-bottom: 2rem;
+          }
+
           .arrow-buttons {
-            padding-top: 0;
+            justify-content: flex-start;
+            gap: 1.5rem;
+          }
+
+          .arrow-button {
+            width: 2.7rem;
+            height: 2.7rem;
+          }
+        }
+
+        /* Large desktop styles */
+        @media (min-width: 1024px) {
+          .testimonial-container {
+            padding: 2.5rem;
+          }
+
+          .designation {
+            margin-bottom: 2rem;
+          }
+
+          .quote {
+            margin-bottom: 3rem;
           }
         }
       `}</style>
@@ -384,16 +567,22 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
   );
 };
 
-// -----------------------------
-// ✅ Exported Wrapper Component
-// -----------------------------
+// Exported Wrapper Component
 export default function Testimonial() {
   return (
-    <div className="bg-gradient-to-r from-[#001A39] to-[#001433] flex flex-col items-center justify-center min-h-screen px-4 py-12  text-white text-center">
-      <h1 className="text-3xl md:text-4xl font-inter mb-10 text-white">
-        What Our Customers Are Saying
-      </h1>
-      <CircularTestimonials testimonials={testimonials} autoplay={true} />
+    <div
+      className="bg-gradient-to-r from-[#001A39] to-[#001433] min-h-screen flex flex-col items-center justify-center text-white"
+      style={{
+        fontFamily:
+          "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      }}
+    >
+      <div className="w-full max-w-7xl px-4 md:px-32">
+        <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold mt-24  md:mb-10 text-white text-center md:text-center">
+          What Our Customers Are Saying
+        </h1>
+        <CircularTestimonials testimonials={testimonials} autoplay={true} />
+      </div>
     </div>
   );
 }

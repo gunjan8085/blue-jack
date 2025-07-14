@@ -36,7 +36,7 @@ CardContent.displayName = "CardContent";
 function TwoSectionCard({
   title = "Innovative Solutions",
   description = "Discover cutting-edge technology",
-  content = "Transform your business with our advanced platform that delivers exceptional results. Our comprehensive solution provides everything you need to succeed in today's competitive market. Experience seamless integration, powerful analytics, and unmatched performance that drives growth and innovation.",
+  content = "Transform your business with our advanced platform that delivers exceptional results...",
   videoSrc = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
   videoPoster = "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=450&fit=crop",
   className,
@@ -57,16 +57,16 @@ function TwoSectionCard({
 
   return (
     <motion.div
-      className={cn("min-w-7xl w-full", className)}
+      className={cn("w-full", className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <Card className="overflow-hidden border-[#9b87f5]/10">
-        <div className="grid lg:grid-cols-2 gap-0 min-h-[400px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[400px]">
           {/* Left Section */}
           <motion.div
-            className="flex flex-col justify-center p-8 lg:p-12 bg-white"
+            className="flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-10 lg:p-12 bg-white"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -74,7 +74,7 @@ function TwoSectionCard({
             <div className="space-y-6">
               <div className="space-y-3">
                 <motion.h2
-                  className="text-3xl lg:text-4xl font-bold text-black leading-tight"
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black leading-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
@@ -82,7 +82,7 @@ function TwoSectionCard({
                   {title}
                 </motion.h2>
                 <motion.p
-                  className="text-lg text-gray-700 font-medium"
+                  className="text-base sm:text-lg text-gray-700 font-medium"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
@@ -91,7 +91,7 @@ function TwoSectionCard({
                 </motion.p>
               </div>
               <motion.p
-                className="text-gray-800 leading-relaxed text-base"
+                className="text-gray-800 leading-relaxed text-sm sm:text-base"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
@@ -99,15 +99,15 @@ function TwoSectionCard({
                 {content}
               </motion.p>
               <motion.div
-                className="flex gap-4 pt-4"
+                className="flex flex-col sm:flex-row gap-4 pt-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
-                <button className="px-6 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1e40af] transition-colors">
+                <button className="px-6 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1e40af] transition-colors w-full sm:w-auto">
                   Learn More
                 </button>
-                <button className="px-6 py-3 border border-[#9b87f5] text-[#2563EB] rounded-lg font-medium hover:bg-[#f3f4f6] transition-colors">
+                <button className="px-6 py-3 border border-[#9b87f5] text-[#2563EB] rounded-lg font-medium hover:bg-[#f3f4f6] transition-colors w-full sm:w-auto">
                   Get Started
                 </button>
               </motion.div>
@@ -116,12 +116,12 @@ function TwoSectionCard({
 
           {/* Right Section - Video */}
           <motion.div
-            className="relative bg-gray-100 flex items-center justify-center overflow-hidden"
+            className="relative bg-gray-100 flex items-center justify-center overflow-hidden min-h-[300px]"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <div className="relative w-full h-full min-h-[400px]">
+            <div className="relative w-full h-full">
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover"
@@ -141,9 +141,9 @@ function TwoSectionCard({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="w-16 h-16 bg-[#9b87f5] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#9b87f5] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
                     <Play
-                      className="w-6 h-6 text-white ml-1"
+                      className="w-5 h-5 sm:w-6 sm:h-6 text-white ml-1"
                       fill="currentColor"
                     />
                   </div>
@@ -161,11 +161,8 @@ function TwoSectionCard({
 
 export default function TwoSectionCardDemo() {
   return (
-    <div
-      className="px-12 bg-gradient-to-r from-[#001A39] to-[#001433] py-12"
-      style={{ fontFamily: "'Proxima Nova', sans-serif" }}
-    >
-      <div className="p-8 bg-white min-h-screen flex items-center justify-center rounded-2xl border-2 border-[#9b87f5]/10 shadow-xl">
+    <div className="px-4 sm:px-6 md:px-12 bg-gradient-to-r from-[#001A39] to-[#001433] py-12">
+      <div className="p-4 sm:p-6 md:p-8 bg-white min-h-[500px] flex items-center justify-center rounded-2xl border-2 border-[#9b87f5]/10 shadow-xl">
         <TwoSectionCard />
       </div>
     </div>

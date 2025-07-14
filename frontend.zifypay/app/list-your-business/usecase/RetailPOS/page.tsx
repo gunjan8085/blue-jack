@@ -62,7 +62,7 @@ export default function FuelPumps() {
           <h1 className="text-4xl md:text-6xl leading-tight">
             Transform Your Retail Operations with Smart POS.
           </h1>
-          <p className="mt-6 text-lg text-gray-300">
+          <p className="mt-6 text-lg text-gray-300 ">
             Real-time inventory, smart billing, and seamless payments.
           </p>
 
@@ -75,14 +75,18 @@ export default function FuelPumps() {
             </button>
           </div>
 
-          <p className="text-xs text-gray-400 mt-6 w-96">
+          <p className="text-xs text-gray-400 mt-6 w-96 hidden md:block">
             ZifyPay is a financial technology company, not a bank. Banking
             services are provided by regulated financial institutions.
           </p>
         </motion.div>
 
         {/* Image */}
-        <img src="/img2.png" alt="Fuel Pump" className="w-1/2 z-10" />
+        <img
+          src="/pos.png"
+          alt="Fuel Pump"
+          className="w-1/2 z-10 hidden md:block"
+        />
 
         {/* Right animation placeholder (optional) */}
         <motion.div
@@ -109,13 +113,13 @@ export default function FuelPumps() {
         }
       >
         <video
-          src="https://youtu.be/0M-tu0hFIOc?si=A3GtdVPJPz7QVsNk"
-          height={500}
-          width={1000}
-          className="mx-auto rounded-2xl object-cover h-full object-left-top"
-          draggable={false}
+          src="/pay.mp4"
           controls
-        ></video>
+          className="w-full max-w-5xl h-full aspect-video mx-auto rounded-2xl object-contain"
+          draggable={false}
+        >
+          Your browser does not support the video tag.
+        </video>
       </ContainerScroll>
       {/* <Bendo /> */}
       <div className="px-16">

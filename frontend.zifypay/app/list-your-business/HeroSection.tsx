@@ -20,23 +20,23 @@ const HeroSection = () => {
   return (
     <section
       ref={ref}
-      className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white min-h-[900px] flex items-center justify-between px-10 md:px-20 py-16 relative overflow-hidden"
+      className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white min-h-[100vh] flex flex-col md:flex-row items-center justify-center md:justify-between px-4 md:px-20 py-12 md:py-16 relative overflow-hidden w-full"
     >
       {/* Text Glow Background */}
-      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[600px] h-[600px] bg-blue-500 opacity-30 blur-3xl rounded-full z-0" />
+      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-blue-500 opacity-30 blur-3xl rounded-full z-0" />
 
       {/* Text Content */}
       <motion.div
-        className="max-w-2xl z-10"
+        className="w-full md:max-w-2xl z-10 flex flex-col justify-center items-center md:items-start text-center md:text-left"
         style={{ fontFamily: "'Proxima Nova', sans-serif", fontWeight: 600 }}
         initial={{ opacity: 0, y: 60 }}
         animate={controls}
         transition={{ duration: 1, ease: "easeOut" }}
       >
-        <h1 className="text-4xl md:text-6xl  leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl leading-tight">
           Smooth Bookings. Seamless Payments. Total Self-Care
         </h1>
-        <p className="mt-6 text-lg text-gray-300">
+        <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-xl">
           Apply in 10 minutes and transform how you operate.
         </p>
 
@@ -48,29 +48,33 @@ const HeroSection = () => {
               className="bg-transparent flex-1 text-white placeholder-white/70 text-sm md:text-base outline-none px-2 py-2"
             />
             <Link href="/user-flow">
-            <button  className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition">
-              Get started
-            </button>
+              <button className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition">
+                Get started
+              </button>
             </Link>
           </div>
         </div>
 
-        <p className="text-xs text-gray-400 mt-3 w-96">
+        <p className="text-xs text-gray-400 mt-3 w-full md:w-96">
           ZifyPay is a financial technology company, not a bank. Banking
           services are provided by regulated financial institutions.
         </p>
       </motion.div>
 
-      {/* Image Card */}
+      {/* Image - hidden on small screens */}
+      <img
+        src="img2.png"
+        alt="Hero visual"
+        className="hidden md:block w-full md:w-1/2 mt-8 md:mt-0"
+      />
 
-      <img src="img2.png" alt="" className="w-1/2 " />
-
+      {/* Decorative motion element (only on md and up) */}
       <motion.div
         className="hidden md:block absolute right-10 top-1/2 transform -translate-y-1/2 w-[450px]"
         initial={{ opacity: 0, x: 80 }}
         animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 80 }}
         transition={{ duration: 1.1, ease: "easeOut", delay: 0.2 }}
-      ></motion.div>
+      />
     </section>
   );
 };

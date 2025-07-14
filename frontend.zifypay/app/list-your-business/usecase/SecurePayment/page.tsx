@@ -53,7 +53,7 @@ export default function FuelPumps() {
             Trusted Transactions, Every Time.
           </h1>
           <p className="mt-6 text-lg text-gray-300">
-            End-to-end encrypted transactions for every  payment.
+            End-to-end encrypted transactions for every payment.
           </p>
 
           <div className="mt-6 flex gap-4">
@@ -65,14 +65,18 @@ export default function FuelPumps() {
             </button>
           </div>
 
-          <p className="text-xs text-gray-400 mt-6 w-96">
+          <p className="text-xs text-gray-400 mt-6 w-96 hidden md:block">
             ZifyPay is a financial technology company, not a bank. Banking
             services are provided by regulated financial institutions.
           </p>
         </motion.div>
 
         {/* Image */}
-        <img src="/img2.png" alt="Fuel Pump" className="w-1/2 z-10" />
+        <img
+          src="https://imgs.search.brave.com/5yAUg2qKoNB6MPalQ5BE2lZ8aqiIwQ9iEfikPke-nIk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuZnJlZWltYWdl/cy5jb20vaW1hZ2Vz/L2xhcmdlLXByZXZp/ZXdzL2U0OS9kaWdp/dGFsLXNlY3VyaXR5/LW5ldHdvcmstMDQx/MC01NzA4ODg0Lmpw/Zz9mbXQ"
+          alt="Fuel Pump"
+          className="w-1/2 z-10 hidden md:block"
+        />
 
         {/* Right animation placeholder (optional) */}
         <motion.div
@@ -168,13 +172,13 @@ export default function FuelPumps() {
         }
       >
         <video
-          src="https://youtu.be/0M-tu0hFIOc?si=A3GtdVPJPz7QVsNk"
-          height={500}
-          width={1000}
-          className="mx-auto rounded-2xl object-cover h-full object-left-top"
-          draggable={false}
+          src="/pay.mp4"
           controls
-        ></video>
+          className="w-full max-w-5xl h-full aspect-video mx-auto rounded-2xl object-contain"
+          draggable={false}
+        >
+          Your browser does not support the video tag.
+        </video>
       </ContainerScroll>
       {/* ZifyPay Achievements Section */}
       <section className="w-full py-16 bg-gradient-to-r from-[#001A39] to-[#001433] flex justify-center items-center">
@@ -317,12 +321,12 @@ export default function FuelPumps() {
                 <polygon
                   points="100,10 190,55 190,145 100,190 10,145 10,55"
                   fill="#0d1a2f"
-                  stroke="#1e293b"
+                  stroke="#fff"
                   strokeWidth="4"
                 />
               </svg>
               <Image
-                src="/secure-hex-main.jpg"
+                src="https://imgs.search.brave.com/CFSd1tBGNh2jTt5Jp6YBc1eAc-dSZfquYbeyNEpQjAo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTQ0/MjQ4NDg2NC9waG90/by9wZW9wbGUtbmV0/d29yay1zZWN1cml0/eS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9bUxoS250WXhi/cl9KYVYybUdjTHJZ/RWZjVFRtenNscFEz/R0xvUVlmMlQxYz0"
                 alt="Secure Payment"
                 fill
                 className="object-cover rounded-2xl z-20"

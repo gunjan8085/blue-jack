@@ -36,28 +36,27 @@ const featureSets = [
       title: "Smart Analytics",
       desc: "Gain actionable insights with real-time dashboards that track sales, expenses, and customer trends in one place.",
       image:
-        "https://.cloudinary.com/dfcbjgt3w/image/upload/v1746258989/brave_screenshot_localhost_3_noxovm.png",
+        "https://res.cloudinary.com/dfcbjgt3w/image/upload/v1746258989/brave_screenshot_localhost_3_noxovm.png",
       imageAlt: "Analytics Dashboard",
     },
     {
       title: "Security",
       desc: "Protect your business with enterprise-grade security features—role-based access, encrypted data, and real-time monitoring.",
       image:
-        "https://imgs.search.brave.com/FidBJt5OffjHjB_07PCRpRTtM7WW_WqczVHd5vXNVVI/rs:fit:500:0:1:0/g:ce/aHR0c...",
+        "https://imgs.search.brave.com/CFSd1tBGNh2jTt5Jp6YBc1eAc-dSZfquYbeyNEpQjAo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTQ0/MjQ4NDg2NC9waG90/by9wZW9wbGUtbmV0/d29yay1zZWN1cml0/eS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9bUxoS250WXhi/cl9KYVYybUdjTHJZ/RWZjVFRtenNscFEz/R0xvUVlmMlQxYz0",
       imageAlt: "Security Shield",
     },
     {
       title: "Fuel Pump Integration",
       desc: "Seamlessly connect and control your fuel pumps in real-time with our POS system—track fuel sales and monitor activity effortlessly.",
-      image:
-        "https://imgs.search.brave.com/BN0cdsuMhVoSp8gANAIWhBDMj7jSTpMLhwQVYo_iNYU/rs:fit:500:0:1:0/g:ce/aHR0c...",
+      image: "pump.png",
       imageAlt: "Fuel Pump Integration",
     },
     {
       title: "Financial Support",
-      desc: "Empower your business with fast, reliable financial assistance—from working capital to daily cash flow .",
+      desc: "Empower your business with fast, reliable financial assistance—from working capital to daily cash flow.",
       image:
-        "https://imgs.search.brave.com/9ECFeh0WBksotubhg_4WhU0UF9DEYpHgXQk2hea6e5A/rs:fit:500:0:1:0/g:ce/aHR0c...",
+        "https://imgs.search.brave.com/dkk9y-5oEzHGc0u4LiEqjDBKEBppQOUFJXGLv_Ppxxg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNTYv/OTU4LzU0MS9zbWFs/bC9ydXN0aWMtbG9h/bi1zaWduLXdpdGgt/YnVybGFwLXNhY2st/YmFja2dyb3VuZC1w/aG90by5qcGc",
       imageAlt: "Financial Support",
     },
   ],
@@ -83,7 +82,7 @@ const FinancialWorkflows = () => {
   return (
     <section
       ref={sectionRef}
-      className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white px-6 md:px-20 py-20 h-screen mt-24"
+      className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white px-4 md:px-20 py-12 md:py-20 mt-24"
     >
       <div className="text-center max-w-4xl mx-auto mb-12">
         <h2 className="text-4xl font-inter mb-4">
@@ -116,12 +115,12 @@ const FinancialWorkflows = () => {
               </div>
 
               {feature.image && (
-                <div className="relative w-full h-full mt-auto ">
+                <div className="relative w-full h-40 mt-auto">
                   <Image
                     src={feature.image}
                     alt={feature.imageAlt}
                     layout="fill"
-                    className=" rounded-2xl object-contain"
+                    className={`rounded-2xl ${i === 1 ? "h-full w-full" : "object-contain"}`}
                     loading="lazy"
                   />
                 </div>

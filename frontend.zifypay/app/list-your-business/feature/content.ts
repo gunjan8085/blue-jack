@@ -3,13 +3,13 @@ export const featureContent = {
     title: "Appointment Calendar",
     description:
       "Easily manage and schedule appointments with our intuitive calendar. Stay organized and never miss a booking.",
-    image: "/images/feature-appointment-calendar.png",
+    image: "/App.jpg",
     products: [
       {
         title: "Smart Scheduling",
         description:
           "Book, reschedule, and cancel appointments with ease. Real-time availability and reminders reduce no-shows.",
-        image: "/images/feature-appointment-calendar.png",
+        image: "",
       },
       {
         title: "Automated Reminders",
@@ -35,7 +35,7 @@ export const featureContent = {
     title: "Point of Sale",
     description:
       "A modern POS system for seamless transactions, inventory management, and customer engagement at your retail location.",
-    image: "/images/feature-pos.png",
+    image: "/pos1.jpg",
     products: [
       {
         title: "All-in-One Terminal",

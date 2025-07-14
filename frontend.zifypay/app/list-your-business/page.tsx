@@ -56,9 +56,9 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="font-inter bg-gradient-to-r from-[#001A39] to-[#001433] relative min-h-screen">
+    <div className="font-inter min-w-full bg-gradient-to-r from-[#001A39] to-[#001433] relative min-h-screen">
       {/* Background */}
-      <div className="fixed inset-0 -z-10" />
+      <div className="inset-0 " />
 
       {/* Main sections */}
       <Navbar />
@@ -79,7 +79,7 @@ export default function LandingPage() {
         />
 
         {/* Content above animated background */}
-        <div className="relative z-[1]">
+        <div className="relative ">
           <ForWhomSection />
           <CTASection />
         </div>

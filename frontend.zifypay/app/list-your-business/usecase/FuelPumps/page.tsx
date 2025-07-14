@@ -4,13 +4,13 @@ import React, { useRef, useEffect } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import Navbar from "../../Navbar";
 import Footer from "@/components/Footer";
-import CoreFeatures from "../CoreFeatures"
-import { ContainerScroll } from "@/components/ui/container-scroll-animation"; 
-import Profit from "../Profit"
-import Bendo from "../Bendo"
-import CTASection from "../../CTASection"
-import Testimonial from "../Testimonial"
-import FinancialSupportSection from "../../FinancialSupportSection"
+import CoreFeatures from "../CoreFeatures";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import Profit from "../Profit";
+import Bendo from "../Bendo";
+import CTASection from "../../CTASection";
+import Testimonial from "../Testimonial";
+import FinancialSupportSection from "../../FinancialSupportSection";
 
 export default function FuelPumps() {
   const ref = useRef(null);
@@ -37,16 +37,16 @@ export default function FuelPumps() {
 
         {/* Text Content */}
         <motion.div
-          className="max-w-2xl z-10"
+          className="max-w-xl md:max-w-2xl z-10"
           style={{ fontFamily: "'Proxima Nova', sans-serif", fontWeight: 600 }}
           initial={{ opacity: 0, y: 60 }}
           animate={controls}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <h1 className="text-4xl md:text-6xl leading-tight">
+          <h1 className="text-3xl md:text-6xl leading-tight">
             Fuel Pump Integration. Reimagined.
           </h1>
-          <p className="mt-6 text-lg text-gray-300">
+          <p className="mt-6 text-lg text-gray-300 hidden md:block">
             Real-time inventory, smart billing, and seamless fuel payments.
           </p>
 
@@ -58,15 +58,14 @@ export default function FuelPumps() {
               Learn More
             </button>
           </div>
-
-          <p className="text-xs text-gray-400 mt-6 w-96">
-            ZifyPay is a financial technology company, not a bank. Banking
-            services are provided by regulated financial institutions.
-          </p>
         </motion.div>
 
         {/* Image */}
-        <img src="/img2.png" alt="Fuel Pump" className="w-1/2 z-10" />
+        <img
+          src="/FULE.png"
+          alt="Fuel Pump"
+          className="w-1/2 z-10 hidden md:block"
+        />
 
         {/* Right animation placeholder (optional) */}
         <motion.div
@@ -93,13 +92,13 @@ export default function FuelPumps() {
         }
       >
         <video
-          src="https://youtu.be/0M-tu0hFIOc?si=A3GtdVPJPz7QVsNk"
-          height={500}
-          width={1000}
-          className="mx-auto rounded-2xl object-cover h-full object-left-top"
-          draggable={false}
+          src="/pay.mp4"
           controls
-        ></video>
+          className="w-full max-w-5xl h-full aspect-video mx-auto rounded-2xl object-contain"
+          draggable={false}
+        >
+          Your browser does not support the video tag.
+        </video>
       </ContainerScroll>
       {/* <Bendo /> */}
       <Profit />
