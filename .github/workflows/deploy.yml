@@ -32,7 +32,7 @@ jobs:
             cd backend.zifypay && npm install
 
             echo "🧱 Installing & building frontend..."
-            cd ../frontend.zifypay && npm install && npm run build
+            cd ../frontend.zifypay && npm install --force && npm run build
 
             echo "🚀 Restarting PM2 apps..."
             pm2 restart backend-demo || pm2 start npm --name backend-demo run start
@@ -43,6 +43,6 @@ jobs:
             sudo systemctl reload nginx
             echo "✅ Deployment complete!"
           
-            
+
 
           EOF
