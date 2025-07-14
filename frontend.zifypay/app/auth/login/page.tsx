@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,7 +10,6 @@ import {
   checkBusinessProfile,
 } from "../../../lib/auth";
 import { API_URL } from "../../../lib/const";
-import { constructFromSymbol } from "date-fns/constants";
 
 interface UserData {
   _id: string;
@@ -37,6 +36,14 @@ export default function LoginPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+useEffect(() => {
+  const token = localStorage.getItem('businessProfile');
+  if (token) {
+    // If token exists, redirect to dashboard
+    router.push('/dashboard');
+  }
+
+}, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +74,7 @@ export default function LoginPage() {
       const businessProfile = await checkBusinessProfile(
         responseData.data.employee._id
       );
+      console.log("Business Profile:", businessProfile);
 
       if (!businessProfile) {
         // Redirect to business creation page if no profile exists
@@ -81,6 +89,7 @@ export default function LoginPage() {
           "businessProfile",
           JSON.stringify(businessProfile)
         );
+        document.cookie = `businessProfile=true; path=/`;
         window.location.href = "/dashboard";
       }
     } catch (err: any) {

@@ -38,7 +38,7 @@ router.use("/api/v1/jobs", jobRoutes);
 router.use("/api/v1/applications", applicationRoutes);
 router.use("/api/v1/admin", adminRoutes);
 router.use("/api/pricing-plan", pricingPlanRoutes);
-router.use(paymentRoutes);
+router.use("/api/v1/payments", paymentRoutes);
 
 module.exports = router;
 
