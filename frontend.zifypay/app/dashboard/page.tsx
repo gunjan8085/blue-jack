@@ -164,7 +164,7 @@ const BusinessDashboard = () => {
     if (!token) {
       router.push('/auth/login')
       return
-    }
+    } 
   }, [router])
 
   useEffect(() => {

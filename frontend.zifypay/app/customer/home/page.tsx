@@ -94,7 +94,8 @@ export default function DashboardPage() {
   // Check authentication first
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const businessProfile = localStorage.getItem('businessProfile');
+    if (!token && !businessProfile) {
       router.push('/customer/auth/login');
       return;
     }
