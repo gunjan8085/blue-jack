@@ -1,0 +1,47 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd ~/blue-jack
+
+            echo "📦 Pulling latest code..."
+            git pull origin main
+
+            echo "🔧 Installing backend deps..."
+            cd backend.zifypay && npm install
+
+            echo "🧱 Installing & building frontend..."
+            cd ../frontend.zifypay && npm install && npm run build
+
+            echo "🚀 Restarting PM2 apps..."
+            pm2 restart backend-demo || pm2 start npm --name backend-demo run start
+            pm2 restart frontend-zifypay || pm2 start npm --name frontend-zifypay -- start
+            pm2 save
+
+            echo "🔁 Reloading Nginx..."
+            sudo systemctl reload nginx
+            echo "✅ Deployment complete!"
+          
+
+          EOF
