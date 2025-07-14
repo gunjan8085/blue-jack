@@ -28,6 +28,8 @@ jobs:
             echo "📦 Pulling latest code..."
             git pull origin main
 
+            sudo su 
+            
             echo "🔧 Installing backend deps..."
             cd backend.zifypay && npm install
 
