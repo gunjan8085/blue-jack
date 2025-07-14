@@ -1,16 +1,18 @@
 "use client";
-import GradientButton from "@/components/ui/button-1";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { logout, isAuthenticated, getUserData } from "@/lib/auth";
 
-function HeaderForCustomer() {
+function HeaderForCustomer({ showView }: { showView?: boolean  }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userFirstName, setUserFirstName] = useState("");
-  const [profilePicUrl, setProfilePicUrl] = useState("");
-
+  const [profilePicUrl, setProfilePicUrl] = useState("https://placehold.co/150x150?text=Profile+Pic");
+  const [businessProfile, setBusinessProfile] = useState<string | null>(null);
+  
   useEffect(() => {
+    const businessProfile = localStorage.getItem("businessProfile");
+    setBusinessProfile(businessProfile);
     const checkAuth = () => {
       const loggedIn = isAuthenticated();
       setIsLoggedIn(loggedIn);
@@ -53,36 +55,50 @@ function HeaderForCustomer() {
         </Link>
         {/* Right side: View Businesses + Auth Actions */}
         <div className="flex items-center gap-4">
-          <Link href="/list-your-business">
+
+          {isLoggedIn? (
+            <>
+            <Link href="/customer/home">
             <Button
               variant="outline"
               className="text-white bg-black border border-black rounded-full hover:bg-white hover:text-black transition-colors duration-200"
             >
-              List you bussiness
+              View Businesses
             </Button>
           </Link>
-          {isLoggedIn ? (
-            <>
-              <span className="text-gray-700 font-medium">
-                Hi, {userFirstName}
-              </span>
-              <Button
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50"
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
+          {businessProfile && (
+              <><span className="text-gray-700 font-medium">
+                  Hi, {userFirstName}
+                  <img src={profilePicUrl} alt="Profile Picture" className="inline-block h-10 w-10 rounded-full ml-2" />
+                </span><Button
+                  variant="outline"
+                  className="border-red-200 text-red-600 hover:bg-red-50"
+                  onClick={handleLogout}
+                >
+                    Logout
+                  </Button></>
+            )}
             </>
           ) : (
+            <>
+            <Link href="/businesses">
+            <Button
+              variant="outline"
+              className="text-white bg-black border border-black rounded-full hover:bg-white hover:text-black transition-colors duration-200"
+            >
+              View Businesses
+            </Button>
+          </Link>
+            
             <Link href="/customer/auth/login">
               <Button
                 variant="outline"
-                className="border-blue-200 borrouded-full text-blue-800 hover:bg-blue-50"
+                className="border-blue-200 rounded-full text-blue-800 hover:bg-blue-50"
               >
                 Login
               </Button>
             </Link>
+            </>
           )}
         </div>
       </div>

@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { API_URL } from "@/lib/const";
 import { UploadCloud, Loader2 } from "lucide-react";
 import HeaderForCustomer from "@/components/customer/HeaderForCustomer";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const router = useRouter();
   const [formData, setFormData] = useState({
     userId:"",
     firstName: "",
@@ -27,6 +29,10 @@ export default function ProfilePage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
+    const businessProfile = localStorage.getItem("businessProfile");
+    if (!businessProfile) {
+      router.push('/customer/auth/login');
+    }
     loadUserProfile();
   }, []);
 
