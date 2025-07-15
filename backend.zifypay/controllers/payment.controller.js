@@ -1,9 +1,16 @@
 const { processEpxSale } = require('../services/epxPayment.service');
-const { logTransaction } = require('../services/transactionLog.service');
-const TransactionLog = require('../models/transactionLog.model');
+const TransactionLog = require('../models/transactionLog.model'); // adjust path as needed
 
 function getField(obj, key) {
   return obj[key] || obj[key.toUpperCase()];
+}
+
+function maskCardNumber(cardNumber) {
+  return cardNumber.replace(/\d(?=\d{4})/g, '*'); // masks all but last 4
+}
+
+function maskExpDate(expDate) {
+  return `**/${expDate.slice(-2)}`; // show only last 2 digits of year
 }
 
 async function charge(req, res) {
@@ -20,38 +27,52 @@ async function charge(req, res) {
     const zipCode = getField(req.body, 'zipCode');
     const batchId = getField(req.body, 'batchId');
     const tranNbr = getField(req.body, 'tranNbr');
+
     if (!amount || !accountNbr || !expDate || !cvv2 || !firstName || !lastName || !address || !city || !state || !zipCode || !batchId || !tranNbr) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    const payload = { amount, accountNbr, expDate, cvv2, firstName, lastName, address, city, state, zipCode, batchId, tranNbr };
+
     let result;
     let status = 'success';
-    let responseCode = null;
-    let responseMessage = null;
+    let responseCode = '';
+    let responseMessage = '';
+
     try {
-      result = await processEpxSale({ amount, accountNbr, expDate, cvv2, firstName, lastName, address, city, state, zipCode, batchId, tranNbr });
-      responseCode = result.AUTH_RESP || null;
-      responseMessage = result.AUTH_RESP_TEXT || 'Unknown transaction status';
-      if (responseCode !== '00') status = 'failure';
+      result = await processEpxSale(payload);
+      responseCode = result.responseCode || '';
+      responseMessage = result.responseMessage || '';
     } catch (err) {
       status = 'failure';
       responseMessage = err.message;
     }
-    await logTransaction({
+
+    // Log to DB (masking sensitive info)
+    await TransactionLog.create({
       tranNbr,
       batchId,
       amount,
-      accountNbr,
-      expDate,
+      accountNbr: maskCardNumber(accountNbr),
+      expDate: maskExpDate(expDate),
       status,
       responseCode,
       responseMessage,
-      requestPayload: { ...req.body, accountNbr: undefined, cvv2: undefined, expDate: undefined },
-      responsePayload: result,
+      requestPayload: {
+        ...payload,
+        accountNbr: maskCardNumber(accountNbr),
+        expDate: maskExpDate(expDate),
+        cvv2: '***',
+      },
+      responsePayload: result || {},
     });
+
     if (status === 'failure') {
       return res.status(500).json({ success: false, error: responseMessage });
     }
+
     return res.json({ success: true, data: result });
+
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
@@ -66,4 +87,4 @@ async function getAllTransactions(req, res) {
   }
 }
 
-module.exports = { charge, getAllTransactions }; 
+module.exports = { charge, getAllTransactions };
