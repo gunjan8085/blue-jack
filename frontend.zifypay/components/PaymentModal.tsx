@@ -67,7 +67,7 @@ export default function PaymentModal({ open, onClose, onSuccess, plan, businessI
         tranNbr: String(tranNbr),
       };
       const encoded = qs.stringify(payload);
-      const res = await fetch(`${API_URL.replace('/api/v1','')}/api/payments/charge`, {
+      const res = await fetch(`${API_URL}/payments/charge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: encoded,

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Briefcase, Users, LogOut } from 'lucide-react';
+import { Briefcase, Users, LogOut, CreditCard } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -49,6 +49,16 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <Users className="w-5 h-5 mr-3" />
             <Link href="/admin/applications">Applications</Link>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
+              activeTab === 'transactions' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            <CreditCard className="w-5 h-5 mr-3" />
+            <Link href="/admin/transactions">Transactions</Link>
           </button>
         </nav>
 
