@@ -384,22 +384,13 @@ const HeroSection = () => {
       >
         {/* Left: Text Content */}
         <div className="flex-1 max-w-xl px-6 md:px-16 flex flex-col justify-center items-start mb-10 md:mb-0 md:mr-12">
-          <h2
-            className="text-3xl md:text-4xl font-extrabold mb-2"
-            style={{ color: "#001433" }}
-          >
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-2 text-[#174ea6]">
             Have Questions?
           </h2>
-          <h3
-            className="text-2xl md:text-3xl font-light mb-6"
-            style={{ color: "#001433" }}
-          >
+          <h3 className="text-2xl md:text-3xl font-light mb-6 text-[#174ea6]">
             Speak with a Business Financing Advisor today!
           </h3>
-          <p
-            className="text-base md:text-lg mb-8"
-            style={{ color: "#001433cc" }}
-          >
+          <p className="text-base md:text-lg mb-8 text-[#174ea6]">
             Our Business Financing Advisors will help you find the best
             financing options for your business to get you more funding, great
             terms, and the lowest interest. We're available to explain every
@@ -414,7 +405,7 @@ const HeroSection = () => {
         <div className="flex-1 flex justify-center items-center">
           {/* Use Next.js Image component with a valid src, width, and height */}
           <Image
-            src="/advisor-illustration.svg"
+            src="/vv.png"
             alt="Advisor Illustration"
             width={400}
             height={300}
