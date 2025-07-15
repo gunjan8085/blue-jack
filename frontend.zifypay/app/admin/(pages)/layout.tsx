@@ -29,58 +29,59 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           />
           <span className="text-lg font-semibold">Admin</span>
         </div>
-        
+
         <nav className="flex-1 mt-6 px-2 space-y-1">
-          <button
-            onClick={() => setActiveTab('jobs')}
-            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
-              activeTab === 'jobs' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            <Briefcase className="w-5 h-5 mr-3" />
-            <Link href="/admin/job-management">Job Management</Link>
-          </button>
+          <Link href="/admin/job-management">
+            <button
+              onClick={() => setActiveTab('jobs')}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'jobs' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+                }`}
+            >
+              <Briefcase className="w-5 h-5 mr-3" />
+              Job Management
+            </button>
+          </Link>
 
           {/* Business Link */}
-          <button
-            onClick={() => setActiveTab('business')}
-            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
-              activeTab === 'business' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            <Building2 className="w-5 h-5 mr-3" />
-            <Link href="/admin/business">Business</Link>
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('applications')}
-            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
-              activeTab === 'applications' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            <Users className="w-5 h-5 mr-3" />
-            <Link href="/admin/applications">Applications</Link>
-          </button>
+          <Link href="/admin/business">
+            <button
+              onClick={() => setActiveTab('business')}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'business' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+                }`}
+            >
+              <Building2 className="w-5 h-5 mr-3" />
+              Business
+            </button></Link>
+
+          <Link href="/admin/applications">
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'applications' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+                }`}
+            >
+              <Users className="w-5 h-5 mr-3" />
+              Applications
+            </button></Link>
+            
+          <Link href="/admin/loan-applications">
           <button
             onClick={() => setActiveTab('Loan Applications')}
-            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
-              activeTab === 'applications' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
-            }`}
+            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'applications' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+              }`}
           >
             <Users className="w-5 h-5 mr-3" />
-            <Link href="/admin/loan-applications">Loan Applications</Link>
-          </button>
+            Loan Applications
+          </button></Link>
 
-
-          <button
-            onClick={() => setActiveTab('transactions')}
-            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
-              activeTab === 'transactions' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            <CreditCard className="w-5 h-5 mr-3" />
-            <Link href="/admin/transactions">Transactions</Link>
-          </button>
+          <Link href="/admin/transactions">
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'transactions' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+                }`}
+            >
+              <CreditCard className="w-5 h-5 mr-3" />
+              Transactions
+            </button></Link>
         </nav>
 
         {/* Logout Button */}
