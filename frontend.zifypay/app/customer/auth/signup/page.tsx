@@ -74,13 +74,20 @@ export default function SignupPage() {
       {/* Left: Signup Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
+          {/* Back Button */}
+        <Link href="/" className="absolute ml-5 mt-5 top-4 left-4 text-white hover:underline text-sm">
+          ← Back
+        </Link>
+
           {/* Logo and Heading */}
           <div className="mb-6">
+           <Link href="/">
             <img
               src="https://zifypay.com/logo.png"
-              alt="ZifyPay"
-              className="h-10 mb-4"
+              alt="ZifyPay Logo"
+              className="h-10 w-auto cursor-pointer mb-4"
             />
+          </Link>
             <h1 className="text-3xl font-bold text-white mb-1">
               Create Account
             </h1>

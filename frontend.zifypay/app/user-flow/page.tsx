@@ -4,14 +4,21 @@ export default function SignUp() {
   return (
     <div className="h-screen flex flex-col md:flex-row bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 rounded-br-4xl">
       {/* Left section */}
-      <div className="w-full md:w-1/2 flex flex-col px-8 py-12">
+      <div className="w-full md:w-1/2 flex flex-col px-8 py-12 relative">
+        {/* Back Button */}
+        <Link href="/" className="absolute ml-5 mt-5 top-4 left-4 text-white hover:underline text-sm">
+          ← Back
+        </Link>
+
         {/* Logo */}
-        <div className="mt-4 mb-8">
-          <img
-            src="https://zifypay.com/logo.png"
-            alt="ZifyPay Logo"
-            className="h-10 w-auto"
-          />
+        <div className="mt-10 mb-8">
+          <Link href="/">
+            <img
+              src="https://zifypay.com/logo.png"
+              alt="ZifyPay Logo"
+              className="h-10 w-auto cursor-pointer"
+            />
+          </Link>
         </div>
 
         <h1 className="text-2xl font-bold mb-8 text-white">Sign up / Log in</h1>

@@ -90,13 +90,18 @@ export default function CustomerLoginPage() {
       {/* Left: Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
         <div className="w-full max-w-md">
+          <Link href="/" className="absolute ml-5 mt-5 top-4 left-4 text-white hover:underline text-sm">
+          ← Back
+        </Link>
           {/* Logo */}
           <div className="mb-6">
+             <Link href="/">
             <img
               src="https://zifypay.com/logo.png"
               alt="ZifyPay Logo"
-              className="h-10 mb-4"
+              className="h-10 w-auto cursor-pointer mb-4"
             />
+          </Link>
             <h1 className="text-3xl font-bold text-white mb-1">Welcome Back</h1>
             <p className="text-white">Sign in to your customer account</p>
           </div>
