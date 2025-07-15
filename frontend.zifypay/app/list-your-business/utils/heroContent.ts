@@ -10,7 +10,7 @@ export const heroContent: Record<
     title: "The best software for barber shops",
     description:
       "Client booking, payments, staff management, marketing and more – GlossGenius is the only platform designed for happy barber shop staff and clients.",
-    image: "/salon.png",
+    image: "/salon1.png",
   },
   "hair-salons": {
     title: "Hair Salon Management",

@@ -53,7 +53,7 @@ export function ProductCards({ products }: ProductCardsProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
                 className={clsx(
-                  "group bg-[#ebf8ff] border border-white/10 backdrop-blur-xl transition-all duration-500 rounded-2xl cursor-pointer overflow-hidden shadow-xl p-6",
+                  "group bg-[#ebf8ff] border border-white/10 backdrop-blur-xl transition-all duration-500 rounded-2xl cursor-pointer overflow-hidden shadow-xl p-6 min-h-[60vh]",
                   open ? "w-[360px]" : "w-[240px]"
                 )}
                 style={{
@@ -108,12 +108,12 @@ export function ProductCards({ products }: ProductCardsProps) {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="relative w-full h-28 rounded-lg overflow-hidden mb-4">
-                        <Image
+                        {/* <Image
                           src={product.image}
                           alt={product.title}
                           fill
                           className="object-cover"
-                        />
+                        /> */}
                       </div>
                       <h3 className="px-2 text-center text-3xl md:text-5xl text-[#001A39] font-semibold leading-tight">
                         {product.title}

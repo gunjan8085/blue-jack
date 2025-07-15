@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Building2, Eye } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { API_URL } from "@/lib/const";
 
 // Business type based on API response
@@ -24,10 +24,36 @@ interface Business {
   createdAt: string;
 }
 
+interface AnalyticsData {
+  totalRevenue: number;
+  totalAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
+  noShowAppointments: number;
+  averageAppointmentValue: number;
+  firstAppointmentDate: string | null;
+  lastAppointmentDate: string | null;
+  mostPopularService: { name: string; count: number; revenue: number } | null;
+  totalServices: number;
+  totalCustomers: number;
+  topCustomer: { email: string; appointments: number; revenue: number } | null;
+  repeatCustomerRate: number;
+  averageReviewRating: number;
+  totalReviews: number;
+  recentReview: { text: string; rating: number; date: string } | null;
+  totalEmployees: number;
+  topEmployee: { name: string; appointments: number } | null;
+}
+
 const BusinessPage = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState("");
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
 
   const getAuthToken = () => {
     return localStorage.getItem("adminToken");
@@ -60,6 +86,23 @@ const BusinessPage = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async (business: Business) => {
+    setAnalyticsLoading(true);
+    setAnalyticsError("");
+    setAnalyticsData(null);
+    setSelectedBusiness(business);
+    setShowAnalytics(true);
+    try {
+      const res = await apiRequest(`/appointments/${business._id}/analytics`);
+      setAnalyticsData(res.data);
+    } catch (err) {
+      setAnalyticsError("Failed to fetch analytics");
+      setAnalyticsData(null);
+    } finally {
+      setAnalyticsLoading(false);
     }
   };
 
@@ -102,7 +145,7 @@ const BusinessPage = () => {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {businesses.map((b) => (
-                <tr key={b._id} className="hover:bg-gray-800/50 transition-colors">
+                <tr key={b._id} className="hover:bg-gray-800/50 transition-colors cursor-pointer" onClick={() => fetchAnalytics(b)}>
                   <td className="px-6 py-4 flex items-center gap-3">
                     {b.thumbnail && (
                       <img src={b.thumbnail} alt={b.brandName} className="w-10 h-10 rounded-full object-cover border border-gray-700" />
@@ -132,6 +175,86 @@ const BusinessPage = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Analytics Modal */}
+      {showAnalytics && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                Analytics for {selectedBusiness?.brandName}
+              </h3>
+              <button
+                className="text-gray-400 hover:text-white transition-colors text-2xl"
+                onClick={() => setShowAnalytics(false)}
+              >
+                ×
+              </button>
+            </div>
+            {analyticsLoading ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                <p className="mt-2 text-blue-200">Loading analytics...</p>
+              </div>
+            ) : analyticsError ? (
+              <div className="p-4 bg-red-900/50 border border-red-700 text-red-200 rounded-lg">{analyticsError}</div>
+            ) : analyticsData ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Revenue & Appointments */}
+                  <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
+                    <div className="font-semibold text-white">Total Revenue</div>
+                    <div className="text-lg text-blue-400 font-bold">${analyticsData.totalRevenue.toLocaleString()}</div>
+                    <div className="font-semibold text-white mt-4">Total Appointments</div>
+                    <div className="text-lg text-gray-300">{analyticsData.totalAppointments}</div>
+                    <div className="font-semibold text-white mt-4">Completed Appointments</div>
+                    <div className="text-lg text-gray-300">{analyticsData.completedAppointments}</div>
+                    <div className="font-semibold text-white mt-4">Cancelled Appointments</div>
+                    <div className="text-lg text-gray-300">{analyticsData.cancelledAppointments}</div>
+                    <div className="font-semibold text-white mt-4">No-show Appointments</div>
+                    <div className="text-lg text-gray-300">{analyticsData.noShowAppointments}</div>
+                    <div className="font-semibold text-white mt-4">Average Appointment Value</div>
+                    <div className="text-lg text-gray-300">{analyticsData.averageAppointmentValue.toFixed(2)}</div>
+                  </div>
+                  {/* Dates & Services */}
+                  <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
+                    <div className="font-semibold text-white">First Appointment</div>
+                    <div className="text-lg text-gray-300">{analyticsData.firstAppointmentDate ? new Date(analyticsData.firstAppointmentDate).toLocaleString() : '-'}</div>
+                    <div className="font-semibold text-white mt-4">Last Appointment</div>
+                    <div className="text-lg text-gray-300">{analyticsData.lastAppointmentDate ? new Date(analyticsData.lastAppointmentDate).toLocaleString() : '-'}</div>
+                    <div className="font-semibold text-white mt-4">Most Popular Service</div>
+                    <div className="text-lg text-gray-300">{analyticsData.mostPopularService ? `${analyticsData.mostPopularService.name} (${analyticsData.mostPopularService.count} times, ₹${analyticsData.mostPopularService.revenue})` : '-'}</div>
+                    <div className="font-semibold text-white mt-4">Total Services</div>
+                    <div className="text-lg text-gray-300">{analyticsData.totalServices}</div>
+                  </div>
+                  {/* Customers */}
+                  <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
+                    <div className="font-semibold text-white">Total Customers</div>
+                    <div className="text-lg text-gray-300">{analyticsData.totalCustomers}</div>
+                    <div className="font-semibold text-white mt-4">Top Customer</div>
+                    <div className="text-lg text-gray-300">{analyticsData.topCustomer ? `${analyticsData.topCustomer.email} (${analyticsData.topCustomer.appointments} appointments, ₹${analyticsData.topCustomer.revenue})` : '-'}</div>
+                    <div className="font-semibold text-white mt-4">Repeat Customer Rate</div>
+                    <div className="text-lg text-gray-300">{(analyticsData.repeatCustomerRate * 100).toFixed(1)}%</div>
+                  </div>
+                  {/* Reviews & Employees */}
+                  <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
+                    <div className="font-semibold text-white">Average Review Rating</div>
+                    <div className="text-lg text-gray-300">{analyticsData.averageReviewRating.toFixed(2)} / 5</div>
+                    <div className="font-semibold text-white mt-4">Total Reviews</div>
+                    <div className="text-lg text-gray-300">{analyticsData.totalReviews}</div>
+                    <div className="font-semibold text-white mt-4">Most Recent Review</div>
+                    <div className="text-lg text-gray-300">{analyticsData.recentReview ? `"${analyticsData.recentReview.text}" (${analyticsData.recentReview.rating}★ on ${new Date(analyticsData.recentReview.date).toLocaleString()})` : '-'}</div>
+                    <div className="font-semibold text-white mt-4">Total Employees</div>
+                    <div className="text-lg text-gray-300">{analyticsData.totalEmployees}</div>
+                    <div className="font-semibold text-white mt-4">Top Employee</div>
+                    <div className="text-lg text-gray-300">{analyticsData.topEmployee ? `${analyticsData.topEmployee.name} (${analyticsData.topEmployee.appointments} appointments)` : '-'}</div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
     </div>
