@@ -1,7 +1,6 @@
 import React from "react";
 
-const illustration =
-  "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop";
+const illustration = "/payment1.png";
 
 export const FinancialSupportSection: React.FC = () => {
   return (
@@ -41,11 +40,11 @@ export const FinancialSupportSection: React.FC = () => {
 
       {/* Illustration */}
       <div className="flex-1 flex justify-center z-10 w-full mt-8 md:mt-0">
-        <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
+        <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-full">
           <img
             src={illustration}
             alt="Financial support for small business"
-            className="rounded-2xl shadow-2xl object-cover w-full border-4 border-blue-100"
+            className=" object-cover w-full "
           />
           {/* Floating effect */}
           <div className="absolute -bottom-6 -right-6 w-16 h-16 md:w-24 md:h-24 bg-blue-500 opacity-30 rounded-full blur-2xl z-0" />

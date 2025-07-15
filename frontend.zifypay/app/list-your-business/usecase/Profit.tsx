@@ -24,7 +24,7 @@ export default function Profit() {
           <div className="relative flex justify-center">
             <div className="relative w-[340px] h-[260px] md:w-[400px] md:h-[320px] rounded-2xl overflow-hidden shadow-lg bg-gray-50">
               <Image
-                src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80"
+                src="/gas.jpg"
                 alt="Profit Visual"
                 fill
                 className="object-cover"
