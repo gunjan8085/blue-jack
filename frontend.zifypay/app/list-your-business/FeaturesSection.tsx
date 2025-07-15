@@ -49,7 +49,7 @@ const featureSets = [
     {
       title: "Fuel Pump Integration",
       desc: "Seamlessly connect and control your fuel pumps in real-time with our POS system—track fuel sales and monitor activity effortlessly.",
-      image: "pump.png",
+      image: "/fuel1.jpg",
       imageAlt: "Fuel Pump Integration",
     },
     {
@@ -82,7 +82,7 @@ const FinancialWorkflows = () => {
   return (
     <section
       ref={sectionRef}
-      className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white px-4 md:px-20 py-12 md:py-20 mt-24"
+      className=" text-white px-4 md:px-20 py-12 md:py-20 mt-24"
     >
       <div className="text-center max-w-4xl mx-auto mb-12">
         <h2 className="text-4xl font-inter mb-4">

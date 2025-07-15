@@ -238,9 +238,9 @@ function Navbar() {
                   <HoveredLink href="/list-your-business/feature/pointOfSale">
                     Point of sale
                   </HoveredLink>
-                  <HoveredLink href="/list-your-business/feature/onlineBookings">
+                  {/* <HoveredLink href="/list-your-business/feature/onlineBookings">
                     Online bookings
-                  </HoveredLink>
+                  </HoveredLink> */}
                   <HoveredLink href="/list-your-business/feature/payments">
                     Payments
                   </HoveredLink>
@@ -347,7 +347,7 @@ function Navbar() {
 
               <div className="flex items-center px-4 gap-2">
                 <Link
-                  href="/pricing"
+                  href="/Pricing"
                   className="text-white transition-colors duration-200 px-4 py-2 text-base md:text-lg font-medium"
                   style={{ fontFamily: "'Proxima Nova', sans-serif" }}
                 >

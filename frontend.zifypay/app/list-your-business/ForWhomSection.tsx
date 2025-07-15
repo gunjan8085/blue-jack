@@ -6,19 +6,19 @@ const lenders = [
     title: "Emerging Businesses",
     description:
       "Start strong with ZifyPay. Launch payment solutions fast, build trust, and grow your brand with smart POS and zero-fee payments.",
-    image: "desh.png", // Replace with actual path
+    image: "/desh.png", // Replace with actual path
   },
   {
     title: "Growing Enterprises",
     description:
       "Scale your business with robust payment infrastructure, analytics, and automation tools to optimize operations and boost revenue.",
-    image: "desh2.png", // Replace with actual path
+    image: "/desh2.png", // Replace with actual path
   },
   {
     title: "Enterprise Leaders",
     description:
       "Power national operations with enterprise-grade compliance, custom dashboards, and seamless integrations across locations.",
-    image: "desh3.png", // Replace with actual path
+    image: "/desh3.png", // Replace with actual path
   },
 ];
 
