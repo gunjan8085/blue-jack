@@ -322,14 +322,14 @@ export default function FuelPumps() {
                 />
               </svg>
               <Image
-                src="https://imgs.search.brave.com/CFSd1tBGNh2jTt5Jp6YBc1eAc-dSZfquYbeyNEpQjAo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTQ0/MjQ4NDg2NC9waG90/by9wZW9wbGUtbmV0/d29yay1zZWN1cml0/eS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9bUxoS250WXhi/cl9KYVYybUdjTHJZ/RWZjVFRtenNscFEz/R0xvUVlmMlQxYz0"
+                src="/lock.png"
                 alt="Secure Payment"
                 fill
                 className="object-cover rounded-2xl z-20"
-                style={{
-                  clipPath:
-                    "polygon(50% 5%, 95% 27%, 95% 73%, 50% 95%, 5% 73%, 5% 27%)",
-                }}
+                // style={{
+                //   clipPath:
+                //     "polygon(50% 5%, 95% 27%, 95% 73%, 50% 95%, 5% 73%, 5% 27%)",
+                // }}
               />
             </div>
           </div>

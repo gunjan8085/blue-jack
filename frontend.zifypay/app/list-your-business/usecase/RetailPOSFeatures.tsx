@@ -65,9 +65,9 @@ export default function RetailPOSFeatures() {
 
           {/* Center Image */}
           <div className="flex justify-center">
-            <div className="relative w-[260px] h-[260px] md:w-[320px] md:h-[320px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-white/10 backdrop-blur-xl">
+            <div className="relative w-[260px] h-[260px]  rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-white/10 backdrop-blur-xl">
               <Image
-                src="https://images.unsplash.com/photo-1556742048-c4d51a3f3edc?auto=format&fit=crop&w=600&q=80"
+                src="/Pos.png"
                 alt="Retail POS Visual"
                 fill
                 className="object-cover"

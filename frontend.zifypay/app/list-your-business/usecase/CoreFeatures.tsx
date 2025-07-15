@@ -59,7 +59,7 @@ export default function CoreFeatures() {
           <div className="flex justify-center">
             <div className="relative w-[260px] h-[260px] md:w-[320px] md:h-[320px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-white/10 backdrop-blur-xl">
               <Image
-                src="https://imgs.search.brave.com/vaGrL2dhG-nY_Czrrn2r0DVheJmTVVrisuAmEk3dj4k/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NzFqUUVpMUNrR0wu/anBn"
+                src="/Pump.png"
                 alt="Core Feature Visual"
                 fill
                 className="object-cover"

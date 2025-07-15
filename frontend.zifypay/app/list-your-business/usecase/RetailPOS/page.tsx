@@ -14,6 +14,7 @@ import Image from "next/image";
 import { CheckCircle } from "lucide-react";
 import RetailPOSFeatures from "../RetailPOSFeatures"
 import TestimonialSection from "../RetailStoreTestimonial"
+import FinancialSupportSection from "../../FinancialSupportSection"
 
 const retailFeatures = [
   "Boosted Sales & Upselling",
@@ -129,7 +130,7 @@ export default function FuelPumps() {
             <div className="relative flex justify-center">
               <div className="relative w-[340px] h-[260px] md:w-[400px] md:h-[320px] rounded-2xl overflow-hidden shadow-lg bg-gray-50">
                 <Image
-                  src="https://images.unsplash.com/photo-1515168833906-d2a3b82b302b?auto=format&fit=crop&w=600&q=80"
+                  src="/vv1.jpg"
                   alt="Retail POS Profit"
                   fill
                   className="object-cover"
@@ -181,6 +182,7 @@ export default function FuelPumps() {
       </div>
 
       <RetailPOSFeatures />
+      <FinancialSupportSection />
 
       <TestimonialSection />
 
