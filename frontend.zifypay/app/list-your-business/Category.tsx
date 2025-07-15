@@ -11,6 +11,7 @@ import { categoryContent } from "./categoryContent";
 import { videoContent } from "./videocontent";
 import { FAQSection } from "./FAQSection";
 import FinancialSupportSection from "./FinancialSupportSection";
+import Link from "next/link";
 
 export type CategoryProps = {
   title: string;
@@ -96,9 +97,10 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           <p className="text-lg text-gray-300 mb-8">{description}</p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start z-10">
-            <button className="bg-white text-black text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition">
-              Explore Services
-            </button>
+            <Link href="booking-engine">
+            
+            </Link>
+           
             <button className="bg-blue-500 text-white text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:bg-blue-600 transition">
               Get Started
             </button>
@@ -115,7 +117,7 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           <Image
             src={image}
             alt={title}
-            width={400}
+            width={800}
             height={400}
             className="rounded-xl shadow-xl object-cover"
           />

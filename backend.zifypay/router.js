@@ -17,7 +17,7 @@ const applicationRoutes = require("./routes/application.route");
 const adminRoutes = require("./routes/admin.route");
 const pricingPlanRoutes = require("./routes/pricingPlan.route");
 const paymentRoutes = require('./routes/payment.route');
-
+const loadnRoutes = require("./routes/loan.route");
 
 // Base Routes
 router.use("/api/v1/users", userRoutes);
@@ -39,6 +39,7 @@ router.use("/api/v1/applications", applicationRoutes);
 router.use("/api/v1/admin", adminRoutes);
 router.use("/api/pricing-plan", pricingPlanRoutes);
 router.use("/api/v1/payments", paymentRoutes);
+router.use("/api/v1/loan", loadnRoutes);
 
 module.exports = router;
 
