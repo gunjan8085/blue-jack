@@ -1,6 +1,7 @@
 import React from "react";
+import Link from "next/link";
 
-const illustration = "/payment1.png";
+const illustration = "/loan1.png";
 
 export const FinancialSupportSection: React.FC = () => {
   return (
@@ -32,10 +33,11 @@ export const FinancialSupportSection: React.FC = () => {
           and access to financial tools that help you thrive—no matter your
           size.
         </p>
-
-        <button className="block bg-blue-600 w-1/2 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl text-base md:text-lg shadow transition md:w-auto mx-auto md:mx-0">
-          Learn More About Our Support
-        </button>
+        <Link href="/list-your-business/usecase/loan">
+          <button className="block bg-blue-600 w-1/2 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl text-base md:text-lg shadow transition md:w-auto mx-auto md:mx-0">
+            Learn More about Funding
+          </button>
+        </Link>
       </div>
 
       {/* Illustration */}

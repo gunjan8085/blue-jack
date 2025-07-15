@@ -115,9 +115,9 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           <Image
             src={image}
             alt={title}
-            width={400}
-            height={400}
-            className="rounded-xl shadow-xl object-cover"
+            width={700}
+            height={700}
+            className=" object-cover"
           />
         </motion.div>
       </section>

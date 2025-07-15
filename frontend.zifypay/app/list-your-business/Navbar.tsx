@@ -238,9 +238,9 @@ function Navbar() {
                   <HoveredLink href="/list-your-business/feature/pointOfSale">
                     Point of sale
                   </HoveredLink>
-                  <HoveredLink href="/list-your-business/feature/onlineBookings">
+                  {/* <HoveredLink href="/list-your-business/feature/onlineBookings">
                     Online bookings
-                  </HoveredLink>
+                  </HoveredLink> */}
                   <HoveredLink href="/list-your-business/feature/payments">
                     Payments
                   </HoveredLink>
