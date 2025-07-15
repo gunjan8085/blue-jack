@@ -72,11 +72,7 @@ export default function FuelPumps() {
         </motion.div>
 
         {/* Image */}
-        <img
-          src="https://imgs.search.brave.com/5yAUg2qKoNB6MPalQ5BE2lZ8aqiIwQ9iEfikPke-nIk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuZnJlZWltYWdl/cy5jb20vaW1hZ2Vz/L2xhcmdlLXByZXZp/ZXdzL2U0OS9kaWdp/dGFsLXNlY3VyaXR5/LW5ldHdvcmstMDQx/MC01NzA4ODg0Lmpw/Zz9mbXQ"
-          alt="Fuel Pump"
-          className="w-1/2 z-10 hidden md:block"
-        />
+        <img src="/secured.png" className="w-1/2 z-10 hidden md:block" />
 
         {/* Right animation placeholder (optional) */}
         <motion.div

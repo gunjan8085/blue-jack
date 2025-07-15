@@ -62,7 +62,7 @@ export default function FuelPumps() {
 
         {/* Image */}
         <img
-          src="/FULE.png"
+          src="/Pump.png"
           alt="Fuel Pump"
           className="w-1/2 z-10 hidden md:block"
         />
