@@ -244,9 +244,9 @@ function Navbar() {
                   <HoveredLink href="/list-your-business/feature/payments">
                     Payments
                   </HoveredLink>
-                  <HoveredLink href="/list-your-business/feature/checkInApp">
+                  {/* <HoveredLink href="/list-your-business/feature/checkInApp">
                     Check-in app
-                  </HoveredLink>
+                  </HoveredLink> */}
                   <HoveredLink href="/list-your-business/feature/cloudDashboard">
                     Cloud Dashboard
                   </HoveredLink>

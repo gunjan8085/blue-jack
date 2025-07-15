@@ -412,10 +412,18 @@ const HeroSection = () => {
 
         {/* Right: Illustration */}
         <div className="flex-1 flex justify-center items-center">
-          <img
+          {/* Use Next.js Image component with a valid src, width, and height */}
+          <Image
             src="/advisor-illustration.svg"
             alt="Advisor Illustration"
+            width={400}
+            height={300}
             className="w-full max-w-md h-auto"
+            priority
+            unoptimized
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder-advisor.png";
+            }}
           />
         </div>
       </section>
