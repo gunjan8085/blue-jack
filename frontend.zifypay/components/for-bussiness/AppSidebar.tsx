@@ -13,6 +13,7 @@ import {
   BarChart3,
   CalendarDays,
   LogOut,
+  User,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -62,12 +63,12 @@ const sidebarItems = [
   {
     title: "Customers",
     url: "/dashboard/customers",
-    icon: Users,
+    icon: User,
   },
   {
     title: "Plans",
     url: "/dashboard/plans",
-    icon: Users,
+    icon: DollarSign,
   }
  
 ]

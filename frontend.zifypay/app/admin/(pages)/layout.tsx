@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Briefcase, Users, LogOut, CreditCard } from 'lucide-react';
+import { Briefcase, Users, LogOut, CreditCard, Building2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -39,6 +39,17 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <Briefcase className="w-5 h-5 mr-3" />
             <Link href="/admin/job-management">Job Management</Link>
+          </button>
+
+          {/* Business Link */}
+          <button
+            onClick={() => setActiveTab('business')}
+            className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${
+              activeTab === 'business' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            <Building2 className="w-5 h-5 mr-3" />
+            <Link href="/admin/business">Business</Link>
           </button>
           
           <button
