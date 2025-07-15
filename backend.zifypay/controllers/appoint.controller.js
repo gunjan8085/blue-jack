@@ -869,11 +869,10 @@ const getBusinessAnalytics = async (req, res, next) => {
     const Business = require("../models/business.model");
     const Employee = require("../models/employee.model");
     const Review = require("../models/review.model");
-    const Service = require("../models/services.model");
     const mongoose = require("mongoose");
 
     // Fetch all appointments for this business
-    const appointments = await Appoint.find({ business: businessId }).populate("service");
+    const appointments = await Appoint.find({ business: businessId });
     const business = await Business.findById(businessId);
     if (!business) {
       return res.status(404).json({ success: false, message: "Business not found" });
@@ -893,9 +892,17 @@ const getBusinessAnalytics = async (req, res, next) => {
     let customerCountMap = {};
     let employeeCountMap = {};
 
-    appointments.forEach((apt) => {
+    for (const apt of appointments) {
+      // Get price from business.serviceCategories
+      let serviceId = apt.service?.toString();
+      let price = 0;
+      if (serviceId) {
+        const matchedService = business.serviceCategories.find(
+          s => s._id?.toString() === serviceId
+        );
+        price = matchedService?.price || 0;
+      }
       // Revenue: sum price for completed appointments
-      const price = apt.service?.price || 0;
       if (apt.status === "completed") {
         totalRevenue += price;
         completedAppointments++;
@@ -908,7 +915,6 @@ const getBusinessAnalytics = async (req, res, next) => {
       if (!firstAppointmentDate || created < firstAppointmentDate) firstAppointmentDate = created;
       if (!lastAppointmentDate || created > lastAppointmentDate) lastAppointmentDate = created;
       // Service stats
-      const serviceId = apt.service?._id?.toString();
       if (serviceId) {
         serviceCountMap[serviceId] = (serviceCountMap[serviceId] || 0) + 1;
         serviceRevenueMap[serviceId] = (serviceRevenueMap[serviceId] || 0) + price;
@@ -925,7 +931,7 @@ const getBusinessAnalytics = async (req, res, next) => {
       if (staffId) {
         employeeCountMap[staffId] = (employeeCountMap[staffId] || 0) + 1;
       }
-    });
+    }
 
     // Average appointment value
     const averageAppointmentValue = appointmentValues.length > 0 ? (appointmentValues.reduce((a, b) => a + b, 0) / appointmentValues.length) : 0;
@@ -934,9 +940,9 @@ const getBusinessAnalytics = async (req, res, next) => {
     let mostPopularService = null;
     if (Object.keys(serviceCountMap).length > 0) {
       const topServiceId = Object.keys(serviceCountMap).reduce((a, b) => serviceCountMap[a] > serviceCountMap[b] ? a : b);
-      const serviceDoc = await Service.findById(topServiceId);
-      mostPopularService = serviceDoc ? {
-        name: serviceDoc.name,
+      const matchedService = business.serviceCategories.find(s => s._id?.toString() === topServiceId);
+      mostPopularService = matchedService ? {
+        name: matchedService.title,
         count: serviceCountMap[topServiceId],
         revenue: serviceRevenueMap[topServiceId] || 0
       } : null;
