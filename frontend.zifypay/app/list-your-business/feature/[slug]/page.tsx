@@ -79,9 +79,9 @@ export default function FeaturePage() {
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             viewport={{ once: true, amount: 0.3 }}
           >
-            <div className="w-full flex h-40 md:h-64 relative overflow-hidden">
+            <div className="w-full flex h-40 md:h-72 relative overflow-hidden">
               <img
-                src="https://blocks.mvp-subha.me/assets/earth.png"
+                src="/earth.png"
                 alt="Earth"
                 className="absolute px-4 top-0 left-1/2 -translate-x-1/2 mx-auto -z-10 opacity-80"
               />

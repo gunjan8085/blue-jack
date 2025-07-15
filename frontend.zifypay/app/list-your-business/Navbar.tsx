@@ -183,7 +183,7 @@ function Navbar() {
           fontFamily: "'Proxima Nova', sans-serif",
         }}
       >
-        <div className="max-w-full mx-4 md:mx-24 flex items-center justify-between px-4 py-2">
+        <div className="max-w-full mx-4 md:mx-24 flex items-center justify-between px-4 ">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-white text-sm">
             <Image src="/logo.png" alt="ZifyPay Logo" width={100} height={80} />
@@ -231,7 +231,7 @@ function Navbar() {
           <div className="hidden md:flex flex-1 justify-center">
             <Menu setActive={setActive} className="text-sm">
               <MenuItem setActive={setActive} active={active} item="Features">
-                <div className="flex flex-col space-y-2 text-sm min-w-[220px]">
+                <div className="flex flex-col  text-sm min-w-[220px]">
                   <HoveredLink href="/list-your-business/feature/appointmentCalendar">
                     Appointment calendar
                   </HoveredLink>
@@ -244,9 +244,9 @@ function Navbar() {
                   <HoveredLink href="/list-your-business/feature/payments">
                     Payments
                   </HoveredLink>
-                  <HoveredLink href="/list-your-business/feature/checkInApp">
+                  {/* <HoveredLink href="/list-your-business/feature/checkInApp">
                     Check-in app
-                  </HoveredLink>
+                  </HoveredLink> */}
                   <HoveredLink href="/list-your-business/feature/cloudDashboard">
                     Cloud Dashboard
                   </HoveredLink>

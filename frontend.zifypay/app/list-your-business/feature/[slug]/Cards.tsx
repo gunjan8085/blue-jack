@@ -37,8 +37,8 @@ function TwoSectionCard({
   title = "Innovative Solutions",
   description = "Discover cutting-edge technology",
   content = "Transform your business with our advanced platform that delivers exceptional results...",
-  videoSrc = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  videoPoster = "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=450&fit=crop",
+  videoSrc = "/pay10.mp4",
+  videoPoster = "/thumb.png",
   className,
 }: TwoSectionCardProps) {
   const [isPlaying, setIsPlaying] = React.useState(false);
