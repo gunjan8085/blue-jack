@@ -861,6 +861,159 @@ const getBookedTimesForEmployee = async (req, res, next) => {
   }
 };
 
+// GET /api/v1/appointments/:businessId/analytics
+const getBusinessAnalytics = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const Appoint = require("../models/appoint.model");
+    const Business = require("../models/business.model");
+    const Employee = require("../models/employee.model");
+    const Review = require("../models/review.model");
+    const Service = require("../models/services.model");
+    const mongoose = require("mongoose");
+
+    // Fetch all appointments for this business
+    const appointments = await Appoint.find({ business: businessId }).populate("service");
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ success: false, message: "Business not found" });
+    }
+
+    // Revenue and appointment stats
+    let totalRevenue = 0;
+    let completedAppointments = 0;
+    let cancelledAppointments = 0;
+    let noShowAppointments = 0; // If you have a 'no-show' status, otherwise 0
+    let totalAppointments = appointments.length;
+    let appointmentValues = [];
+    let firstAppointmentDate = null;
+    let lastAppointmentDate = null;
+    let serviceCountMap = {};
+    let serviceRevenueMap = {};
+    let customerCountMap = {};
+    let employeeCountMap = {};
+
+    appointments.forEach((apt) => {
+      // Revenue: sum price for completed appointments
+      const price = apt.service?.price || 0;
+      if (apt.status === "completed") {
+        totalRevenue += price;
+        completedAppointments++;
+        appointmentValues.push(price);
+      }
+      if (apt.status === "cancelled") cancelledAppointments++;
+      if (apt.status === "no-show") noShowAppointments++;
+      // First/last appointment
+      const created = new Date(apt.createdAt);
+      if (!firstAppointmentDate || created < firstAppointmentDate) firstAppointmentDate = created;
+      if (!lastAppointmentDate || created > lastAppointmentDate) lastAppointmentDate = created;
+      // Service stats
+      const serviceId = apt.service?._id?.toString();
+      if (serviceId) {
+        serviceCountMap[serviceId] = (serviceCountMap[serviceId] || 0) + 1;
+        serviceRevenueMap[serviceId] = (serviceRevenueMap[serviceId] || 0) + price;
+      }
+      // Customer stats
+      const email = apt.customer?.email;
+      if (email) {
+        if (!customerCountMap[email]) customerCountMap[email] = { appointments: 0, revenue: 0 };
+        customerCountMap[email].appointments++;
+        customerCountMap[email].revenue += price;
+      }
+      // Employee stats
+      const staffId = apt.staff?.toString();
+      if (staffId) {
+        employeeCountMap[staffId] = (employeeCountMap[staffId] || 0) + 1;
+      }
+    });
+
+    // Average appointment value
+    const averageAppointmentValue = appointmentValues.length > 0 ? (appointmentValues.reduce((a, b) => a + b, 0) / appointmentValues.length) : 0;
+
+    // Most popular service
+    let mostPopularService = null;
+    if (Object.keys(serviceCountMap).length > 0) {
+      const topServiceId = Object.keys(serviceCountMap).reduce((a, b) => serviceCountMap[a] > serviceCountMap[b] ? a : b);
+      const serviceDoc = await Service.findById(topServiceId);
+      mostPopularService = serviceDoc ? {
+        name: serviceDoc.name,
+        count: serviceCountMap[topServiceId],
+        revenue: serviceRevenueMap[topServiceId] || 0
+      } : null;
+    }
+
+    // Total services
+    const totalServices = business.serviceCategories.length;
+
+    // Total customers
+    const totalCustomers = Object.keys(customerCountMap).length;
+
+    // Top customer
+    let topCustomer = null;
+    if (Object.keys(customerCountMap).length > 0) {
+      const topEmail = Object.keys(customerCountMap).reduce((a, b) => customerCountMap[a].revenue > customerCountMap[b].revenue ? a : b);
+      topCustomer = {
+        email: topEmail,
+        appointments: customerCountMap[topEmail].appointments,
+        revenue: customerCountMap[topEmail].revenue
+      };
+    }
+
+    // Repeat customer rate
+    const repeatCustomers = Object.values(customerCountMap).filter(c => c.appointments > 1).length;
+    const repeatCustomerRate = totalCustomers > 0 ? repeatCustomers / totalCustomers : 0;
+
+    // Reviews
+    const reviews = await Review.find({ forBusiness: businessId }).sort({ createdAt: -1 });
+    const totalReviews = reviews.length;
+    const averageReviewRating = totalReviews > 0 ? (reviews.reduce((sum, r) => sum + (r.stars || 0), 0) / totalReviews) : 0;
+    const recentReview = totalReviews > 0 ? {
+      text: reviews[0].text,
+      rating: reviews[0].stars,
+      date: reviews[0].createdAt
+    } : null;
+
+    // Employees
+    const totalEmployees = business.employees.length;
+    let topEmployee = null;
+    if (Object.keys(employeeCountMap).length > 0) {
+      const topStaffId = Object.keys(employeeCountMap).reduce((a, b) => employeeCountMap[a] > employeeCountMap[b] ? a : b);
+      const empDoc = await Employee.findById(topStaffId);
+      topEmployee = empDoc ? {
+        name: empDoc.name,
+        appointments: employeeCountMap[topStaffId]
+      } : null;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue,
+        totalAppointments,
+        completedAppointments,
+        cancelledAppointments,
+        noShowAppointments,
+        averageAppointmentValue,
+        firstAppointmentDate,
+        lastAppointmentDate,
+        mostPopularService,
+        totalServices,
+        totalCustomers,
+        topCustomer,
+        repeatCustomerRate,
+        averageReviewRating,
+        totalReviews,
+        recentReview,
+        totalEmployees,
+        topEmployee
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching business analytics:", err);
+    next(err);
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsForBusiness,
@@ -881,5 +1034,6 @@ module.exports = {
   getCustomerVisitHistory,
   getTopCustomers,
   createAppointmentByBusiness,
-  getBookedTimesForEmployee
+  getBookedTimesForEmployee,
+  getBusinessAnalytics
 };

@@ -58,4 +58,7 @@ router.get("/:businessId/top-customers", appointController.getTopCustomers);
 // GET /api/v1/employee/:staffId/booked
 router.get('/employee/:staffId/booked', appointController.getBookedTimesForEmployee);
 
+// Add analytics endpoint
+router.get('/:businessId/analytics', appointController.getBusinessAnalytics);
+
 module.exports = router;
