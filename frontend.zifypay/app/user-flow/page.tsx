@@ -24,7 +24,7 @@ export default function SignUp() {
         <h1 className="text-2xl font-bold mb-8 text-white">Sign up / Log in</h1>
 
         {/* Option 1 - Customers */}
-        <Link href="/customer/auth/signup">
+        <Link href="/customer/auth/login">
           <button className="w-full flex justify-between items-center bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-xl p-4 mb-4 hover:bg-white/20 hover:scale-[1.02] transition-all">
             <div>
               <p className="font-medium">ZifyPay for Customers</p>
@@ -37,7 +37,7 @@ export default function SignUp() {
         </Link>
 
         {/* Option 2 - Professionals */}
-        <Link href="/auth/signup">
+        <Link href="/auth/login">
           <button className="w-full flex justify-between items-center bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-xl p-4 hover:bg-white/20 hover:scale-[1.02] transition-all">
             <div>
               <p className="font-medium">ZifyPay for Business</p>
