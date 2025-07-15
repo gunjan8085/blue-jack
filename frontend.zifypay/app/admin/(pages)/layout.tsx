@@ -31,6 +31,19 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <nav className="flex-1 mt-6 px-2 space-y-1">
+
+                    {/* Business Link */}
+          <Link href="/admin/business">
+            <button
+              onClick={() => setActiveTab('business')}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'business' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
+                }`}
+            >
+              <Building2 className="w-5 h-5 mr-3" />
+              Business
+            </button></Link>
+
+
           <Link href="/admin/job-management">
             <button
               onClick={() => setActiveTab('jobs')}
@@ -42,16 +55,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           </Link>
 
-          {/* Business Link */}
-          <Link href="/admin/business">
-            <button
-              onClick={() => setActiveTab('business')}
-              className={`w-full flex items-center px-4 py-3 text-left rounded-md hover:bg-gray-800 ${activeTab === 'business' ? 'bg-gray-800 text-white' : 'text-gray-300 hover:text-white'
-                }`}
-            >
-              <Building2 className="w-5 h-5 mr-3" />
-              Business
-            </button></Link>
 
           <Link href="/admin/applications">
             <button
@@ -62,7 +65,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Users className="w-5 h-5 mr-3" />
               Applications
             </button></Link>
-            
+
           <Link href="/admin/loan-applications">
           <button
             onClick={() => setActiveTab('Loan Applications')}
