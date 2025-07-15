@@ -225,7 +225,7 @@ const BusinessPage = () => {
                     <div className="font-semibold text-white mt-4">Last Appointment</div>
                     <div className="text-lg text-gray-300">{analyticsData.lastAppointmentDate ? new Date(analyticsData.lastAppointmentDate).toLocaleString() : '-'}</div>
                     <div className="font-semibold text-white mt-4">Most Popular Service</div>
-                    <div className="text-lg text-gray-300">{analyticsData.mostPopularService ? `${analyticsData.mostPopularService.name} (${analyticsData.mostPopularService.count} times, ₹${analyticsData.mostPopularService.revenue})` : '-'}</div>
+                    <div className="text-lg text-gray-300">{analyticsData.mostPopularService ? `${analyticsData.mostPopularService.name} (${analyticsData.mostPopularService.count} times, $${analyticsData.mostPopularService.revenue})` : '-'}</div>
                     <div className="font-semibold text-white mt-4">Total Services</div>
                     <div className="text-lg text-gray-300">{analyticsData.totalServices}</div>
                   </div>
