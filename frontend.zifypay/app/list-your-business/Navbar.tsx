@@ -347,7 +347,7 @@ function Navbar() {
 
               <div className="flex items-center px-4 gap-2">
                 <Link
-                  href="/Pricing"
+                  href="/list-your-business/Pricing"
                   className="text-white transition-colors duration-200 px-4 py-2 text-base md:text-lg font-medium"
                   style={{ fontFamily: "'Proxima Nova', sans-serif" }}
                 >
@@ -430,7 +430,7 @@ function Navbar() {
             </button>
             <div className="flex flex-col space-y-6 text-white pt-2">
               <Link
-                href="/pricing"
+                href="/list-your-business/Pricing"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-lg font-medium"
               >

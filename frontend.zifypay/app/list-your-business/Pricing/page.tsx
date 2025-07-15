@@ -64,9 +64,9 @@ export default function LandingPage() {
       {/* Main sections */}
       <Navbar />
       <Pricing />
-      <FeaturesSection />
-      <YieldSection />
-      <Testimonial />
+      {/* <FeaturesSection /> */}
+      {/* <YieldSection /> */}
+      {/* <Testimonial /> */}
 
       {/* Scroll-sensitive background color section */}
       <div ref={ctaRef} className="relative min-h-screen overflow-hidden">

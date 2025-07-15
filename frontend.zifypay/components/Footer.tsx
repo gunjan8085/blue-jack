@@ -126,7 +126,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-white transition-colors block">
+                <Link href="/list-your-business/Pricing" className="hover:text-white transition-colors block">
                   Pricing
                 </Link>
               </li>
