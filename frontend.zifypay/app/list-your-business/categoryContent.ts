@@ -286,7 +286,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Brighten Your Practice",
     description: "Modern solutions for dental clinic scheduling and growth.",
     buttonText: "Try Now",
-    images: ["/public/pay1.png", "/salon/salon1.png", "/salon/salon1.png"],
+    images: ["/clinics1.png", "/clinics2.png", "/clinics3.png"],
     features: [
       {
         step: "Step 1",
@@ -430,7 +430,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Picture Perfect Scheduling",
     description: "Book more shoots and manage your photography business.",
     buttonText: "See How",
-    images: ["/salon/salon1.png", "/salon/salon1.png", "/public/pay1.png"],
+    images: ["/photo1.jpeg", "/photo2.jpeg", "/photo3.jpeg"],
     features: [
       {
         step: "Step 1",
@@ -517,7 +517,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Convenience, Upgraded",
     description: "Grow your convenience store with our digital solutions.",
     buttonText: "Try Now",
-    images: ["/salon/salon1.png", "/salon/salon1.png", "/public/pay1.png"],
+    images: ["/cs1.jpeg", "/cs2.jpeg", "/cs3.jpeg"],
     features: [
       {
         step: "Step 1",
@@ -544,7 +544,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Retail, Reimagined",
     description: "Boost sales and manage your retail store with ease.",
     buttonText: "Start Free Trial",
-    images: ["/cstore.jpeg", "/cstore1.jpeg", "/cstore2.jpeg"],
+    images: ["/cstore.jpeg", "/cstore1.jpeg", "/cstore3.jpeg"],
     features: [
       {
         step: "Step 1",

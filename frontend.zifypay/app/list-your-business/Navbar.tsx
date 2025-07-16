@@ -312,7 +312,7 @@ function Navbar() {
                       "Photographers",
                       "Optical stores",
                       "Fuel pump",
-                    
+                      "Cstore",
                       "Retail store",
                     ].map((industry) => {
                       const slug = industry.toLowerCase().replace(/ /g, "-");
