@@ -301,7 +301,7 @@ function Navbar() {
                       "Barbershops",
                       "Beauty salons",
                       "Nail salons",
-                      "Tanning salons",
+                      
                       "Spas",
                       "Clinics",
                       "Dental clinics",

@@ -143,7 +143,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     description:
       "Streamline your beauty salon operations and delight your clients.",
     buttonText: "Start Free Trial",
-    images: ["/salon/salon1.png", "/public/pay1.png", "/salon/salon1.png"],
+    images: ["/b1.jpeg", "/b3.jpeg", "/b2.jpeg"],
     features: [
       {
         step: "Step 1",
@@ -315,7 +315,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     description:
       "Streamline your auto shop with our booking and management tools.",
     buttonText: "Get Started",
-    images: ["/salon/salon1.png", "/salon/salon1.png", "/salon/salon1.png"],
+    images: ["/auto0.jpeg", "/auto2.jpeg", "/auto3.jpeg"],
     features: [
       {
         step: "Step 1",
@@ -373,7 +373,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Pedal to Success",
     description: "Boost your bike shop with easy scheduling and management.",
     buttonText: "Try Now",
-    images: ["/salon/salon1.png", "/salon/salon1.png", "/public/pay1.png"],
+    images: ["/bike-shop2.jpeg", "/bike-shop.jpeg", "/bike-shop1.jpeg"],
     features: [
       {
         step: "Step 1",
