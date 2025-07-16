@@ -52,7 +52,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     description:
       "Empower your salon with seamless booking and management tools.",
     buttonText: "Book a Demo",
-    images: ["/salon/salon1.png", "/salon/salon2.png", "/salon/salon1.png"],
+    images: ["/salon/salon1.png", "/salon/salon2.png", "/salon/salon3.png"],
     features: [
       {
         step: "Step 1",
@@ -73,7 +73,7 @@ export const categoryContent: Record<string, CategoryContent> = {
         title: "Boost Revenue with Packages",
         content:
           "Offer bundled services and memberships to increase loyalty and sales.",
-        image: "/salon/salon3.png",
+        image: "/salon/salon4.png",
       },
     ],
   },
@@ -103,7 +103,7 @@ export const categoryContent: Record<string, CategoryContent> = {
         title: "Automated Follow-ups",
         content:
           "Send personalized reminders and aftercare tips to boost retention.",
-        image: "/salon/salon1.png",
+        image: "/salon/salon3.png",
       },
     ],
   },
@@ -424,6 +424,7 @@ export const categoryContent: Record<string, CategoryContent> = {
       },
     ],
   },
+
   photographers: {
     subtitle: "For Photographers",
     title: "Picture Perfect Scheduling",
@@ -458,7 +459,11 @@ export const categoryContent: Record<string, CategoryContent> = {
     description:
       "Modernize your optical store with seamless appointment booking.",
     buttonText: "Get Started",
-    images: ["/optical/optical1.png", "/optical/optical2.png", "/optical/optical3.png"],
+    images: [
+      "/optical/optical1.png",
+      "/optical/optical2.png",
+      "/optical/optical3.png",
+    ],
     features: [
       {
         step: "Step 1",
@@ -485,7 +490,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Fuel Up Your Business",
     description: "Efficient management for modern fuel stations.",
     buttonText: "Book a Demo",
-    images: ["/salon/salon1.png", "/salon/salon1.png", "/public/pay1.png"],
+    images: ["/fuel1.jpg", "/fuel2.jpg", "/fuel3.jpeg"],
     features: [
       {
         step: "Step 1",
@@ -539,7 +544,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: "Retail, Reimagined",
     description: "Boost sales and manage your retail store with ease.",
     buttonText: "Start Free Trial",
-    images: ["/salon/salon1.png", "/salon/salon1.png", "/public/pay1.png"],
+    images: ["/cstore.jpeg", "/cstore1.jpeg", "/cstore2.jpeg"],
     features: [
       {
         step: "Step 1",
