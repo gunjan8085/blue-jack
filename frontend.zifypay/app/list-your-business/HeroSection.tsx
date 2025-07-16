@@ -3,11 +3,14 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, useAnimation, useInView } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const HeroSection = () => {
   const ref = useRef(null);
   const inView = useInView(ref, { amount: 0.4, once: false });
   const controls = useAnimation();
+  const [email, setEmail] = React.useState("");
+  const router = useRouter();
 
   React.useEffect(() => {
     if (inView) {
@@ -46,12 +49,22 @@ const HeroSection = () => {
               type="email"
               placeholder="What's your work email?"
               className="bg-transparent flex-1 text-white placeholder-white/70 text-sm md:text-base outline-none px-2 py-2"
+              value={email}
+              onChange={e => {
+                setEmail(e.target.value);
+                localStorage.setItem("signupEmail", e.target.value);
+              }}
             />
-            <Link href="/user-flow">
-              <button className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition">
-                Get started
-              </button>
-            </Link>
+            <button
+              className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition"
+              onClick={() => {
+                if (email) {
+                  router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
+                }
+              }}
+            >
+              Get started
+            </button>
           </div>
         </div>
 

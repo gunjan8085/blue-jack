@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { API_URL } from "@/lib/const";
+import Link from "next/link";
 
 const ADMIN_EMAIL = "Kenneth@lodgezify.com";
 const ADMIN_PASSWORD = "GreenJack@$^E^%123456";
@@ -49,13 +50,14 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 rounded-br-4xl">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
+          <Link href={"/"}>
           <Image
             src="https://zifypay.com/logo.png"
             alt="ZifyPay Logo"
             width={200}
             height={60}
             className="h-20 w-auto"
-          />
+          /></Link>
         </div>
         <h2 className="mt-6 text-white text-center text-3xl font-extrabold text-gray-900">
           Admin Portal

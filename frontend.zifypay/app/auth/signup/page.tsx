@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { API_URL } from "../../../lib/const";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -24,6 +26,21 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [error, setError] = useState("");
+
+  // Autofill email from query or localStorage
+  useEffect(() => {
+    if (!formData.email) {
+      const emailFromQuery = searchParams.get("email");
+      if (emailFromQuery) {
+        setFormData((prev) => ({ ...prev, email: emailFromQuery }));
+      } else if (typeof window !== "undefined") {
+        const emailFromStorage = localStorage.getItem("signupEmail");
+        if (emailFromStorage) {
+          setFormData((prev) => ({ ...prev, email: emailFromStorage }));
+        }
+      }
+    }
+  }, [searchParams, formData.email]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
