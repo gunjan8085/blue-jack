@@ -6,6 +6,7 @@ const Service = require("../models/services.model");
 const Employee = require("../models/employee.model");
 const { log } = require("console");
 const { sendAppointmentMail } = require("../services/mail.service");
+const { sendBookingSMS } = require("../services/sms.service");
 const customerService = require("../services/customer.service");
 const { scheduleAppointmentReminders } = require("../services/appointment.service");
 
@@ -95,6 +96,14 @@ const createAppointment = async (req, res, next) => {
       normalizedTime,
       location
     ).catch((err) => console.error("Appointment email error:", err));
+
+    // Send SMS confirmation (non-blocking)
+    if (customer && customer.phone) {
+      const smsMsg = `Hi ${customer.name}, your appointment for ${serviceName} at ${businessName} is confirmed for ${normalizedDate} at ${normalizedTime}.`;
+      sendBookingSMS(customer.phone, smsMsg)
+        .then(() => console.log('SMS sent to', customer.phone))
+        .catch((err) => console.error('Error sending SMS:', err));
+    }
 
     // Schedule appointment reminders
     scheduleAppointmentReminders({

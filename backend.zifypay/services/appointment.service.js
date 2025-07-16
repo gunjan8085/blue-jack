@@ -4,7 +4,10 @@ const mongoose = require("mongoose");
 const cron = require('node-cron');
 const { sendAppointmentReminderMail24h, sendAppointmentReminderMail1h } = require('./mail.service');
 
+const { sendBookingSMS } = require('./sms.service');
+
 module.exports = {
+  
   createAppointmentByUser: async (userId, data) => {
     try {
       // Check if business is active
@@ -34,6 +37,17 @@ module.exports = {
         business.isActive = false;
       }
       await business.save();
+      console.log('Creating appointment for phone:', data?.customer?.phone);
+      // Send SMS if phone is available
+if (data.customer && data.customer.phone) {
+  const smsMsg = `Hi ${data.customer.name}, your appointment for ${data.serviceName || 'service'} at ${business.brandName || 'our business'} is confirmed for ${data.date || data.startAt} at ${data.time || ''}.`;
+  try {
+    await sendBookingSMS(data.customer.phone, smsMsg);
+    console.log('SMS sent to', data.customer.phone);
+  } catch (err) {
+    console.error('Error sending SMS:', err);
+  }
+}
       return appointment;
     } catch (error) {
       throw new ApiError(500, error.message, error);
