@@ -157,7 +157,7 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           className="bg-gradient-to-r from-[#001A39] to-[#001433] p-12 "
         >
           <FeatureSteps
-            className="bg-[#ebf8ff]  text-[#094183] h-screen rounded-3xl"
+            className="bg-[#ebf8ff]  text-[#094183]  rounded-3xl"
             features={content.features}
             title="why you choose Zifypay"
             autoPlayInterval={4000}

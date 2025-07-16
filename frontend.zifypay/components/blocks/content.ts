@@ -10,15 +10,15 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
   salons: {
     subtitle: "For Modern Salons",
     title:
-      "Elevate your salon’s potential with a complete digital solution that simplifies appointment scheduling, enhances client engagement, and streamlines daily operations. Whether you're managing a boutique salon or a multi-location brand, our intelligent tools help you focus more on delivering exceptional service while we take care of the rest.",
+      "Elevate your salon's potential with a complete digital solution that simplifies appointment scheduling, enhances client engagement, and streamlines daily operations. Whether you're managing a boutique salon or a multi-location brand, our intelligent tools help you focus more on delivering exceptional service while we take care of the rest.",
     description:
-      "Elevate your salon’s potential with a complete digital solution that simplifies appointment scheduling, enhances client engagement, and streamlines daily operations. Whether you're managing a boutique salon or a multi-location brand, our intelligent tools help you focus more on delivering exceptional service while we take care of the rest.",
+      "Elevate your salon's potential with a complete digital solution that simplifies appointment scheduling, enhances client engagement, and streamlines daily operations. Whether you're managing a boutique salon or a multi-location brand, our intelligent tools help you focus more on delivering exceptional service while we take care of the rest.",
     buttonText: "Book a Demo",
     images: [
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "salon/salon3.png",
+      "salon/salon2.png",
+      "/salon/salon1.png",
+      
     ],
   },
 
@@ -29,10 +29,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Modernize your hair salon with digital scheduling and personalized client care.",
     buttonText: "Try Now",
     images: [
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon2.png",
+      "/salon/salon3.png",
+      "/salon/salon1.png",
     ],
   },
   barbershops: {
@@ -42,10 +42,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Attract more clients and manage your shop with ease using our all-in-one platform.",
     buttonText: "Get Started",
     images: [
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+      "/barber/barber1.png",
+      "/barber/barber2.png",
+      "/barber/barber3.png",
+      "/barber/barber4.png",
     ],
   },
   "beauty salons": {
@@ -55,10 +55,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Streamline your beauty salon operations and delight your clients with easy booking.",
     buttonText: "Start Free Trial",
     images: [
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "nail salons": {
@@ -68,10 +68,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Boost bookings and manage your nail salon with ease and style.",
     buttonText: "See How",
     images: [
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "tanning salons": {
@@ -81,10 +81,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Simplify scheduling and grow your tanning salon with our digital tools.",
     buttonText: "Get Started",
     images: [
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   spas: {
@@ -94,10 +94,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Let your spa thrive with our easy-to-use management tools and online booking.",
     buttonText: "Book a Demo",
     images: [
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   clinics: {
@@ -107,10 +107,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Efficiently manage appointments and patient records with our platform.",
     buttonText: "Learn More",
     images: [
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "dental clinics": {
@@ -119,10 +119,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
     description: "Modern solutions for dental clinic scheduling and growth.",
     buttonText: "Try Now",
     images: [
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "auto shops": {
@@ -132,10 +132,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Streamline your auto shop with our booking and management tools.",
     buttonText: "Get Started",
     images: [
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "pet care": {
@@ -145,10 +145,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Manage appointments and grow your pet care business with ease.",
     buttonText: "Book a Demo",
     images: [
-      "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1518715308788-3005759c61d3?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1518715308788-3005759c61d3?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "bike shops": {
@@ -157,10 +157,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
     description: "Boost your bike shop with easy scheduling and management.",
     buttonText: "Try Now",
     images: [
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "personal trainers": {
@@ -169,10 +169,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
     description: "Manage clients and sessions with our all-in-one platform.",
     buttonText: "Start Free Trial",
     images: [
-      "https://images.unsplash.com/photo-1518715308788-3005759c61d3?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   photographers: {
@@ -182,10 +182,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Book more shoots and manage your photography business with ease.",
     buttonText: "See How",
     images: [
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "optical stores": {
@@ -195,10 +195,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Modernize your optical store with seamless appointment booking.",
     buttonText: "Get Started",
     images: [
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "fuel pump": {
@@ -207,10 +207,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
     description: "Efficient management for modern fuel stations.",
     buttonText: "Book a Demo",
     images: [
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   cstore: {
@@ -219,10 +219,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
     description: "Grow your convenience store with our digital solutions.",
     buttonText: "Try Now",
     images: [
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   "retail store": {
@@ -231,10 +231,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
     description: "Boost sales and manage your retail store with ease.",
     buttonText: "Start Free Trial",
     images: [
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
   default: {
@@ -244,10 +244,10 @@ export const aboutDemoContent: Record<string, AboutDemoContent> = {
       "Transform your startup's potential through innovative solutions and strategic growth. We help businesses adapt, evolve, and thrive in today's competitive marketplace.",
     buttonText: "Start Scaling Today",
     images: [
-      "https://images.unsplash.com/photo-1519415943484-cfbdfb6c7b51?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
+      "/salon/salon1.png",
     ],
   },
 };

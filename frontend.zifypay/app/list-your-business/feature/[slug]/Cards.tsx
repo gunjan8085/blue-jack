@@ -37,7 +37,7 @@ function TwoSectionCard({
   title = "Innovative Solutions",
   description = "Discover cutting-edge technology",
   content = "Transform your business with our advanced platform that delivers exceptional results...",
-  videoSrc = "/pay10.mp4",
+  videoSrc = "/zifypay.mp4",
   videoPoster = "/thumb.png",
   className,
 }: TwoSectionCardProps) {
