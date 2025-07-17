@@ -111,9 +111,9 @@ export default function SignupPage() {
             {/* Profile Image and Name Row */}
             <div className="flex flex-row items-start gap-4">
               {/* Profile Picture */}
-              <div className="w-48">
+              <div className="w-42 rounded-xl bordar-2 border-gray-600">
                 <label className="block text-xs font-semibold text-gray-700 mb-1 text-center">
-                  Profile Picture (Optional)
+                  Profile Picture
                 </label>
                 <div className="flex items-center justify-center gap-2">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-200 bg-white shadow-sm">
@@ -340,11 +340,6 @@ export default function SignupPage() {
           alt="Signup Visual"
           className="w-full h-full object-cover brightness-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center">
-          <p className="text-white text-lg font-medium opacity-80">
-            Empower Your Business
-          </p>
-        </div>
       </div>
     </div>
   );
