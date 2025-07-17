@@ -6,7 +6,7 @@ const illustration = "/loan1.png";
 export const FinancialSupportSection: React.FC = () => {
   return (
     <section
-      className="w-full px-4 md:px-24 py-10 md:py-20 flex flex-col md:flex-row items-center gap-12 bg-gradient-to-r from-[#001A39] to-[#001433] rounded-3xl my-16 relative overflow-hidden"
+      className="min-w-7xl px-4 md:px-28 py-10 md:py-20 flex flex-col md:flex-row items-center bg-gradient-to-r from-[#001A39] to-[#001433] rounded-3xl my-16 relative overflow-hidden"
       style={{
         fontFamily:
           "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",

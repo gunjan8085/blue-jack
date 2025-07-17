@@ -297,14 +297,14 @@ function Navbar() {
                   <div className="w-1/2 grid grid-cols-2 gap-y-4 text-left">
                     {[
                       "Salons",
-                      "Hair salons",
-                      "Barbershops",
+
                       "Beauty salons",
                       "Nail salons",
-                      
+
                       "Spas",
                       "Clinics",
                       "Dental clinics",
+                      "Barbershops",
                       "Auto shops",
                       "Pet care",
                       "Bike shops",

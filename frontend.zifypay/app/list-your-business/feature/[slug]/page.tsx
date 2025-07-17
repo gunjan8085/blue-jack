@@ -9,6 +9,8 @@ import { motion } from "framer-motion";
 import TwoSectionCard from "./Cards";
 import ProductCards from "./productCards";
 import CTASection from "../../CTASection";
+ import Testimonial from "../../Testimonial";
+// import Testimonial from "../../usecase/Testimonial";
 
 export default function FeaturePage() {
   const params = useParams();
@@ -64,7 +66,7 @@ export default function FeaturePage() {
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href={`${slug ? 'https://pos.zifypay.com' : '/contact-us'}`}
+                href={`${slug ? "https://pos.zifypay.com" : "/contact-us"}`}
                 className="neumorphic-button hover:shadow-[0_0_20px_rgba(155,135,245,0.5)] relative w-full overflow-hidden rounded-full border border-white/10 bg-gradient-to-b from-white/10 to-white/5 px-8 py-4 text-white shadow-lg transition-all duration-300 hover:border-[#9b87f5]/30 sm:w-auto"
               >
                 Get Started
@@ -86,12 +88,12 @@ export default function FeaturePage() {
                 className="absolute px-4 top-0 left-1/2 -translate-x-1/2 mx-auto -z-10 opacity-80"
               />
             </div>
-            <div className="relative z-10 mx-auto max-w-7xl overflow-hidden rounded-lg shadow-2xl">
+            <div className="relative z-10  max-w-7xl overflow-hidden rounded-lg shadow-2xl">
               {content.image && (
                 <Image
                   src={content.image}
                   alt={content.title}
-                  width={900}
+                  width={1000}
                   height={600}
                   className="h-auto w-full rounded-lg border border-white/10"
                   priority
@@ -105,6 +107,7 @@ export default function FeaturePage() {
       {/* REPEATED COMPONENTS */}
       <TwoSectionCard />
       <ProductCards />
+      <Testimonial />
       <CTASection />
       <Footer />
     </div>
