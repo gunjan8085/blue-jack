@@ -6,7 +6,10 @@ export default function SignUp() {
       {/* Left section */}
       <div className="w-full md:w-1/2 flex flex-col px-8 py-12 relative">
         {/* Back Button */}
-        <Link href="/" className="absolute ml-5 mt-5 top-4 left-4 text-white hover:underline text-sm">
+        <Link
+          href="/"
+          className="absolute ml-5 mt-5 top-4 left-4 text-white hover:underline text-sm"
+        >
           ← Back
         </Link>
 
@@ -14,7 +17,7 @@ export default function SignUp() {
         <div className="mt-10 mb-8">
           <Link href="/">
             <img
-              src="https://zifypay.com/logo.png"
+              src="/logo.png"
               alt="ZifyPay Logo"
               className="h-10 w-auto cursor-pointer"
             />
