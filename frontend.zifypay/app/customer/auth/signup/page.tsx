@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { setAuthToken, setUserData } from "@/lib/auth";
@@ -25,6 +25,27 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Example: check for token in localStorage
+    const token = localStorage.getItem("customerToken");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    // Remove token and user data
+    localStorage.removeItem("customerToken");
+    localStorage.removeItem("customerProfile");
+    // Remove cookies if any
+    document.cookie.split(";").forEach((cookie) => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    });
+    setIsLoggedIn(false);
+    router.push("/customer/auth/login");
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -69,7 +90,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-gray-50 overflow-hidden">
+    <div className="relative min-h-screen w-full flex flex-col md:flex-row bg-gray-50 overflow-hidden">
+      {/* Logout Button (top right) */}
+      {isLoggedIn && (
+        <button
+          onClick={handleLogout}
+          className="absolute top-4 right-4 px-4 py-2 bg-red-600 text-white rounded-lg font-medium shadow hover:bg-red-700 z-50"
+        >
+          Logout
+        </button>
+      )}
       {/* Left: Signup Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-900 to-indigo-900 p-4">
         <div className="w-full max-w-xl bg-white rounded-xl shadow-xl p-6">
