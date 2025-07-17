@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { Button } from "../../../components/ui/button";
+import { Button } from "../../../components/ui/button"
 import { logout, isAuthenticated, getUserData } from "@/lib/auth";
 
 function HeaderForCustomer({ showView }: { showView?: boolean }) {
