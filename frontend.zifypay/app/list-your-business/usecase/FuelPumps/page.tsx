@@ -102,7 +102,7 @@ export default function FuelPumps() {
       </ContainerScroll>
       {/* <Bendo /> */}
       <Profit />
-      <CoreFeatures />
+      <CoreFeatures /> 
       <FinancialSupportSection />
       <Testimonial />
 
