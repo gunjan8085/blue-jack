@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-export default function generateBatchId() {
+ function generateBatchId() {
   const currentDate = new Date();
   const datePrefix = currentDate.toISOString().slice(0, 10).replace(/-/g, ''); // Format as YYYYMMDD
 
@@ -45,7 +45,7 @@ export default function generateBatchId() {
 /**
  * Extract field value from EPX XML response
  */
-export const extractFieldFromXML = (xmlString, fieldKey) => {
+ const extractFieldFromXML = (xmlString, fieldKey) => {
   try {
     const regex = new RegExp(`<FIELD KEY="${fieldKey}">(.*?)</FIELD>`, 'i');
     const match = xmlString.match(regex);
@@ -58,7 +58,7 @@ export const extractFieldFromXML = (xmlString, fieldKey) => {
 /**
  * Validate payment details format
  */
- export const validatePaymentDetails = (paymentDetails) => {
+ const validatePaymentDetails = (paymentDetails) => {
   const errors = [];
 
   if (!paymentDetails.cardNumber || !/^\d{13,19}$/.test(paymentDetails.cardNumber.replace(/\s/g, ''))) {
@@ -94,6 +94,14 @@ export const extractFieldFromXML = (xmlString, fieldKey) => {
 /**
  * Generate unique request ID for tracking
  */
-export const generateRequestId = () => {
+ const generateRequestId = () => {
   return `REQ_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
+module.exports = {
+
+generateBatchId,
+extractFieldFromXML,
+validatePaymentDetails,
+generateRequestId
 };
