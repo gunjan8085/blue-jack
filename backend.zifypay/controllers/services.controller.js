@@ -180,7 +180,7 @@ exports.getServiceById = async (req, res) => {
 exports.updateService = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    let updateData = { ...req.body };
     
     if (!isValidObjectId(id)) {
       return res.status(400).json({
@@ -189,19 +189,26 @@ exports.updateService = async (req, res) => {
       });
     }
 
-    // Validate ObjectId fields in update data
-    if (updateData.company && !isValidObjectId(updateData.company)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid company ID"
-      });
+    // Handle file upload if exists
+    if (req.file) {
+      // Here you would typically upload the file to a storage service
+      // For now, we'll just store the file path or URL
+      updateData.imageUrl = `/uploads/services/${req.file.filename}`;
     }
 
-    if (updateData.category && !isValidObjectId(updateData.category)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid category ID"
-      });
+    // Convert string values to appropriate types
+    if (updateData.price) updateData.price = Number(updateData.price);
+    if (updateData.duration) updateData.duration = Number(updateData.duration);
+    if (updateData.costOfService) updateData.costOfService = Number(updateData.costOfService);
+
+    // Handle price object if needed
+    if (updateData.price && typeof updateData.price === 'object') {
+      if (updateData.price.amount) {
+        updateData.price = {
+          ...updateData.price,
+          amount: Number(updateData.price.amount)
+        };
+      }
     }
 
     const service = await Service.findByIdAndUpdate(
@@ -211,10 +218,11 @@ exports.updateService = async (req, res) => {
         new: true, 
         runValidators: true 
       }
-    ).populate('company', 'name email')
-     .populate('category', 'name description')
-     .populate('teamMembers', 'name email position')
-     .populate('resources', 'name type');
+    )
+    .populate('company', 'name email')
+    .populate('category', 'name description')
+    .populate('teamMembers', 'name email position')
+    .populate('resources', 'name type');
 
     if (!service) {
       return res.status(404).json({
