@@ -9,7 +9,7 @@ router.post("/:businessId/create", appointController.createAppointment);
 // POST /api/v1/appointments/check-availability
 router.post("/check-availability", appointController.checkAvailability);
 
-router.post("/create-by-business", appointController.createAppointmentByBusiness);
+router.post("/:businessId/create-by-business", appointController.createAppointmentByBusiness);
 
 // GET /api/v1/appointments/:businessId
 router.get("/:businessId", appointController.getAppointmentsForBusiness);
