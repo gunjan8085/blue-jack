@@ -12,6 +12,9 @@ const {  validatePaymentDetails , generateRequestId } = require("../services/bat
 const axios = require('axios');
 const qs = require('querystring');
 const { parseStringPromise } = require("xml2js");
+const fs = require('fs');
+const path = require('path');
+
 
 // const logger = require('../services/logger');
 
