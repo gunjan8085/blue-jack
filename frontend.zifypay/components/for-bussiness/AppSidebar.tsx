@@ -13,6 +13,7 @@ import {
   BarChart3,
   CalendarDays,
   LogOut,
+  CreditCard,
   User,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
+import { title } from "process"
 
 const sidebarItems = [
   {
@@ -69,6 +71,11 @@ const sidebarItems = [
     title: "Plans",
     url: "/dashboard/plans",
     icon: DollarSign,
+  },
+  {
+    title : "Payments",
+    url: "/dashboard/payments",
+    icon: CreditCard,
   }
  
 ]

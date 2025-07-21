@@ -127,6 +127,21 @@ export default function BusinessProfilePage() {
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null)
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    firstName: "",
+    lastName: "",
+    address : "",
+    city : "",
+    state : "",
+    zipCode : "",
+  }); //{ cardNumber, expDate, cvv, firstName, lastName, address, city, state, zipCode }
+
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [checkError, setCheckError] = useState("");
+  const [isSlotAvailable, setIsSlotAvailable] = useState(null); // null | true | false
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -197,7 +212,7 @@ export default function BusinessProfilePage() {
   }
 
   const handleBookingNext = () => {
-    if (bookingStep < 3) {
+    if (bookingStep < 4) {
       setBookingStep(bookingStep + 1)
       setBookingError(null)
       setBookingSuccess(null)
@@ -211,6 +226,80 @@ export default function BusinessProfilePage() {
       setBookingSuccess(null)
     }
   }
+
+
+
+  const checkAvailableStaff = async () => {
+  setCheckingAvailability(true);
+  setCheckError("");
+
+  try {
+    const res = await fetch(`${API_URL}/appointments/check-availability`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        staff: selectedStaff,   // Make sure you have selectedStaffId in state
+        date: selectedDate,
+        time: selectedTime,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success && data.available) {
+      setBookingStep((prev) => prev + 1);
+    } else {
+      setCheckError("Selected time slot is not available. Please choose another.");
+    }
+  } catch (error) {
+    setCheckError("Failed to check availability. Please try again.");
+  }
+
+  setCheckingAvailability(false);
+};
+
+
+useEffect(() => {
+  const autoCheckAvailability = async () => {
+    if (!selectedDate || !selectedTime || !selectedStaff) return;
+
+    setCheckingAvailability(true);
+    setCheckError("");
+    setIsSlotAvailable(null);
+
+    try {
+      const res = await fetch(`${API_URL}/appointments/check-availability`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          staff: selectedStaff,
+          date: selectedDate,
+          time: selectedTime,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setIsSlotAvailable(data.available);
+        if (!data.available) {
+          setCheckError("Selected time slot is not available.");
+        }
+      } else {
+        setCheckError("Unable to verify availability.");
+      }
+    } catch (err) {
+      setCheckError("Error checking availability.");
+    }
+
+    setCheckingAvailability(false);
+  };
+
+  autoCheckAvailability();
+}, [selectedDate, selectedTime, selectedStaff]);
+
 
   const handleBookingSubmit = async () => {
     if (!selectedService || !selectedStaff || !selectedDate || !selectedTime || !customerInfo.name || !customerInfo.email || !customerInfo.phone) {
@@ -235,7 +324,8 @@ export default function BusinessProfilePage() {
           phone: customerInfo.phone,
           notes: customerInfo.notes || ""
         },
-        user: user?._id
+        user: user?._id,
+        paymentDetails
       }
 
       const response = await fetch(`${API_URL}/appointments/${params.id}/create`, {
@@ -809,6 +899,19 @@ export default function BusinessProfilePage() {
               {/* Step 2: Date and Time */}
               {bookingStep === 2 && (
                 <div className="space-y-4">
+
+                     {isSlotAvailable === true && (
+                        <div className="text-green-600 text-sm">Slot is available</div>
+                      )}
+                      {isSlotAvailable === false && (
+                        <div className="text-red-500 text-sm">Slot not available</div>
+                      )}
+                      {checkingAvailability && (
+                        <div className="text-gray-500 text-sm">Checking availability...</div>
+                      )}
+
+
+
                   <div className="space-y-2">
                     <Label htmlFor="date">Select Date</Label>
                     <Input
@@ -840,12 +943,22 @@ export default function BusinessProfilePage() {
                   </div>
 
                   <div className="flex space-x-2">
-                    <Button variant="outline" onClick={handleBookingBack} className="flex-1">
+                    <Button variant="outline" onClick={checkAvailableStaff} className="flex-1">
                       Back
                     </Button>
-                    <Button onClick={handleBookingNext} className="flex-1" disabled={!selectedDate || !selectedTime}>
-                      Next
-                    </Button>
+                   <Button
+                        onClick={handleBookingNext}
+                        className="flex-1"
+                        disabled={
+                          !selectedDate || !selectedTime || checkingAvailability || isSlotAvailable === false
+                        }
+                      >
+                        {checkingAvailability ? "Checking..." : "Next"}
+                      </Button>
+
+
+                      
+
                   </div>
                 </div>
               )}
@@ -895,11 +1008,13 @@ export default function BusinessProfilePage() {
                     <Button variant="outline" onClick={handleBookingBack} className="flex-1" disabled={isBookingLoading}>
                       Back
                     </Button>
-                    <Button
+                    {/* <Button
                       onClick={handleBookingSubmit}
                       className="flex-1"
                       disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone || isBookingLoading}
                     >
+
+                   
                       {isBookingLoading ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -908,10 +1023,186 @@ export default function BusinessProfilePage() {
                       ) : (
                         'Book Appointment'
                       )}
+                    </Button> */}
+
+                       <Button onClick={handleBookingNext} className="flex-1" >
+                      Next
                     </Button>
                   </div>
                 </div>
               )}
+
+         {bookingStep === 4 && (
+  <div className="space-y-4">
+    <h1>Complete Payment</h1>
+
+    {/* Card Number */}
+    <div className="space-y-2">
+      <Label htmlFor="cardNumber">Card Number *</Label>
+      <Input
+        type="text"
+        inputMode="numeric"
+        pattern="\d{16}"
+        maxLength={17}
+        placeholder="1234567812345678"
+        value={paymentDetails.cardNumber}
+        onChange={(e) => {
+          const val = e.target.value.replace(/\D/g, '');
+          if (val.length <= 16) setPaymentDetails({ ...paymentDetails, cardNumber: val });
+        }}
+      />
+    </div>
+
+    {/* Expiry Date & CVV */}
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="expiryDate">Expiry Date (MMYY) *</Label>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="\d{4}"
+          maxLength={4}
+          placeholder="MMYY"
+          value={paymentDetails.expiryDate}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, '');
+            if (val.length <= 4) setPaymentDetails({ ...paymentDetails, expiryDate: val });
+          }}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="cvv">CVV *</Label>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="\d{3,4}"
+          maxLength={4}
+          placeholder="123"
+          value={paymentDetails.cvv}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, '');
+            if (val.length <= 4) setPaymentDetails({ ...paymentDetails, cvv: val });
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Name on Card */}
+    <div className="space-y-2">
+      <Label htmlFor="firstName">First Name on Card *</Label>
+      <Input
+        type="text"
+        placeholder="First Name"
+        value={paymentDetails.firstName}
+        onChange={(e) => {
+          const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+          setPaymentDetails({ ...paymentDetails, firstName: val });
+        }}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="lastName">Last Name on Card *</Label>
+      <Input
+        type="text"
+        placeholder="Last Name"
+        value={paymentDetails.lastName}
+        onChange={(e) => {
+          const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+          setPaymentDetails({ ...paymentDetails, lastName: val });
+        }}
+      />
+    </div>
+
+    {/* Billing Address */}
+    <div className="space-y-2">
+      <Label htmlFor="address">Billing Address *</Label>
+      <Input
+        type="text"
+        placeholder="123 Main St"
+        value={paymentDetails.address}
+        onChange={(e) => setPaymentDetails({ ...paymentDetails, address: e.target.value })}
+      />
+    </div>
+
+    <div className="grid grid-cols-3 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="city">City *</Label>
+        <Input
+          type="text"
+          value={paymentDetails.city}
+          onChange={(e) => {
+            const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+            setPaymentDetails({ ...paymentDetails, city: val });
+          }}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="state">State *</Label>
+        <Input
+          type="text"
+          maxLength={2}
+          value={paymentDetails.state.toUpperCase()}
+          onChange={(e) => {
+            const val = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+            if (val.length <= 2) setPaymentDetails({ ...paymentDetails, state: val });
+          }}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="zipCode">ZIP Code *</Label>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="\d{5}"
+          maxLength={10}
+          value={paymentDetails.zipCode}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, '');
+            if (val.length <= 10) setPaymentDetails({ ...paymentDetails, zipCode: val });
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Buttons */}
+    <div className="flex space-x-2">
+      <Button variant="outline" onClick={handleBookingBack} className="flex-1" disabled={isBookingLoading}>
+        Back
+      </Button>
+      <Button
+        onClick={handleBookingSubmit}
+        className="flex-1"
+        disabled={
+          !paymentDetails.cardNumber ||
+          !paymentDetails.expiryDate ||
+          !paymentDetails.cvv ||
+          !paymentDetails.firstName ||
+          !paymentDetails.lastName ||
+          !paymentDetails.address ||
+          !paymentDetails.city ||
+          !paymentDetails.state ||
+          !paymentDetails.zipCode ||
+          isBookingLoading
+        }
+      >
+        {isBookingLoading ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Processing...
+          </>
+        ) : (
+          'Pay & Book'
+        )}
+      </Button>
+    </div>
+  </div>
+)}
+
+              
+
             </div>
           )}
         </DialogContent>

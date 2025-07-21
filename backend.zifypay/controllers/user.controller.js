@@ -227,7 +227,10 @@ const userController = {
         error: error.message
       });
     }
-  }
+  },
+  // make a api that handles google login and signup
+  
+   
 };
 
 module.exports = userController;

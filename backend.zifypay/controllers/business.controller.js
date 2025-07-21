@@ -15,8 +15,8 @@ module.exports = {
       // Send signup email (non-blocking)
       const { email, name } = req.body;
       if (email) {
-        const { sendSignupMail } = require("../services/mail.service");
-        sendSignupMail(email, name || email.split('@')[0]).catch(err => console.error('Business signup email error:', err));
+        const { sendSignupMailForBussiness } = require("../services/mail.service");
+        sendSignupMailForBussiness(email, name || email.split('@')[0]).catch(err => console.error('Business signup email error:', err));
       }
       return res.status(201).json({ data: business, success: true });
     } catch (error) {

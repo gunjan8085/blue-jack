@@ -10,7 +10,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-
 const sendSignupMail = async (to, name) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;">
@@ -29,6 +28,27 @@ const sendSignupMail = async (to, name) => {
   });
 };
 
+const sendSignupMailForBussiness = async (to, name ) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;">
+      <h2 style="color: #4CAF50;">Welcome to Zifypay, ${name}!</h2>
+      <p>Thank you for signing up. We're excited to have you on board. Please Resgister your north account </p>
+       <p>To get started, and activate your bussiness</p>
+      <p> please click the link below to set up your payment account:</p>
+      <p><a href="${"https://zifypay.com/dashboard/payments"}/setup-payment-account" style="color : #2196F3; text-decoration: none;">Set Up Payment Account</a></p>
+      <p>Once your account is set up, you can start managing your business and accepting payments seamlessly.</p>
+      <p>Start exploring our platform and enjoy our services!</p>
+      <hr>
+      <p style="font-size: 12px; color: #888;">If you did not sign up, please ignore this email.</p>
+    </div>
+  `;
+  await transporter.sendMail({
+    from: `Zifypay <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Welcome to Zifypay!',
+    html,
+  });
+};
 const sendLoginMail = async (to, name) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;">
@@ -138,4 +158,5 @@ module.exports = {
   sendAppointmentMail,
   sendAppointmentReminderMail24h,
   sendAppointmentReminderMail1h,
+  sendSignupMailForBussiness
 };

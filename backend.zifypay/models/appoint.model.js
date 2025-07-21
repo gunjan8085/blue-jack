@@ -21,6 +21,11 @@ const appointSchema = new mongoose.Schema(
     },
     hasReview: { type: Boolean, default: false },
     review: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
+    paymentStatus:  {
+      type: String,
+      enum: ["pending", "failed", "completed"],
+      default: "pending",
+    },
   },
   { timestamps: true }
 );
