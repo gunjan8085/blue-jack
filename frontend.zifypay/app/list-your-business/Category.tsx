@@ -19,12 +19,6 @@ export type CategoryProps = {
   image: string;
 };
 
-const aboutDemoImages = [
-  "https://images.unsplash.com/photo-1455849318743-b2233052fcff?q=80&w=2338&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1733680958774-39a0e8a64a54?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1548783307-f63adc3f200b?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1703622377707-29bc9409aaf2?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-];
 
 const PricingSection = () => (
   <section
@@ -80,14 +74,14 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
     <>
       <section
         ref={ref}
-        className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white min-h-[900px] flex flex-col-reverse md:flex-row items-center justify-between px-10 md:px-20 py-16 relative overflow-hidden"
+        className="bg-gradient-to-r from-[#001A39] to-[#001433] text-white min-h-screen flex flex-col-reverse md:flex-row items-center justify-between px-10 md:px-20 py-16 relative overflow-hidden"
       >
         {/* Glow Background */}
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[600px] h-[600px] bg-blue-500 opacity-30 blur-3xl rounded-full z-0" />
 
         {/* Text Content */}
         <motion.div
-          className="max-w-2xl z-10 text-center md:text-left"
+          className="max-w-2xl z-10 flex flex-col items-start justify-center text-left h-full"
           style={{ fontFamily: "'Proxima Nova', sans-serif", fontWeight: 600 }}
           initial={{ opacity: 0, y: 60 }}
           animate={controls}
@@ -96,11 +90,8 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           <h1 className="text-4xl md:text-6xl leading-tight mb-6">{title}</h1>
           <p className="text-lg text-gray-300 mb-8">{description}</p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start z-10">
-            <Link href="booking-engine">
-            
-            </Link>
-           
+          <div className="flex flex-col sm:flex-row gap-4 justify-start z-10">
+            <Link href="booking-engine"></Link>
             <button className="bg-blue-500 text-white text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:bg-blue-600 transition">
               Get Started
             </button>
@@ -119,7 +110,7 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
             alt={title}
             width={800}
             height={400}
-            className="rounded-xl shadow-xl object-cover"
+            className="rounded-xl shadow-xl object-cover w-full h-screen"
           />
         </motion.div>
       </section>

@@ -235,7 +235,7 @@ export function BusinessProfileForm({
         title: "Success!",
         description: "Business profile created successfully.",
       });
-      window.location.href = `/subscription-plans?businessId=${responseData.data._id}`;
+      window.location.href = `/dashboard`;
     } catch (error: any) {
       console.error("Error creating business profile:", error);
       toast({

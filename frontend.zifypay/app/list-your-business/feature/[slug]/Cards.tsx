@@ -161,7 +161,7 @@ function TwoSectionCard({
 
 export default function TwoSectionCardDemo() {
   return (
-    <div className="px-4 sm:px-6 md:px-12 bg-gradient-to-r from-[#001A39] to-[#001433] py-12 min-h-screen">
+    <div className="px-4 sm:px-6 md:px-32 bg-gradient-to-r from-[#001A39] to-[#001433] py-12 min-h-screen">
       <div className="p-4 sm:p-6 md:p-8 bg-white min-h-[500px] flex items-center justify-center rounded-2xl border-2 border-[#9b87f5]/10 shadow-xl">
         <TwoSectionCard />
       </div>

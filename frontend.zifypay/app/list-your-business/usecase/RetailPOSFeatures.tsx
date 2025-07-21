@@ -67,7 +67,7 @@ export default function RetailPOSFeatures() {
           <div className="flex justify-center">
             <div className="relative w-[260px] h-[260px]  rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-white/10 backdrop-blur-xl">
               <Image
-                src="/Pos.png"
+                src="https://res.cloudinary.com/dfcbjgt3w/image/upload/v1752771853/Pos_hbqccy.png"
                 alt="Retail POS Visual"
                 fill
                 className="object-cover"

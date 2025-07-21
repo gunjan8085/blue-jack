@@ -84,8 +84,8 @@ export default function FuelPumps() {
 
         {/* Image */}
         <img
-          src="/pos.png"
-          alt="Fuel Pump"
+          src="https://res.cloudinary.com/dfcbjgt3w/image/upload/v1752771853/Pos_hbqccy.png"
+          alt="45re"
           className="w-1/2 z-10 hidden md:block"
         />
 
@@ -130,7 +130,8 @@ export default function FuelPumps() {
             <div className="relative flex justify-center">
               <div className="relative w-[340px] h-[260px] md:w-[400px] md:h-[320px] rounded-2xl overflow-hidden shadow-lg bg-gray-50">
                 <Image
-                  src="/vv1.jpg"
+                  src="/vv1.jpg
+                  "
                   alt="Retail POS Profit"
                   fill
                   className="object-cover"

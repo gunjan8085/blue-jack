@@ -6,6 +6,9 @@ router.get("/user", appointController.getAppointmentsForUser);
 // POST /api/v1/appointments/:businessId/create
 router.post("/:businessId/create", appointController.createAppointment);
 
+// POST /api/v1/appointments/check-availability
+router.post("/check-availability", appointController.checkAvailability);
+
 router.post("/:businessId/create-by-business", appointController.createAppointmentByBusiness);
 
 // GET /api/v1/appointments/:businessId

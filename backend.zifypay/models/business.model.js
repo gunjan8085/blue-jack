@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { ENUMS } = require("../configs/constants.config");
-const { required } = require("joi");
+const { required, number } = require("joi");
 
 const businessSchema = new mongoose.Schema(
   {
@@ -133,7 +133,26 @@ const businessSchema = new mongoose.Schema(
     // Subscription & Appointment Tracking
     appointmentCount: { type: Number, default: 0 },
     subscriptionPlan: { type: mongoose.Schema.Types.ObjectId, ref: "PricingPlan", default: null },
-    isActive: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: false },
+    connectedPaymentAccount: {
+      NAME : { type: String, required: false, default: "NORTH" },
+      CUST_NBR: { type: String, required: false , default: "NA"},
+      MERCH_NBR: { type: String, required: false , default: "NA"},
+      DBA_NBR: { type: String, required: false , default: "NA"},
+      TERMINAL_NBR: { type: String, required: false , default: "NA"},
+    },
+    paymentHistory: [
+      {
+        transactionId: { type: String, required: true },
+        amount: { type: Number, required: true },
+        date: { type: Date, default: Date.now },
+        status: { type: String, enum: ["success", "failed", "pending"], default: "pending" },
+        customerName : { type: String, required: true },
+        customerNumber: { type: String, required: true },
+        customerEmail: { type: String, required: true },
+        paymentMethod: { type: String, enum: ["card", "bank_transfer", "cash"], default: "card" },
+      },
+    ],
   },
   { timestamps: true }
 );

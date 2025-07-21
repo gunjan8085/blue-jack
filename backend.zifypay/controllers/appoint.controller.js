@@ -1,121 +1,622 @@
 // const Appointment = require("../models/appoint.model");
 const Appoint = require("../models/appoint.model");
-
+const path = require("path");
 const Business = require("../models/business.model");
 const Service = require("../models/services.model");
 const Employee = require("../models/employee.model");
-const { log } = require("console");
+const { log, trace } = require("console");
 const { sendAppointmentMail } = require("../services/mail.service");
 const customerService = require("../services/customer.service");
 const { scheduleAppointmentReminders } = require("../services/appointment.service");
+const {  validatePaymentDetails , generateRequestId } = require("../services/batch_counter");
+const axios = require('axios');
+const qs = require('querystring');
+const { parseStringPromise } = require("xml2js");
+const fs = require('fs');
 
-const createAppointment = async (req, res, next) => {
+
+// const logger = require('../services/logger');
+
+const logger = {
+  info: (operation, message, data = null) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [INFO] [${operation}] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  },
+  error: (operation, message, error = null) => {
+    const timestamp = new Date().toISOString();
+    console.error(`[${timestamp}] [ERROR] [${operation}] ${message}`);
+    if (error) {
+      console.error(`[${timestamp}] [ERROR] [${operation}] Error Details:`, {
+        message: error.message,
+        stack: error.stack,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        code: error.code
+      });
+    }
+  },
+  debug: (operation, step, data) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [DEBUG] [${operation}] ${step}:`, JSON.stringify(data, null, 2));
+  },
+  warn: (operation, message, data = null) => {
+    const timestamp = new Date().toISOString();
+    console.warn(`[${timestamp}] [WARN] [${operation}] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  }
+};
+
+function generateBatchId() {
+  const currentDate = new Date();
+  const datePrefix = currentDate.toISOString().slice(0, 10).replace(/-/g, ''); // Format as YYYYMMDD
+
+  // Path to store batch count file
+  const batchCountFilePath = path.join("../", 'batchCount.json');
+
+  let batchCount = 1; // Default to 1 if the count file doesn't exist
+
   try {
-    const { businessId } = req.params;
-    const { service, staff, date, time, customer, user } = req.body;
+    // Check if the batch count file exists
+    if (fs.existsSync(batchCountFilePath)) {
+      const data = fs.readFileSync(batchCountFilePath, 'utf8');
+      const jsonData = JSON.parse(data);
 
-    // Basic checks
-    if (!service || !staff || !date || !time || !customer?.name || !customer?.email || !customer?.phone || !user) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      // Check if the stored date matches today
+      if (jsonData.date === datePrefix) {
+        batchCount = jsonData.count + 1; // Increment the counter for the day
+      }
     }
 
-    // Validate time format (HH:mm)
+    // Update the batch count in the file
+    const newData = {
+      date: datePrefix, // Save the current date in YYYYMMDD format
+      count: batchCount
+    };
+    fs.writeFileSync(batchCountFilePath, JSON.stringify(newData));
+
+  } catch (error) {
+    console.error('Error reading or writing batch count file:', error);
+  }
+
+  // Generate the final BATCH_ID in the format: YYYYMMDDXX (with two-digit counter)
+  const batchId = `${datePrefix}${String(batchCount).padStart(2, '0')}`;
+  console.log(batchId);  // Output for debugging
+  
+  return batchId;
+}
+
+const extractFieldFromXML = (xmlString, fieldKey) => {
+  try {
+    const regex = new RegExp(`<FIELD KEY="${fieldKey}">(.*?)</FIELD>`, 'i');
+    const match = xmlString.match(regex);
+    return match ? match[1] : null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const processPayment = async ({
+  service,
+  staff,
+  date,
+  time,
+  customer,
+  user,
+  businessId,
+  appointmentId,
+  paymentDetails // { cardNumber, expDate, cvv, firstName, lastName, address, city, state, zipCode }
+}) => {
+  const operation = 'PROCESS_PAYMENT';
+  const requestId = generateRequestId();
+  logger.info(operation, `Starting payment process for appointment: ${appointmentId}`, { requestId });
+ try {
+
+  const business = await require("../models/business.model").findById(businessId);
+   if (!business) {
+      logger.error(operation, `Business not found: ${businessId}`, { requestId });
+      return { success: false, error: "Business not found" };
+    }
+  // STEP 2: Validate payment account credentials
+    const paymentCreds = business.connectedPaymentAccount;
+    if (!paymentCreds || !paymentCreds.CUST_NBR || !paymentCreds.MERCH_NBR || !paymentCreds.DBA_NBR || !paymentCreds.TERMINAL_NBR) {
+      logger.error(operation, `Invalid payment credentials for business: ${businessId}`, { requestId });
+      return { success: false, error: "Business payment account not properly configured" };
+    }  
+
+// STEP 3: Fetch and validate service details
+    const serviceDetails = business.serviceCategories.find(s => s._id.toString() === service.toString());
+      // .findById(service)
+      // .select("price")
+    if (!serviceDetails) {
+      logger.error(operation, `Service not found: ${service}`, { requestId });
+      return { success: false, error: "Service not found" };
+    }
+  const serviceAmount =  serviceDetails.price; 
+
+  if (!serviceAmount || serviceAmount <= 0) {
+      logger.error(operation, `Invalid service amount: ${serviceAmount}`, { requestId });
+      return { success: false, error: "Invalid service pricing" };
+    }
+
+     // STEP 4: Fetch staff details for validation
+    const staffDetails = await require("../models/employee.model")
+      .findById(staff);
+
+    if (!staffDetails) {
+      logger.error(operation, `Staff not found: ${staff}`, { requestId });
+      return { success: false, error: "Staff member not found" };
+    }
+
+    // STEP 5: Validate payment details
+    if (!paymentDetails || !paymentDetails.cardNumber || !paymentDetails.expiryDate || !paymentDetails.cvv) {
+      logger.error(operation, 'Missing payment details', { requestId });
+      return { success: false, error: "Missing payment details" };
+    }
+
+
+    // STEP 6: Generate transaction identifiers
+  const TRAN_NBR = Math.floor(1000000000 + Math.random() * 9000000000);
+  const transactionId = `TXN_${Date.now()}_${TRAN_NBR}`;
+  const BATCH_ID = generateBatchId();
+
+   // STEP 7: Create payment history entry (pending status)
+    const paymentHistoryEntry = {
+      transactionId,
+      amount: serviceAmount,
+      date: new Date(),
+      status: "pending",
+      customerName: customer.name,
+      customerNumber: customer.phone,
+      customerEmail: customer.email,
+      paymentMethod: "card",
+      appointmentId,
+      serviceId: service,
+      staffId: staff,
+      epxTransactionNumber: TRAN_NBR,
+      batchId: BATCH_ID
+    };
+
+     // Add to business payment history
+    await require("../models/business.model").findByIdAndUpdate(
+      businessId,
+      { $push: { paymentHistory: paymentHistoryEntry } },
+      { new: true }
+    );
+    logger.info(operation, `Payment history entry created: ${transactionId}`, { requestId });
+
+    // STEP 8: Prepare EPX transaction payload
+    const {
+      CUST_NBR,
+      MERCH_NBR,
+      DBA_NBR,
+      TERMINAL_NBR,
+      NAME = "NORTH"
+    } = paymentCreds;
+
+      const basePayload = {
+      CUST_NBR,
+      MERCH_NBR,
+      DBA_NBR,
+      TERMINAL_NBR,
+      TRAN_TYPE: 'CCE1',
+      AMOUNT: parseFloat(serviceAmount).toFixed(2),
+      BATCH_ID,
+      TRAN_NBR,
+      ACCOUNT_NBR: paymentDetails.cardNumber.replace(/\s/g, ''),
+      EXP_DATE: paymentDetails.expiryDate,
+      CARD_ENT_METH: "E",
+      CVV2: paymentDetails.cvv,
+      FIRST_NAME: paymentDetails.firstName.trim(),
+      LAST_NAME: paymentDetails.lastName.trim(),
+      ADDRESS: paymentDetails.address.trim(),
+      CITY: paymentDetails.city.trim(),
+      STATE: paymentDetails.state.trim(),
+      ZIP_CODE: paymentDetails.zipCode.trim(),
+      // INDUSTRY_TYPE: 'E',
+    };
+
+    logger.info(operation, `Prepared EPX payload for transaction: ${TRAN_NBR}`, { requestId });
+    logger.debug(operation, 'EPX REQUEST PAYLOAD', { ...basePayload, ACCOUNT_NBR: '**** **** **** ' + basePayload.ACCOUNT_NBR.slice(-4), CVV2: '***' });
+
+    // STEP 9: Send transaction to EPX
+    const response = await axios.post(
+      'https://secure.epxuap.com',
+      qs.stringify(basePayload),
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        timeout: 45000
+      }
+    );
+
+    const xmlResponse = response.data;
+    logger.info(operation, 'EPX RESPONSE RECEIVED', { requestId, responseLength: xmlResponse.length });
+// const parsed = await parseStringPromise(xmlResponse);
+console.log(xmlResponse);
+
+
+
+    // STEP 10: Parse EPX response
+    const isSuccess = typeof xmlResponse === 'string' && xmlResponse.includes('<FIELD KEY="AUTH_RESP">00</FIELD>');
+    const authCode = extractFieldFromXML(xmlResponse, 'AUTH_CODE');
+    const responseMessage = extractFieldFromXML(xmlResponse, 'RESP_MSG') || 'Unknown response';
+    const referenceNumber = extractFieldFromXML(xmlResponse, 'REF_NBR');
+
+    // log these three fields
+    logger.debug(operation, 'EPX RESPONSE DETAILS', {
+      requestId,
+      isSuccess,
+      authCode,
+      referenceNumber,
+      responseMessage
+    });
+    // STEP 11: Log transaction details
+    const logContent = `
+        [PAYMENT TRANSACTION]
+        Request ID: ${requestId}
+        Transaction ID: ${transactionId}
+        EPX Transaction Number: ${TRAN_NBR}
+        Appointment ID: ${appointmentId}
+        Business: ${business.brandName || business.name}
+        Service: ${serviceDetails.name}
+        Staff: ${staffDetails.name}
+        Customer: ${customer.name} (${customer.email})
+        Amount: $${serviceAmount}
+        Timestamp: ${new Date().toISOString()}
+
+        --- REQUEST ---
+        ${qs.stringify({ ...basePayload, ACCOUNT_NBR: '**** **** **** ' + basePayload.ACCOUNT_NBR.slice(-4), CVV2: '***' })}
+
+        --- RESPONSE ---
+        ${xmlResponse}
+
+        --- RESULT ---
+        Success: ${isSuccess}
+        Auth Code: ${authCode || 'N/A'}
+        Reference: ${referenceNumber || 'N/A'}
+        Message: ${responseMessage}
+    `;
+
+    // STEP 12: Update payment history based on result
+    const updateData = {
+      status: isSuccess ? "success" : "failed",
+      epxResponse: xmlResponse,
+      authCode,
+      referenceNumber,
+      responseMessage,
+      processedAt: new Date()
+    };
+
+    await require("../models/business.model").updateOne(
+      { _id: businessId, "paymentHistory.transactionId": transactionId },
+      { $set: { "paymentHistory.$": { ...paymentHistoryEntry, ...updateData } } }
+    );
+
+    if (isSuccess) {
+      logger.info(operation, `Payment successful: ${transactionId}`, { 
+        requestId, 
+        authCode, 
+        referenceNumber, 
+        amount: serviceAmount 
+      });
+       return {
+        success: true,
+        paymentId: transactionId,
+        transactionNumber: TRAN_NBR,
+        authCode,
+        referenceNumber,
+        amount: serviceAmount,
+        currency: 'USD',
+        responseMessage
+      };
+    } else {
+      logger.warn(operation, `Payment failed: ${transactionId}`, { 
+        requestId, 
+        responseMessage, 
+        amount: serviceAmount 
+      });
+
+      return {
+        success: false,
+        error: responseMessage || 'Payment declined',
+        paymentId: transactionId,
+        transactionNumber: TRAN_NBR,
+        responseMessage
+      };
+    }
+    } catch (error) {
+        logger.error(operation, `Payment processing error: ${error.message}`, { 
+          requestId, 
+          appointmentId,
+          businessId,
+          stack: error.stack 
+        });
+        }
+ try {
+      await require("../models/business.model").updateOne(
+        { _id: businessId, "paymentHistory.transactionId": transactionId },
+        { 
+          $set: { 
+            "paymentHistory.$.status": "failed",
+            "paymentHistory.$.error": error.message,
+            "paymentHistory.$.processedAt": new Date()
+          } 
+        }
+      );
+    } catch (updateError) {
+      logger.error(operation, `Failed to update payment history: ${updateError.message}`, { requestId });
+    }
+
+    return {
+      success: false,
+      error: 'Payment processing failed. Please try again.',
+      details: error.message
+    };
+  }
+;
+
+const checkAvailability = async (req, res) => {
+  try {
+    const { staff, date, time } = req.body;
+
+    if (!staff || !date || !time) {
+      return res.status(400).json({ success: false, message: "Missing required query parameters: staff, date, time" });
+    }
+
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    const trimmedTime = time.trim(); // Trim the time field to remove any extra spaces
-    console.log("Raw time received:", time);
-    console.log("Trimmed time:", trimmedTime);
+    const normalizedTime = time.trim().padStart(5, '0');
+    const normalizedDate = date.trim();
 
-    if (!timeRegex.test(trimmedTime)) {
-      console.error("Invalid time format:", trimmedTime);
-      return res.status(400).json({ success: false, message: "Invalid time value" });
+    if (!timeRegex.test(normalizedTime)) {
+      return res.status(400).json({ success: false, message: "Invalid time format. Use HH:mm" });
     }
 
-    // Normalize date and time
-    const normalizedDate = date.trim(); // Trim the date field
-    const normalizedTime = trimmedTime.padStart(5, '0'); // Ensure proper format (e.g., '09:00')
-
-    // Logging for debugging
-    console.log("Normalized date:", normalizedDate);
-    console.log("Normalized time:", normalizedTime);
-
-    // Double booking check
+    // Check if slot is already booked
     const existing = await Appoint.findOne({
       staff,
       date: normalizedDate,
       time: normalizedTime,
-      status: { $ne: "cancelled" },
+      status: { $ne: "cancelled" }
     });
-    console.log("Existing appointment found:", existing);
-    if (existing) {
-      return res.status(409).json({ success: false, message: "This slot is booked" });
+
+    const isAvailable = !existing;
+
+    return res.status(200).json({ success: true, available: isAvailable });
+  } catch (err) {
+    console.error("Error checking availability:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+
+// 💡 Flow:
+// User selects date, time, staff → slot is checked for availability
+
+// Slot is "soft-reserved" temporarily (not yet confirmed)
+
+// Payment is processed
+
+// If payment succeeds:
+
+//  Confirm the appointment (status: confirmed)
+
+// If payment fails:
+
+//  Release the slot (do not create or cancel appointment)
+const createAppointment = async (req, res, next) => {
+  try {
+    const { businessId } = req.params;
+    const { service, staff, date, time, customer, user,
+       paymentDetails  // { cardNumber, expDate, cvv, firstName, lastName, address, city, state, zipCode }
+       } = req.body;
+
+    // Basic validation
+    if (!service || !staff || !date || !time || !customer?.name || !customer?.email || !customer?.phone || !user) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    const appointment = await Appoint.create({
+    // Validate payment details
+    if (!paymentDetails) {
+      return res.status(400).json({ success: false, message: "Payment details required" });
+    }
+
+    const paymentValidation = validatePaymentDetails(paymentDetails);
+    if (!paymentValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment details",
+        errors: paymentValidation.errors
+      });
+    }
+
+    // Validate time format (HH:mm)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    const trimmedTime = time.trim();
+
+    if (!timeRegex.test(trimmedTime)) {
+      return res.status(400).json({ success: false, message: "Invalid time format. Use HH:mm format." });
+    }
+
+    // Normalize date and time
+    const normalizedDate = date.trim();
+    const normalizedTime = trimmedTime.padStart(5, '0');
+
+    // STEP 1: Check slot availability
+    const existing = await require("../models/appointment.model").findOne({
+      staff,
+      date: normalizedDate,
+      time: normalizedTime,
+      status: { $in: ["pending", "confirmed"] },
+    });
+
+    if (existing) {
+      return res.status(409).json({ success: false, message: "This time slot is not available" });
+    }
+    console.log("step 2 is started");
+    
+    // STEP 2: Create appointment with "pending" status (soft reservation)
+
+    console.log("appointment creation started with this payload " , 
+      {
       business: businessId,
       service,
       staff,
       user,
-      date,
+      date: normalizedDate,
       time: normalizedTime,
       customer,
-    });
-
-    await require("../models/business.model").findByIdAndUpdate(
-      businessId,
-      { $inc: { appointmentCount: 1 } }
+      // status: "pending"
+    }
     );
     
-
-    // Fetch business, service, staff details for email
-    let business, serviceObj, staffObj;
-    try {
-      business = await require("../models/business.model").findById(businessId);
-      serviceObj = await require("../models/services.model").findById(service);
-      staffObj = await require("../models/employee.model").findById(staff);
-    } catch (e) {
-      console.error("Error fetching business/service/staff details:", e);
-    }
-
-    // Compose details for email
-    const businessName = business?.brandName || business?.name || "Business";
-    const serviceName = serviceObj?.name || "Service";
-    const staffName = staffObj?.name || "Staff";
-    const location = business?.address?.addressLine1
-      ? `${business.address.addressLine1}, ${business.address.city}`
-      : "";
-
-    // Send appointment confirmation email (non-blocking)
-    sendAppointmentMail(
-      customer.email,
-      customer.name,
-      businessName,
-      serviceName,
-      staffName,
-      normalizedDate,
-      normalizedTime,
-      location
-    ).catch((err) => console.error("Appointment email error:", err));
-
-    // Schedule appointment reminders
-    scheduleAppointmentReminders({
+    const pendingAppointment = await require("../models/appoint.model").create({
+      business: businessId,
+      service,
+      staff,
+      user,
+      date: normalizedDate,
+      time: normalizedTime,
       customer,
-      businessName,
-      serviceName,
-      staffName,
-      normalizedDate,
-      normalizedTime,
-      location,
+      status: "pending"
     });
 
-    res.status(201).json({ success: true, message: "Appointment booked", data: appointment });
+    console.log("Appointment created with pending status:", pendingAppointment._id);
+
+    try {
+      // STEP 3: Process payment with complete workflow
+      const paymentResult = await processPayment({
+        service,
+        staff,
+        date: normalizedDate,
+        time: normalizedTime,
+        customer,
+        user,
+        businessId,
+        appointmentId: pendingAppointment._id,
+        paymentDetails
+      });
+
+      if (!paymentResult.success) {
+        // STEP 4a: Payment failed - remove the pending appointment
+        await require("../models/appoint.model").findByIdAndDelete(pendingAppointment._id);
+        console.log("Payment failed, appointment removed:", pendingAppointment._id);
+
+        return res.status(402).json({
+          success: false,
+          message: paymentResult.error || "Payment failed. Please try again.",
+          paymentDetails: {
+            transactionId: paymentResult.paymentId,
+            responseMessage: paymentResult.responseMessage
+          }
+        });
+      }
+
+      // STEP 4b: Payment succeeded - confirm the appointment
+      const confirmedAppointment = await require("../models/appoint.model").findByIdAndUpdate(
+        pendingAppointment._id,
+        {
+          status: "confirmed",
+          // paymentId: paymentResult.paymentId,
+          // transactionNumber: paymentResult.transactionNumber,
+          paymentStatus: "completed",
+          // authCode: paymentResult.authCode,
+          // referenceNumber: paymentResult.referenceNumber,
+          // paidAmount: paymentResult.amount
+        },
+        { new: true }
+      );
+
+      console.log("Payment successful, appointment confirmed:", confirmedAppointment._id);
+
+      // Update business appointment count
+      await require("../models/business.model").findByIdAndUpdate(
+        businessId,
+        { $inc: { appointmentCount: 1 } }
+      );
+
+      // Fetch business, service, staff details for email
+      let business, serviceObj, staffObj;
+      try {
+        [business, serviceObj, staffObj] = await Promise.all([
+          require("../models/business.model").findById(businessId),
+          require("../models/services.model").findById(service),
+          require("../models/employee.model").findById(staff)
+        ]);
+      } catch (e) {
+        console.error("Error fetching business/service/staff details:", e);
+      }
+
+      // Compose details for email
+      const businessName = business?.brandName || business?.name || "Business";
+      const serviceName = serviceObj?.name || "Service";
+      const staffName = staffObj?.name || "Staff";
+      const location = business?.address?.addressLine1
+        ? `${business.address.addressLine1}, ${business.address.city}`
+        : "";
+
+      // Send appointment confirmation email (non-blocking)
+      sendAppointmentMail(
+        customer.email,
+        customer.name,
+        businessName,
+        serviceName,
+        staffName,
+        normalizedDate,
+        normalizedTime,
+        location,
+        {
+          paymentId: paymentResult.paymentId,
+          amount: paymentResult.amount,
+          authCode: paymentResult.authCode
+        }
+      ).catch((err) => console.error("Appointment email error:", err));
+
+      // Schedule appointment reminders
+      scheduleAppointmentReminders({
+        customer,
+        businessName,
+        serviceName,
+        staffName,
+        normalizedDate,
+        normalizedTime,
+        location,
+        appointmentId: confirmedAppointment._id
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Appointment booked and payment processed successfully",
+        data: {
+          appointment: confirmedAppointment,
+          payment: {
+            transactionId: paymentResult.paymentId,
+            amount: paymentResult.amount,
+            currency: paymentResult.currency,
+            authCode: paymentResult.authCode,
+            referenceNumber: paymentResult.referenceNumber
+          }
+        }
+      });
+
+    } catch (paymentError) {
+      // STEP 4c: Payment processing error - clean up
+      await require("../models/appointment.model").findByIdAndDelete(pendingAppointment._id);
+      console.error("Payment processing error:", paymentError);
+
+      return res.status(500).json({
+        success: false,
+        message: "Payment processing failed. Please try again."
+      });
+    }
+
   } catch (err) {
     if (err.code === 11000) {
-      return res.status(409).json({ success: false, message: "This slot is booked" });
+      return res.status(409).json({ success: false, message: "This slot is already booked" });
     }
     console.error("Create appointment error:", err);
     next(err);
   }
 };
+
+
 const createAppointmentByBusiness = async (req, res, next) => {
   try {
     const { businessId } = req.params;
@@ -289,11 +790,11 @@ const getAppointmentsForBusiness = async (req, res, next) => {
 
       appointmentObj.service = matchedService
         ? {
-            _id: matchedService._id,
-            title: matchedService.title,
-            price: matchedService.price,
-            duration: matchedService.duration
-          }
+          _id: matchedService._id,
+          title: matchedService.title,
+          price: matchedService.price,
+          duration: matchedService.duration
+        }
         : null;
 
       return appointmentObj;
@@ -348,12 +849,12 @@ const getMonthlyRevenue = async (req, res, next) => {
       if (price !== undefined) {
         servicePriceMap[serviceId] = price;
       }
-      });
+    });
 
     // Calculate revenue by summing the price of each appointment's service
     let revenue = 0;
     for (const appointment of appointments) {
-      
+
       const serviceId = appointment.service.toString();
       const price = servicePriceMap[serviceId];
       if (price !== undefined) {
@@ -416,11 +917,11 @@ const getTodaysAppointments = async (req, res, next) => {
 
       appointmentObj.service = matchedService
         ? {
-            _id: matchedService._id,
-            title: matchedService.title,
-            price: matchedService.price,
-            duration: matchedService.duration
-          }
+          _id: matchedService._id,
+          title: matchedService.title,
+          price: matchedService.price,
+          duration: matchedService.duration
+        }
         : null;
 
       return appointmentObj;
@@ -481,11 +982,11 @@ const getRecentBookings = async (req, res, next) => {
 
       appointmentObj.service = matchedService
         ? {
-            _id: matchedService._id,
-            title: matchedService.title,
-            price: matchedService.price,
-            duration: matchedService.duration
-          }
+          _id: matchedService._id,
+          title: matchedService.title,
+          price: matchedService.price,
+          duration: matchedService.duration
+        }
         : null;
 
       return appointmentObj;
@@ -592,22 +1093,22 @@ const getTodaysRevenue = async (req, res, next) => {
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-    
+
     // Fetch business to get serviceCategories (for price lookup)
     const business = await Business.findById(businessId);
     if (!business) {
       return res.status(404).json({ success: false, message: "Business not found" });
     }
-    
+
     // Find all appointments for this business for today with status 'completed'
     const appointments = await Appoint.find({
       business: businessId,
       createdAt: { $gte: startOfDay, $lte: endOfDay },
       status: "completed",
     });
-    
+
     console.log(`Today's appointments:`, appointments);
-    
+
     // Create a map of service IDs to their prices for quick lookup
     const servicePriceMap = {};
     appointments.forEach(appointment => {
@@ -617,18 +1118,18 @@ const getTodaysRevenue = async (req, res, next) => {
         servicePriceMap[serviceId] = price;
       }
     });
-    
+
     console.log(`servicePriceMap:`, servicePriceMap);
-    
+
     // Calculate revenue by summing the price of each appointment's service
     let revenue = 0;
     for (const appointment of appointments) {
       console.log(`[DEBUG] Processing Appointment ID: ${appointment._id}`);
       console.log(` - Customer: ${appointment.customer.name}`);
-      
+
       const serviceId = appointment.service.toString();
       const price = servicePriceMap[serviceId];
-      
+
       if (price !== undefined) {
         revenue += price;
         console.log(` - Service Price: ${price}`);
@@ -636,7 +1137,7 @@ const getTodaysRevenue = async (req, res, next) => {
         console.log(` - Warning: No price found for service ID ${serviceId}`);
       }
     }
-    
+
     console.log(`[INFO] Total today's revenue: ${revenue}`);
     res.status(200).json({ success: true, todaysRevenue: revenue });
   } catch (err) {
@@ -801,45 +1302,45 @@ const getCustomerSatisfaction = async (req, res, next) => {
 
 
 const getCustomerVisitHistory = async (req, res, next) => {
-    try {
-      const { businessId } = req.params;
-      const { page = 1, limit = 10, sortBy = "recent" } = req.query;
+  try {
+    const { businessId } = req.params;
+    const { page = 1, limit = 10, sortBy = "recent" } = req.query;
 
-      const result = await customerService.getCustomerVisitHistory(
-        businessId,
-        parseInt(page),
-        parseInt(limit),
-        sortBy
-      );
+    const result = await customerService.getCustomerVisitHistory(
+      businessId,
+      parseInt(page),
+      parseInt(limit),
+      sortBy
+    );
 
-      res.json({
-        success: true,
-        data: result.customers,
-        pagination: result.pagination
-      });
-    } catch (err) {
-      next(new ApiError(500, "Failed to fetch customer visit history", err));
-    }
+    res.json({
+      success: true,
+      data: result.customers,
+      pagination: result.pagination
+    });
+  } catch (err) {
+    next(new ApiError(500, "Failed to fetch customer visit history", err));
   }
+}
 
 const getTopCustomers = async (req, res, next) => {
-    try {
-      const { businessId } = req.params;
-      const { limit = 5 } = req.query;
+  try {
+    const { businessId } = req.params;
+    const { limit = 5 } = req.query;
 
-      const topCustomers = await customerService.getTopCustomers(
-        businessId,
-        parseInt(limit)
-      );
+    const topCustomers = await customerService.getTopCustomers(
+      businessId,
+      parseInt(limit)
+    );
 
-      res.json({
-        success: true,
-        data: topCustomers
-      });
-    } catch (err) {
-      next(new ApiError(500, "Failed to fetch top customers", err));
-    }
+    res.json({
+      success: true,
+      data: topCustomers
+    });
+  } catch (err) {
+    next(new ApiError(500, "Failed to fetch top customers", err));
   }
+}
 
 // Get all booked times for a staff member on a given date
 const getBookedTimesForEmployee = async (req, res, next) => {
@@ -1041,5 +1542,6 @@ module.exports = {
   getTopCustomers,
   createAppointmentByBusiness,
   getBookedTimesForEmployee,
-  getBusinessAnalytics
+  getBusinessAnalytics,
+  checkAvailability
 };

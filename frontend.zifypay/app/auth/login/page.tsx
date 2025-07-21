@@ -89,6 +89,7 @@ useEffect(() => {
           "businessProfile",
           JSON.stringify(businessProfile)
         );
+        localStorage.setItem("businessId", businessProfile._id);
         document.cookie = `businessProfile=true; path=/`;
         window.location.href = "/dashboard";
       }

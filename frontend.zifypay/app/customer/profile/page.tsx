@@ -30,7 +30,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const businessProfile = localStorage.getItem("businessProfile");
-    if (!businessProfile) {
+    if (businessProfile) {
       router.push('/customer/auth/login');
     }
     loadUserProfile();

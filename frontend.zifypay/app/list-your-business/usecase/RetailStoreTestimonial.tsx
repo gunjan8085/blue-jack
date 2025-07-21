@@ -87,21 +87,21 @@ const retailTestimonials: TestimonialItem[] = [
     title: "Retail Manager, Shopper's Delight",
     quote:
       "ZifyPay transformed our POS operations. Inventory sync, customer checkout, and real-time insights – everything just works.",
-    img: "https://randomuser.me/api/portraits/women/45.jpg",
+    img: "https://imgs.search.brave.com/Nw9MRQHAikQ95Su35ViLqoxGA7DNeJCIx-__HVlKgdI/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9wb3dl/cmZ1bC1idXNpbmVz/cy13b21hbi1jb25m/aWRlbnQtY2VvLWNv/bXBhbnktaGVhZHF1/YXJ0ZXJzLTUzMTg1/NTIyLmpwZw",
   },
   {
     name: "Rahul Mehra",
     title: "Owner, StyleNest Boutique",
     quote:
       "We switched from a legacy system to ZifyPay. The learning curve was minimal, and the impact was immediate — more sales, less chaos.",
-    img: "https://randomuser.me/api/portraits/men/52.jpg",
+    img: "https://imgs.search.brave.com/Ti_wMZ-YdhCoFnk8UBMs4-TW7apAnt-ykkK2VGTD55s/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9wb3J0cmFpdC1j/ZW8tYnVzaW5lc3Nt/YW4tb2ZmaWNlLWNv/cnBvcmF0ZS1hcm1z/LWNyb3NzZWQtc3Vj/Y2Vzc2Z1bC13b3Jr/cGxhY2UtbWFuYWdl/bWVudC1zbWlsZS1z/ZW5pb3ItZXhlY3V0/aXZlLWF0dG9ybmV5/LXByYWN0aWNlLWRp/cmVjdG9yLXByb2Zl/c3Npb25hbC1ib3Nz/XzU5MDQ2NC0zNDY2/MjQuanBnP3NlbXQ9/YWlzX2h5YnJpZCZ3/PTc0MA",
   },
   {
     name: "Neha Shah",
     title: "Co-founder, FreshMart",
     quote:
       "The multi-store reporting and seamless payments are a game changer. ZifyPay made our retail expansion possible.",
-    img: "https://randomuser.me/api/portraits/women/65.jpg",
+    img: "https://imgs.search.brave.com/OEqJIB_1-zKZjZiDxTYMR-hZLcFJOT500Z3GU0MFMMQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9mZW1h/bGUtY29tcGFueS1j/ZW8tYmVhdXRpZnVs/LWNvbmZpZGVudC1z/dGFuZGluZy1iZWhp/bmQtaGVyLW9mZmlj/ZS1jaGFpci1sb29r/aW5nLWNhbWVyYS0x/Mzk5ODE4OTEuanBn",
   },
 ];
 
