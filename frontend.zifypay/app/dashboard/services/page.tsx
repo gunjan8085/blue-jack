@@ -18,6 +18,7 @@ import {
   ImageIcon as ImageIconLucide,
   CheckCircle,
   AlertCircle,
+  CreditCard,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -89,7 +90,15 @@ const sidebarItems = [
     title: "Customers",
     url: "/dashboard/customers",
     icon: Users,
-  },
+  },{
+    title: "Plans",
+    url: "/dashboard/plans",
+    icon: DollarSign,
+  },{
+    title: "Payments",
+    url: "/dashboard/payments",
+    icon: CreditCard,
+  }
   /*{
     title: "Analytics",
     url: "/dashboard/analytics",
@@ -147,7 +156,9 @@ const ServiceManagerPage = () => {
   const [allServices, setAllServices] = useState<CreatedService[]>([])
   const [loading, setLoading] = useState(false)
   const [fetchLoading, setFetchLoading] = useState(true)
-  const [currentService, setCurrentService] = useState<Service>({
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
+  const [currentService, setCurrentService] = useState<Service & { _id?: string }>({
     title: "",
     description: "",
     hashtags: "",
@@ -197,7 +208,28 @@ const ServiceManagerPage = () => {
     if (!currentService.title || !currentService.price || !currentService.duration) {
       return
     }
-    setServices([...services, currentService])
+    
+    if (isEditing && editingServiceId) {
+      // Update existing service in the queue
+      setServices(services.map(s => 
+        s._id === editingServiceId ? { ...currentService } : s
+      ));
+      
+      // Also update in allServices if it exists there
+      if (allServices.some(s => s._id === editingServiceId)) {
+        setAllServices(allServices.map(s => 
+          s._id === editingServiceId ? { ...s, ...currentService } : s
+        ));
+      }
+      
+      setIsEditing(false);
+      setEditingServiceId(null);
+    } else {
+      // Add new service to queue
+      setServices([...services, { ...currentService, _id: `temp-${Date.now()}` }]);
+    }
+    
+    // Reset form
     setCurrentService({
       title: "",
       description: "",
@@ -206,11 +238,32 @@ const ServiceManagerPage = () => {
       price: "",
       duration: "",
       image: null,
-    })
+    });
   }
 
   const removeFromQueue = (index: number) => {
-    setServices(services.filter((_, i) => i !== index))
+    setServices(services.filter((_, i) => i !== index));
+  }
+
+  const handleEditService = (service: CreatedService) => {
+    setCurrentService({
+      _id: service._id,
+      title: service.title,
+      description: service.description || '',
+      hashtags: service.hashtags || '',
+      tags: service.tags || '',
+      price: service.price.toString(),
+      duration: service.duration.toString(),
+      image: null,
+    });
+    setIsEditing(true);
+    setEditingServiceId(service._id);
+    
+    // Scroll to form
+    const formElement = document.getElementById('service-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   const uploadServices = async () => {
@@ -229,15 +282,41 @@ const ServiceManagerPage = () => {
       formData.append("duration", s.duration)
 
       try {
-        const res = await axios.post(`${API_URL}/service-categories/${businessId}/service-categories`, formData)
-        newCreated.push(res.data.data.serviceCategories.at(-1))
+        let res;
+        if (s._id && !s._id.startsWith('temp-')) {
+          // Update existing service
+          res = await axios.put(`${API_URL}/services/${s._id}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          // Update in allServices
+          setAllServices(allServices.map(item => 
+            item._id === s._id ? res.data.data : item
+          ));
+        } else {
+          // Create new service
+          res = await axios.post(`${API_URL}/service-categories/${businessId}/service-categories`, formData);
+          newCreated.push(res.data.data.serviceCategories.at(-1));
+        }
       } catch (err) {
-        console.error("Upload failed:", err)
+        console.error("Upload/Update failed:", err);
       }
     }
 
     setCreatedServices([...createdServices, ...newCreated])
-    setAllServices([...allServices, ...newCreated])
+    setAllServices(prev => {
+      const updatedServices = [...prev];
+      services.forEach(service => {
+        if (service._id && !service._id.startsWith('temp-')) {
+          const index = updatedServices.findIndex(s => s._id === service._id);
+          if (index !== -1) {
+            updatedServices[index] = { ...updatedServices[index], ...service };
+          }
+        }
+      });
+      return [...updatedServices, ...newCreated];
+    });
     setServices([])
     setLoading(false)
   }
@@ -414,12 +493,22 @@ const ServiceManagerPage = () => {
                     </div>
 
                     <Button
+                      id="service-form"
                       onClick={addToQueue}
                       className="w-full h-12 bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                       disabled={!currentService.title || !currentService.price || !currentService.duration}
                     >
-                      <Plus className="h-5 w-5 mr-2" />
-                      Add to Queue
+                      {isEditing ? (
+                        <>
+                          <Edit3 className="h-5 w-5 mr-2" />
+                          Update Service
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-5 w-5 mr-2" />
+                          Add to Queue
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -596,14 +685,15 @@ const ServiceManagerPage = () => {
                           </span>
                         </div>
                         <div className="mt-4 flex space-x-2">
-                          {/* <Button
+                          <Button
                             size="sm"
                             variant="outline"
                             className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent"
+                            onClick={() => handleEditService(service)}
                           >
                             <Edit3 className="h-4 w-4 mr-1" />
                             Edit
-                          </Button> */}
+                          </Button>
                         </div>
                       </div>
                     ))}

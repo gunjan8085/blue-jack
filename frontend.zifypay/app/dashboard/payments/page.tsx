@@ -354,10 +354,11 @@ function PaymentsPage() {
   }
 
   // Calculate stats
-  const totalAmount = filtered.reduce((sum, p) => sum + p.amount, 0)
-  const successfulPayments = filtered.filter((p) => p.status === "success").length
-  const pendingPayments = filtered.filter((p) => p.status === "pending").length
-  const failedPayments = filtered.filter((p) => p.status === "failed").length
+  const successfulTransactions = filtered.filter((p) => p.status === "success");
+  const totalAmount = successfulTransactions.reduce((sum, p) => sum + p.amount, 0);
+  const successfulPayments = successfulTransactions.length;
+  const pendingPayments = filtered.filter((p) => p.status === "pending").length;
+  const failedPayments = filtered.filter((p) => p.status === "failed").length;
 
   // Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage)

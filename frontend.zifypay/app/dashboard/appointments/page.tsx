@@ -281,14 +281,19 @@ export default function AppointmentsPage() {
       if (!businessProfile) throw new Error('Business profile not found')
 
       const business = JSON.parse(businessProfile)
-      // if(newAppointment.date== format(new Date(), 'yyyy-MM-dd') && newAppointment.time < format(new Date(), 'HH:mm')) {
-      //   toast({
-      //     title: "Error",
-      //     description: "Cannot create appointment in the past",
-      //     variant: "destructive",
-      //   })
-      //   return
-      // }
+      
+      // Validate required fields
+      if (!newAppointment.customer.name || !newAppointment.customer.phone || 
+          !newAppointment.service || !newAppointment.staff || 
+          !newAppointment.date || !newAppointment.time) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields",
+          variant: "destructive",
+        })
+        return;
+      }
+
       const payload = {
         customer: newAppointment.customer,
         service: newAppointment.service,
@@ -306,19 +311,23 @@ export default function AppointmentsPage() {
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) {
-        toast({
-          title: "Error",
-          description: "Failed to create appointment",
-          variant: "destructive",
-        })
-        throw new Error("Failed to create appointment")
-      }
       const data = await res.json()
-      toast({ title: "Success", description: "Appointment created successfully" })
+      
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to create appointment")
+      }
 
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Appointment created successfully",
+        variant: "default",
+      })
+
+      // Update the appointments list
       setAppointments(prev => [...prev, data.data])
-      setIsCreateDialogOpen(false)
+      
+      // Reset form and close dialog
       setNewAppointment({
         customer: { name: "", email: "", phone: "", notes: "" },
         service: "",
@@ -326,10 +335,15 @@ export default function AppointmentsPage() {
         date: "",
         time: ""
       })
+      
+      // Close the dialog
+      setIsCreateDialogOpen(false)
+      
     } catch (err: any) {
+      console.error("Error creating appointment:", err);
       toast({
         title: "Error",
-        description: "Failed to create appointment: " + err.message,
+        description: err.message || "Failed to create appointment. Please try again.",
         variant: "destructive",
       })
     }

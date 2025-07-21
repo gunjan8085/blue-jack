@@ -1,5 +1,4 @@
-"use client";
-
+"use client"
 import { useState, useEffect, useMemo } from "react"
 import {
   Calendar,
@@ -8,11 +7,7 @@ import {
   Star,
   TrendingUp,
   Clock,
-  Plus,
-  Settings,
-  BarChart3,
   CalendarDays,
-  Edit,
   MessageSquare,
   User,
   ChevronDown,
@@ -23,28 +18,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { API_URL } from "@/lib/const"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
 import { useToast } from "@/components/ui/use-toast"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface Appointment {
   _id: string
@@ -62,7 +42,7 @@ interface Appointment {
   }
   date: string
   time: string
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  status: "pending" | "confirmed" | "completed" | "cancelled"
   price?: number
 }
 
@@ -80,7 +60,7 @@ interface Review {
 
 const BusinessDashboard = () => {
   const [checkingRole, setCheckingRole] = useState(true)
-  const router = require('next/navigation').useRouter()
+  const router = require("next/navigation").useRouter()
   const [totalBookings, setTotalBookings] = useState<number | null>(null)
   const [monthlyRevenue, setMonthlyRevenue] = useState<number | null>(null)
   const [loadingStats, setLoadingStats] = useState(true)
@@ -100,30 +80,29 @@ const BusinessDashboard = () => {
   const [averageRating, setAverageRating] = useState<number | null>(null)
   const [customerSatisfaction, setCustomerSatisfaction] = useState<number | null>(null)
   const [loadingRatings, setLoadingRatings] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all')
-  const [sortOption, setSortOption] = useState<'time-asc' | 'time-desc' | 'name-asc' | 'name-desc'>('time-asc')
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "completed" | "cancelled">("all")
+  const [sortOption, setSortOption] = useState<"time-asc" | "time-desc" | "name-asc" | "name-desc">("time-asc")
 
   const filteredAppointments = useMemo(() => {
     let filtered = [...todaysAppointments]
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(appt => appt.status === statusFilter)
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((appt) => appt.status === statusFilter)
     }
 
     filtered.sort((a, b) => {
       switch (sortOption) {
-        case 'time-asc':
-          const timeA = a.time.split(':').map(Number)
-          const timeB = b.time.split(':').map(Number)
+        case "time-asc":
+          const timeA = a.time.split(":").map(Number)
+          const timeB = b.time.split(":").map(Number)
           return timeA[0] - timeB[0] || timeA[1] - timeB[1]
-        case 'time-desc':
-          const timeA2 = a.time.split(':').map(Number)
-          const timeB2 = b.time.split(':').map(Number)
+        case "time-desc":
+          const timeA2 = a.time.split(":").map(Number)
+          const timeB2 = b.time.split(":").map(Number)
           return timeB2[0] - timeA2[0] || timeB2[1] - timeA2[1]
-        case 'name-asc':
-          return (a.customer?.name || '').localeCompare(b.customer?.name || '')
-        case 'name-desc':
-          return (b.customer?.name || '').localeCompare(a.customer?.name || '')
+        case "name-asc":
+          return (a.customer?.name || "").localeCompare(b.customer?.name || "")
+        case "name-desc":
+          return (b.customer?.name || "").localeCompare(a.customer?.name || "")
         default:
           return 0
       }
@@ -136,12 +115,13 @@ const BusinessDashboard = () => {
     setLoadingStats(true)
     try {
       let businessId = null
-      if (typeof window !== 'undefined') {
-        const businessProfile = localStorage.getItem('businessProfile')
+      if (typeof window !== "undefined") {
+        const businessProfile = localStorage.getItem("businessProfile")
         if (businessProfile) {
           businessId = JSON.parse(businessProfile)._id
         }
       }
+
       if (!businessId) return
 
       const bookingsRes = await fetch(`${API_URL}/appointments/${businessId}/total-bookings`)
@@ -160,11 +140,11 @@ const BusinessDashboard = () => {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem("token")
     if (!token) {
-      router.push('/auth/login')
+      router.push("/auth/login")
       return
-    } 
+    }
   }, [router])
 
   useEffect(() => {
@@ -173,65 +153,70 @@ const BusinessDashboard = () => {
 
   useEffect(() => {
     const fetchToday = async () => {
-      setLoadingToday(true);
+      setLoadingToday(true)
       try {
-        let businessId = null;
+        let businessId = null
         if (typeof window !== "undefined") {
-          const businessProfile = localStorage.getItem("businessProfile");
+          const businessProfile = localStorage.getItem("businessProfile")
           if (businessProfile) {
-            businessId = JSON.parse(businessProfile)._id;
+            businessId = JSON.parse(businessProfile)._id
           }
         }
+
         if (!businessId) return
 
         const res = await fetch(`${API_URL}/appointments/${businessId}/today`)
         const data = await res.json()
         setTodaysAppointments(data.data || [])
       } catch (err) {
-        setTodaysAppointments([]);
+        setTodaysAppointments([])
       } finally {
-        setLoadingToday(false);
+        setLoadingToday(false)
       }
-    };
-    fetchToday();
-  }, []);
+    }
+
+    fetchToday()
+  }, [])
 
   useEffect(() => {
     const fetchRecent = async () => {
-      setLoadingRecent(true);
+      setLoadingRecent(true)
       try {
-        let businessId = null;
+        let businessId = null
         if (typeof window !== "undefined") {
-          const businessProfile = localStorage.getItem("businessProfile");
+          const businessProfile = localStorage.getItem("businessProfile")
           if (businessProfile) {
-            businessId = JSON.parse(businessProfile)._id;
+            businessId = JSON.parse(businessProfile)._id
           }
         }
+
         if (!businessId) return
 
         const res = await fetch(`${API_URL}/appointments/${businessId}/recent`)
         const data = await res.json()
         setRecentBookings(data.data || [])
       } catch (err) {
-        setRecentBookings([]);
+        setRecentBookings([])
       } finally {
-        setLoadingRecent(false);
+        setLoadingRecent(false)
       }
-    };
-    fetchRecent();
-  }, []);
+    }
+
+    fetchRecent()
+  }, [])
 
   useEffect(() => {
     const fetchQuickStats = async () => {
       setLoadingQuickStats(true)
       try {
         let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
+        if (typeof window !== "undefined") {
+          const businessProfile = localStorage.getItem("businessProfile")
           if (businessProfile) {
             businessId = JSON.parse(businessProfile)._id
           }
         }
+
         if (!businessId) return
 
         const revenueRes = await fetch(`${API_URL}/appointments/${businessId}/today-revenue`)
@@ -248,6 +233,7 @@ const BusinessDashboard = () => {
         setLoadingQuickStats(false)
       }
     }
+
     fetchQuickStats()
   }, [])
 
@@ -256,12 +242,13 @@ const BusinessDashboard = () => {
       setLoadingCustomers(true)
       try {
         let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
+        if (typeof window !== "undefined") {
+          const businessProfile = localStorage.getItem("businessProfile")
           if (businessProfile) {
             businessId = JSON.parse(businessProfile)._id
           }
         }
+
         if (!businessId) return
 
         const res = await fetch(`${API_URL}/appointments/${businessId}/total-customers`)
@@ -273,6 +260,7 @@ const BusinessDashboard = () => {
         setLoadingCustomers(false)
       }
     }
+
     fetchTotalCustomers()
   }, [])
 
@@ -281,12 +269,13 @@ const BusinessDashboard = () => {
       setLoadingReviews(true)
       try {
         let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
+        if (typeof window !== "undefined") {
+          const businessProfile = localStorage.getItem("businessProfile")
           if (businessProfile) {
             businessId = JSON.parse(businessProfile)._id
           }
         }
+
         if (!businessId) return
 
         const res = await fetch(`${API_URL}/businesses/${businessId}/reviews`)
@@ -298,6 +287,7 @@ const BusinessDashboard = () => {
         setLoadingReviews(false)
       }
     }
+
     fetchReviews()
   }, [])
 
@@ -306,12 +296,13 @@ const BusinessDashboard = () => {
       setLoadingRatings(true)
       try {
         let businessId = null
-        if (typeof window !== 'undefined') {
-          const businessProfile = localStorage.getItem('businessProfile')
+        if (typeof window !== "undefined") {
+          const businessProfile = localStorage.getItem("businessProfile")
           if (businessProfile) {
             businessId = JSON.parse(businessProfile)._id
           }
         }
+
         if (!businessId) return
 
         const avgRes = await fetch(`${API_URL}/appointments/${businessId}/average-rating`)
@@ -328,6 +319,7 @@ const BusinessDashboard = () => {
         setLoadingRatings(false)
       }
     }
+
     fetchRatings()
   }, [])
 
@@ -336,47 +328,49 @@ const BusinessDashboard = () => {
       case "confirmed":
         return "bg-blue-100 text-blue-800"
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800"
       case "cancelled":
         return "bg-red-100 text-red-800"
       case "completed":
         return "bg-green-100 text-green-800"
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800"
     }
-  };
+  }
 
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {
     setStatusLoading((prev) => ({ ...prev, [appointmentId]: true }))
     try {
       const res = await fetch(`${API_URL}/appointments/${appointmentId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       })
+
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Failed to update status')
-      
-      toast({ title: 'Status updated', description: `Status changed to ${status}` })
-      
+      if (!res.ok) throw new Error(data.message || "Failed to update status")
+
+      toast({ title: "Status updated", description: `Status changed to ${status}` })
+
       let businessId = null
-      if (typeof window !== 'undefined') {
-        const businessProfile = localStorage.getItem('businessProfile')
+      if (typeof window !== "undefined") {
+        const businessProfile = localStorage.getItem("businessProfile")
         if (businessProfile) {
           businessId = JSON.parse(businessProfile)._id
         }
       }
+
       if (businessId) {
         const res = await fetch(`${API_URL}/appointments/${businessId}/today`)
         const data = await res.json()
         setTodaysAppointments(data.data || [])
       }
 
-      if (status === 'completed') {
+      if (status === "completed") {
         fetchStats()
       }
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+      toast({ title: "Error", description: err.message, variant: "destructive" })
     } finally {
       setStatusLoading((prev) => ({ ...prev, [appointmentId]: false }))
     }
@@ -384,7 +378,7 @@ const BusinessDashboard = () => {
 
   const handleEditAppointment = (appointment: Appointment) => {
     // Implement edit functionality
-    console.log('Edit appointment:', appointment)
+    console.log("Edit appointment:", appointment)
   }
 
   return (
@@ -395,15 +389,12 @@ const BusinessDashboard = () => {
           <SidebarTrigger className="-ml-1" />
           <div className="flex items-center justify-between w-full">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Dashboard Overview
-              </h1>
-              <p className="text-gray-600">
-                Welcome back! Here's what's happening today.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+              <p className="text-gray-600">Welcome back! Here's what's happening today.</p>
             </div>
           </div>
         </header>
+
         <div className="flex-1 space-y-6 p-6">
           <div className="flex-1 space-y-6 px-6">
             {/* Stats Cards */}
@@ -414,38 +405,40 @@ const BusinessDashboard = () => {
                   <Calendar className="h-4 w-4 opacity-90" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{loadingStats ? '...' : totalBookings}</div>
-                  <p className="text-xs opacity-90">+12% from last month</p>
+                  <div className="text-2xl font-bold">{loadingStats ? "..." : totalBookings}</div>
                 </CardContent>
               </Card>
+
               <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium opacity-90">Monthly Revenue</CardTitle>
                   <DollarSign className="h-4 w-4 opacity-90" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{loadingStats ? '...' : `$${monthlyRevenue}`}</div>
-                  <p className="text-xs opacity-90">+8% from last month</p>
+                  <div className="text-2xl font-bold">{loadingStats ? "..." : `$${monthlyRevenue}`}</div>
                 </CardContent>
               </Card>
+
               <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-500 to-orange-500 text-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium opacity-90">Average Rating</CardTitle>
                   <Star className="h-4 w-4 opacity-90" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{loadingRatings ? '...' : (averageRating !== null ? averageRating.toFixed(1) : '0')}</div>
-                  <p className="text-xs opacity-90">Based on {loadingReviews ? '...' : recentReviews.length} reviews</p>
+                  <div className="text-2xl font-bold">
+                    {loadingRatings ? "..." : averageRating !== null ? averageRating.toFixed(1) : "0"}
+                  </div>
+                  <p className="text-xs opacity-90">Based on {loadingReviews ? "..." : recentReviews.length} reviews</p>
                 </CardContent>
               </Card>
+
               <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium opacity-90">Total Customers</CardTitle>
                   <Users className="h-4 w-4 opacity-90" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{loadingCustomers ? '...' : totalCustomers}</div>
-                  <p className="text-xs opacity-90">+5 new this week</p>
+                  <div className="text-2xl font-bold">{loadingCustomers ? "..." : totalCustomers}</div>
                 </CardContent>
               </Card>
             </div>
@@ -461,10 +454,7 @@ const BusinessDashboard = () => {
                     <CardTitle>Today's Appointments</CardTitle>
                   </div>
                   <div className="flex gap-2">
-                    <Select
-                      value={statusFilter}
-                      onValueChange={(value) => setStatusFilter(value as any)}
-                    >
+                    <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
                       <SelectTrigger className="min-w-[120px]">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
@@ -493,54 +483,54 @@ const BusinessDashboard = () => {
                   <div className="text-center py-6">
                     <Calendar className="mx-auto h-8 w-8 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">
-                      {statusFilter === 'all' ? 'No appointments today' : `No ${statusFilter} appointments`}
+                      {statusFilter === "all" ? "No appointments today" : `No ${statusFilter} appointments`}
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      {statusFilter === 'all'
-                        ? 'All appointments are completed for today'
-                        : 'Try changing the status filter'
-                      }
+                      {statusFilter === "all"
+                        ? "All appointments are completed for today"
+                        : "Try changing the status filter"}
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {filteredAppointments.slice(0, 2).map((appointment)=> (
+                    {filteredAppointments.slice(0, 2).map((appointment) => (
                       <div
                         key={appointment._id}
                         className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border hover:border-purple-300 transition-all hover:shadow-sm bg-white gap-3 sm:gap-0"
                       >
                         <div className="flex items-center space-x-4 flex-1 min-w-0">
                           <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-purple-50 text-purple-600 min-w-[60px]">
-                            <span className="font-medium text-lg">
-                              {formatTimeDisplay(appointment.time)}
-                            </span>
+                            <span className="font-medium text-lg">{formatTimeDisplay(appointment.time)}</span>
                             <span className="text-xs text-purple-500">
-                              {new Date(appointment.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                              {new Date(appointment.date).toLocaleDateString("en-US", { weekday: "short" })}
                             </span>
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center space-x-2">
                               <h4 className="font-medium text-gray-900 truncate">
-                                {appointment.customer?.name || 'Unknown Customer'}
+                                {appointment.customer?.name || "Unknown Customer"}
                               </h4>
                               <Badge
-                                variant={appointment.status === 'completed' ? 'default' : 'outline'}
+                                variant={appointment.status === "completed" ? "default" : "outline"}
                                 className={
-                                  appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                    appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                                      appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'
+                                  appointment.status === "completed"
+                                    ? "bg-green-100 text-green-800"
+                                    : appointment.status === "confirmed"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : appointment.status === "pending"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
                                 }
                               >
                                 {appointment.status}
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 mt-1 truncate">
-                              {appointment.service?.title || 'No service specified'}
+                              {appointment.service?.title || "No service specified"}
                             </p>
                             <div className="flex items-center mt-1 text-sm text-gray-500 truncate">
                               <User className="h-4 w-4 mr-1 flex-shrink-0" />
-                              <span className="truncate">with {appointment.staff?.name || 'Unassigned'}</span>
+                              <span className="truncate">with {appointment.staff?.name || "Unassigned"}</span>
                             </div>
                           </div>
                         </div>
@@ -550,14 +540,6 @@ const BusinessDashboard = () => {
                             onStatusChange={updateAppointmentStatus}
                             isLoading={statusLoading[appointment._id]}
                           />
-                          {/* <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleEditAppointment(appointment)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button> */}
                         </div>
                       </div>
                     ))}
@@ -578,27 +560,33 @@ const BusinessDashboard = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Today's Revenue</span>
-                    <span className="font-medium">
-                      {loadingQuickStats ? "..." : `$${todaysRevenue}`}
-                    </span>
+                    <span className="font-medium">{loadingQuickStats ? "..." : `$${todaysRevenue}`}</span>
                   </div>
-                  <Progress value={todaysRevenue && todaysRevenue > 0 ? Math.min(100, Math.round((todaysRevenue / 650) * 100)) : 0} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">{todaysRevenue ? `${Math.round((todaysRevenue / 650) * 100)}% of daily goal` : '0% of daily goal'}</p>
+                  <Progress
+                    value={todaysRevenue && todaysRevenue > 0 ? Math.min(100, Math.round(todaysRevenue / 10)) : 0}
+                    className="h-2"
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Bookings Today</span>
-                    <span className="font-medium">
-                      {loadingQuickStats ? "..." : bookingsToday}
-                    </span>
+                    <span className="font-medium">{loadingQuickStats ? "..." : bookingsToday}</span>
                   </div>
-                  <Progress value={bookingsToday && bookingsToday > 0 ? Math.min(100, Math.round((bookingsToday / 12) * 100)) : 0} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">{bookingsToday ? `${12 - bookingsToday} slots remaining` : '12 slots remaining'}</p>
+                  <Progress
+                    value={bookingsToday && bookingsToday > 0 ? Math.min(100, Math.round(bookingsToday * 10)) : 0}
+                    className="h-2"
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Customer Satisfaction</span>
-                    <span className="font-medium">{loadingRatings ? '...' : (customerSatisfaction !== null ? `${customerSatisfaction.toFixed(0)}%` : '0%')}</span>
+                    <span className="font-medium">
+                      {loadingRatings
+                        ? "..."
+                        : customerSatisfaction !== null
+                          ? `${customerSatisfaction.toFixed(0)}%`
+                          : "0%"}
+                    </span>
                   </div>
                   <Progress value={customerSatisfaction ? Math.round(customerSatisfaction) : 0} className="h-2" />
                   <p className="text-xs text-gray-500 mt-1">Based on recent reviews</p>
@@ -635,19 +623,20 @@ const BusinessDashboard = () => {
                   ) : (
                     <>
                       {recentBookings.slice(0, 3).map((booking) => (
-                        <div key={booking._id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div
+                          key={booking._id}
+                          className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                           <Avatar className="h-10 w-10 border">
-                            <AvatarImage src={booking.customer?.profilePicture} />
-                            <AvatarFallback>
-                              {booking.customer?.name?.charAt(0) || 'C'}
-                            </AvatarFallback>
+                            <AvatarImage src={booking.customer?.profilePicture || "/placeholder.svg"} />
+                            <AvatarFallback>{booking.customer?.name?.charAt(0) || "C"}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <h4 className="font-medium text-gray-900">{booking.customer?.name}</h4>
                               <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                             </div>
-                            <p className="text-sm text-gray-600">{booking.service?.title || '-'}</p>
+                            <p className="text-sm text-gray-600">{booking.service?.title || "-"}</p>
                             <div className="flex items-center text-xs text-gray-500 mt-1">
                               <Calendar className="h-3 w-3 mr-1" />
                               <span>
@@ -699,9 +688,10 @@ const BusinessDashboard = () => {
                         <div key={review._id} className="p-4 rounded-lg border">
                           <div className="flex items-start space-x-3">
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src={review.addedBy?.profilePicture} />
+                              <AvatarImage src={review.addedBy?.profilePicture || "/placeholder.svg"} />
                               <AvatarFallback>
-                                {review.addedBy?.firstName?.charAt(0)}{review.addedBy?.lastName?.charAt(0)}
+                                {review.addedBy?.firstName?.charAt(0)}
+                                {review.addedBy?.lastName?.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
@@ -713,7 +703,7 @@ const BusinessDashboard = () => {
                                   {[...Array(5)].map((_, i) => (
                                     <Star
                                       key={i}
-                                      className={`h-4 w-4 ${i < review.stars ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                                      className={`h-4 w-4 ${i < review.stars ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
                                     />
                                   ))}
                                 </div>
@@ -743,7 +733,7 @@ const BusinessDashboard = () => {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }
 
 interface StatusDropdownProps {
@@ -754,16 +744,16 @@ interface StatusDropdownProps {
 
 const StatusDropdown = ({ appointment, onStatusChange, isLoading }: StatusDropdownProps) => {
   const statusOptions = [
-    { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
-    { value: 'confirmed', label: 'Confirmed', color: 'bg-blue-500' },
-    { value: 'completed', label: 'Completed', color: 'bg-green-500' },
-    { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
+    { value: "pending", label: "Pending", color: "bg-yellow-500" },
+    { value: "confirmed", label: "Confirmed", color: "bg-blue-500" },
+    { value: "completed", label: "Completed", color: "bg-green-500" },
+    { value: "cancelled", label: "Cancelled", color: "bg-red-500" },
   ]
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8" disabled={isLoading}>
+        <Button variant="outline" size="sm" className="h-8 bg-transparent" disabled={isLoading}>
           {isLoading ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600 mr-2"></div>
@@ -771,7 +761,9 @@ const StatusDropdown = ({ appointment, onStatusChange, isLoading }: StatusDropdo
             </div>
           ) : (
             <div className="flex items-center">
-              <span className={`h-2 w-2 rounded-full ${statusOptions.find(opt => opt.value === appointment.status)?.color}`}></span>
+              <span
+                className={`h-2 w-2 rounded-full ${statusOptions.find((opt) => opt.value === appointment.status)?.color}`}
+              ></span>
               <span className="ml-2 capitalize">{appointment.status}</span>
               <ChevronDown className="ml-2 h-4 w-4" />
             </div>
@@ -787,9 +779,7 @@ const StatusDropdown = ({ appointment, onStatusChange, isLoading }: StatusDropdo
           >
             <span className={`h-2 w-2 rounded-full ${option.color} mr-2`}></span>
             <span>{option.label}</span>
-            {appointment.status === option.value && (
-              <Check className="ml-auto h-4 w-4" />
-            )}
+            {appointment.status === option.value && <Check className="ml-auto h-4 w-4" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -798,10 +788,10 @@ const StatusDropdown = ({ appointment, onStatusChange, isLoading }: StatusDropdo
 }
 
 const formatTimeDisplay = (time: string) => {
-  const [hours, minutes] = time.split(':').map(Number)
-  const period = hours >= 12 ? 'PM' : 'AM'
+  const [hours, minutes] = time.split(":").map(Number)
+  const period = hours >= 12 ? "PM" : "AM"
   const displayHours = hours % 12 || 12
-  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+  return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`
 }
 
 export default BusinessDashboard
