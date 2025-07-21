@@ -441,7 +441,7 @@ function PaymentsPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Settings className="h-5 w-5" />
-                    North Payments Account
+                    Zifypay Merchant Account
                     {checkingStatus ? (
                       <RefreshCw className="h-4 w-4 animate-spin" />
                     ) : (
