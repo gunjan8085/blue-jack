@@ -70,6 +70,104 @@ const ServiceManagerPage = () => {
     duration: 0,
     image: null,
   })
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // ... existing code ...
+
+    // Fetch all services from backend
+  const fetchServices = async () => {
+    try {
+      const businessId = getBusinessId()
+      if (!businessId) return
+      const res = await axios.get(`${API_URL}/service-categories/${businessId}/service-categories`)
+      setAllServices(res.data.data || [])
+    } catch (error) {
+      console.error("Error fetching services:", error)
+    } finally {
+      setFetchLoading(false)
+    }
+  }
+
+  // PUT: Update a service
+  const handleUpdateService = async () => {
+    if (!editingServiceId) return;
+    setLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      const businessId = getBusinessId();
+      if (!businessId) throw new Error("Missing business ID");
+      const formData = new FormData();
+      formData.append("title", currentService.title);
+      formData.append("description", currentService.description);
+      formData.append("hashtags", currentService.hashtags);
+      formData.append("tags", currentService.tags);
+      formData.append("price", currentService.price.toString());
+      formData.append("duration", currentService.duration.toString());
+      if (currentService.image) {
+        formData.append("image", currentService.image);
+      }
+      const res = await axios.patch(`${API_URL}/service-categories/${businessId}/service-categories/${editingServiceId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setSuccessMsg("Service updated successfully.");
+      await fetchServices();
+      setIsEditing(false);
+      setEditingServiceId(null);
+      setCurrentService({
+        title: "",
+        description: "",
+        hashtags: "",
+        tags: "",
+        price: 0,
+        duration: 0,
+        image: null,
+      });
+    } catch (err: any) {
+      setErrorMsg(
+        err?.response?.data?.message || "Failed to update service. Please try again."
+      );
+    }
+    setLoading(false);
+  };
+
+  // DELETE: Delete a service
+  const handleDeleteService = async (serviceId: string) => {
+    if (!window.confirm("Are you sure you want to delete this service?")) return;
+    setLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      const businessId = getBusinessId();
+      if (!businessId) throw new Error("Missing business ID");
+      await axios.delete(`${API_URL}/service-categories/${businessId}/service-categories/${serviceId}`);
+      setSuccessMsg("Service deleted successfully.");
+      await fetchServices();
+      // If currently editing this service, reset form
+      if (editingServiceId === serviceId) {
+        setIsEditing(false);
+        setEditingServiceId(null);
+        setCurrentService({
+          title: "",
+          description: "",
+          hashtags: "",
+          tags: "",
+          price: 0,
+          duration: 0,
+          image: null,
+        });
+      }
+    } catch (err: any) {
+      setErrorMsg(
+        err?.response?.data?.message || "Failed to delete service. Please try again."
+      );
+    }
+    setLoading(false);
+  };
+
+
+  // ... existing code ...
 
   const getBusinessId = (): string | null => {
     if (typeof window !== "undefined") {
@@ -404,11 +502,13 @@ const ServiceManagerPage = () => {
                     </div>
                     <Button
                       id="service-form"
-                      onClick={addToQueue}
+                      onClick={isEditing ? handleUpdateService : addToQueue}
                       className="w-full h-12 bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                      disabled={!currentService.title || !currentService.price || !currentService.duration}
+                      disabled={loading || !currentService.title || !currentService.price || !currentService.duration}
                     >
-                      {isEditing ? (
+                      {loading ? (
+                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                      ) : isEditing ? (
                         <>
                           <Edit3 className="h-5 w-5 mr-2" />
                           Update Service
@@ -420,6 +520,12 @@ const ServiceManagerPage = () => {
                         </>
                       )}
                     </Button>
+                    {errorMsg && (
+                      <div className="mt-2 text-red-600 text-sm">{errorMsg}</div>
+                    )}
+                    {successMsg && (
+                      <div className="mt-2 text-green-600 text-sm">{successMsg}</div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -600,9 +706,20 @@ const ServiceManagerPage = () => {
                             variant="outline"
                             className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent"
                             onClick={() => handleEditService(service)}
+                            disabled={loading}
                           >
                             <Edit3 className="h-4 w-4 mr-1" />
                             Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
+                            onClick={() => handleDeleteService(service._id)}
+                            disabled={loading}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </div>

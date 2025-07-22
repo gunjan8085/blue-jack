@@ -18,6 +18,11 @@ router.patch(
   serviceController.updateServiceCategory
 );
 
+router.delete(
+  "/:businessId/service-categories/:serviceId",
+  serviceController.deleteServiceCategory
+);
+
 router.get(
   "/:businessId/service-categories",
   serviceController.getAllServiceCategories

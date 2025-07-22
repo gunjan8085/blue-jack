@@ -3,6 +3,36 @@ const { uploadFile } = require("../services/s3.service");
 const logger = require("../utils/logger.util");
 
 module.exports = {
+  deleteServiceCategory: async (req, res) => {
+    try {
+      const { businessId, serviceId } = req.params;
+      logger.info(`[DELETE] businessId=${businessId}, serviceId=${serviceId}`);
+      const business = await Business.findById(businessId);
+      if (!business) {
+        logger.warn(`Business not found: ${businessId}`);
+        return res.status(404).json({ success: false, message: "Business not found" });
+      }
+      if (!Array.isArray(business.serviceCategories)) {
+        logger.error("serviceCategories is not an array");
+        return res.status(500).json({ success: false, message: "Service categories data corrupted" });
+      }
+      const beforeLen = business.serviceCategories.length;
+      const exists = business.serviceCategories.some(s => s._id.toString() === serviceId);
+      if (!exists) {
+        logger.warn(`Service not found: ${serviceId} in business ${businessId}`);
+        return res.status(404).json({ success: false, message: "Service not found" });
+      }
+      business.serviceCategories = business.serviceCategories.filter(s => s._id.toString() !== serviceId);
+      await business.save();
+      const afterLen = business.serviceCategories.length;
+      logger.info(`Deleted service. Before: ${beforeLen}, After: ${afterLen}`);
+      return res.status(200).json({ success: true, message: "Service deleted successfully", data: business.serviceCategories });
+    } catch (error) {
+      logger.error("Error deleting service category:", error);
+      return res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
+    }
+  },
+
   addServiceCategories: async (req, res) => {
     try {
       const { businessId } = req.params;
