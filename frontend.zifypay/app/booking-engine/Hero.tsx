@@ -66,7 +66,11 @@ export default function Hero() {
             className="mx-auto rounded-2xl object-cover h-full object-left-top"
             draggable={false}
             controls
-          ></video>
+            autoPlay
+            muted
+            playsInline
+            loop
+          />
 
           {/* <iframe
             width="1000"
