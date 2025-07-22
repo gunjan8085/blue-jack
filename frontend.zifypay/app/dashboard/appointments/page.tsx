@@ -1,42 +1,33 @@
 "use client"
-
 import { useState, useEffect } from "react"
-import { Calendar as CalendarIcon, Clock, User, Phone, Mail, Search, Plus, Edit, CheckCircle, XCircle, ChevronDown, ChevronUp, Lock, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import {
+  CalendarIcon,
+  Clock,
+  User,
+  Phone,
+  Mail,
+  Search,
+  Plus,
+  Edit,
+  CheckCircle,
+  XCircle,
+  Lock,
+  Loader2,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
-
-import {
-
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import Link from "next/link"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { API_URL } from "@/lib/const"
-import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar"
 import { format, parseISO } from "date-fns"
-import { parse } from "date-fns/parse"
-import { startOfWeek } from "date-fns/startOfWeek"
-import { getDay } from "date-fns/getDay"
-import { enUS } from "date-fns/locale/en-US"
-import "react-big-calendar/lib/css/react-big-calendar.css"
-import {
-  Users,
-  DollarSign,
-  Star,
-  TrendingUp,
-  Settings,
-  BarChart3,
-} from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import CalendarComponent from "./Calender"
@@ -96,10 +87,12 @@ interface TimeSlot {
   end: Date
   staffId: string
 }
+
 interface CalendarResource {
   resourceId: string
   resourceTitle: string
 }
+
 interface Props {
   start: Date
   end: Date
@@ -112,11 +105,12 @@ interface CalendarEvent {
   start: Date
   end: Date
   resourceId: string
-  status: 'confirmed' | 'pending' | 'completed' | 'cancelled' | 'blocked'
+  status: "confirmed" | "pending" | "completed" | "cancelled" | "blocked"
   service?: Service
   customer: Customer
   staff: Staff
 }
+
 export default function AppointmentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -132,6 +126,7 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isBlockingTime, setIsBlockingTime] = useState(false)
+  const [isCreatingAppointment, setIsCreatingAppointment] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isListViewOpen, setIsListViewOpen] = useState(false)
 
@@ -140,7 +135,7 @@ export default function AppointmentsPage() {
     service: "",
     staff: "",
     date: "",
-    time: ""
+    time: "",
   })
 
   const [blockDetails, setBlockDetails] = useState({
@@ -148,88 +143,86 @@ export default function AppointmentsPage() {
     staff: "",
     date: "",
     time: "",
-    duration: 60
+    duration: 60,
   })
 
-  const locales = { "en-US": enUS }
-  const localizer = dateFnsLocalizer({
-    format,
-    parse,
-    startOfWeek,
-    getDay,
-    locales,
-  })
+  // Fetch data function
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const businessProfile = localStorage.getItem("businessProfile")
+      if (!businessProfile) throw new Error("Business profile not found")
+
+      const business = JSON.parse(businessProfile)
+      const businessId = business._id
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Authentication token not found")
+
+      const [appointmentsRes, servicesRes, staffRes] = await Promise.all([
+        fetch(`${API_URL}/appointments/${businessId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_URL}/service-categories/${businessId}/service-categories`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_URL}/employee/business/${businessId}/all`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ])
+
+      if (!appointmentsRes.ok || !servicesRes.ok || !staffRes.ok) {
+        throw new Error("Failed to fetch data")
+      }
+
+      const [appointmentsData, servicesData, staffData] = await Promise.all([
+        appointmentsRes.json(),
+        servicesRes.json(),
+        staffRes.json(),
+      ])
+
+      setAppointments(appointmentsData.data)
+      setServices(servicesData.data)
+      staffData.data = staffData.data.filter((staff: Staff) => !staff.isOwner)
+      setStaffMembers(staffData.data)
+    } catch (err: any) {
+      console.error("Error fetching data:", err)
+      setError(err.message)
+      toast({
+        title: "Error",
+        description: "Failed to load data: " + err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const businessProfile = localStorage.getItem('businessProfile')
-        if (!businessProfile) throw new Error('Business profile not found')
-
-        const business = JSON.parse(businessProfile)
-        const businessId = business._id
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('Authentication token not found')
-
-        const [appointmentsRes, servicesRes, staffRes] = await Promise.all([
-          fetch(`${API_URL}/appointments/${businessId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${API_URL}/service-categories/${businessId}/service-categories`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${API_URL}/employee/business/${businessId}/all`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
-        ])
-
-        if (!appointmentsRes.ok || !servicesRes.ok || !staffRes.ok) {
-          throw new Error('Failed to fetch data')
-        }
-
-        const [appointmentsData, servicesData, staffData] = await Promise.all([
-          appointmentsRes.json(),
-          servicesRes.json(),
-          staffRes.json()
-        ])
-
-        setAppointments(appointmentsData.data)
-        setServices(servicesData.data)
-        staffData.data = staffData.data.filter((staff: Staff) => !staff.isOwner)
-        setStaffMembers(staffData.data)
-      } catch (err: any) {
-        console.error('Error fetching data:', err)
-        setError(err.message)
-        toast({
-          title: "Error",
-          description: "Failed to load data: " + err.message,
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
   }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "confirmed": return "bg-green-100 text-green-800 border-green-200"
-      case "pending": return "bg-yellow-100 text-yellow-800 border-yellow-200"
-      case "completed": return "bg-blue-100 text-blue-800 border-blue-200"
-      case "cancelled": return "bg-red-100 text-red-800 border-red-200"
-      default: return "bg-gray-100 text-gray-800 border-gray-200"
+      case "confirmed":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "completed":
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      case "cancelled":
+        return "bg-red-100 text-red-800 border-red-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
   const filteredAppointments = appointments.filter((appointment) => {
-    const matchesSearch = appointment.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (appointment.service?.title || 'Service').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      appointment.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (appointment.service?.title || "Service").toLowerCase().includes(searchQuery.toLowerCase()) ||
       appointment.staff.name.toLowerCase().includes(searchQuery.toLowerCase())
+
     const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
     const matchesDate = dateFilter === "all" || appointment.date === dateFilter
 
@@ -245,214 +238,208 @@ export default function AppointmentsPage() {
       const res = await fetch(`${API_URL}/appointments/${appointmentId}/status`, {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       })
 
       if (!res.ok) throw new Error("Failed to update status")
 
-      toast({
-        title: "Status updated",
-        description: `Appointment status changed to ${newStatus}`,
-      })
+      // Refresh data to get latest status
+      await fetchData()
 
-      setAppointments(prev => prev.map(apt =>
-        apt._id === appointmentId ? { ...apt, status: newStatus as Appointment["status"] } : apt
-      ))
+      toast({
+        title: "Success",
+        description: `Appointment status changed to ${newStatus}`,
+        duration: 3000,
+      })
     } catch (err: any) {
       toast({
         title: "Error",
         description: "Failed to update status: " + err.message,
         variant: "destructive",
+        duration: 5000,
       })
     } finally {
       setIsUpdatingStatus(false)
     }
   }
 
- // Add this helper function at the top of your component
-const formatTimeForAPI = (timeString : string) => {
-  if (!timeString) return "";
-  
-  // Ensure the time is in HH:mm format
-  const timeParts = timeString.split(':');
-  if (timeParts.length !== 2) return timeString;
-  
-  const hours = timeParts[0].padStart(2, '0');
-  const minutes = timeParts[1].padStart(2, '0');
-  
-  return `${hours}:${minutes}`;
-};
+  // Add this helper function at the top of your component
+  const formatTimeForAPI = (timeString: string) => {
+    if (!timeString) return ""
 
-// Updated handleCreateAppointment function
-const handleCreateAppointment = async () => {
-  console.log("🚀 handleCreateAppointment function called");
-  console.log("📋 Current form data:", newAppointment);
-  
-  try {
-    const token = localStorage.getItem("token")
-    console.log("🔑 Token found:", !!token);
-    
-    if (!token) throw new Error("Auth token not found")
+    // Ensure the time is in HH:mm format
+    const timeParts = timeString.split(":")
+    if (timeParts.length !== 2) return timeString
 
-    const businessProfile = localStorage.getItem('businessProfile')
-    console.log("🏢 Business profile found:", !!businessProfile);
-    
-    if (!businessProfile) throw new Error('Business profile not found')
+    const hours = timeParts[0].padStart(2, "0")
+    const minutes = timeParts[1].padStart(2, "0")
 
-    const business = JSON.parse(businessProfile)
-    console.log("🏢 Business ID:", business._id);
-    
-    // Format and validate time
-    const formattedTime = formatTimeForAPI(newAppointment.time);
-    const formattedDate = newAppointment.date.trim();
-    
-    console.log("🕐 Original time:", newAppointment.time);
-    console.log("🕐 Formatted time:", formattedTime);
-    console.log("📅 Formatted date:", formattedDate);
-    
-    // Validate time format
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timeRegex.test(formattedTime)) {
-      console.error("❌ Time format validation failed:", formattedTime);
-      toast({
-        title: "Error",
-        description: "Please select a valid time",
-        variant: "destructive",
-      })
-      return;
-    }
-    
-    // Validate required fields
-    const requiredFields = {
-      name: newAppointment.customer.name?.trim(),
-      phone: newAppointment.customer.phone?.trim(),
-      service: newAppointment.service,
-      staff: newAppointment.staff,
-      date: formattedDate,
-      time: formattedTime
-    };
-    
-    console.log("✅ Required fields check:", requiredFields);
-    
-    const missingFields = Object.entries(requiredFields)
-      .filter(([key, value]) => !value)
-      .map(([key]) => key);
-    
-    if (missingFields.length > 0) {
-      console.error("❌ Missing required fields:", missingFields);
-      toast({
-        title: "Error",
-        description: `Please fill in: ${missingFields.join(', ')}`,
-        variant: "destructive",
-      })
-      return;
-    }
-
-    const payload = {
-      customer: {
-        name: newAppointment.customer.name.trim(),
-        email: newAppointment.customer.email.trim(),
-        phone: newAppointment.customer.phone.trim(),
-        notes: newAppointment.customer.notes?.trim() || ""
-      },
-      service: newAppointment.service,
-      staff: newAppointment.staff,
-      date: formattedDate,
-      time: formattedTime,
-    }
-
-    console.log("📦 Payload being sent:", payload);
-    console.log("🌐 API URL:", `${API_URL}/appointments/${business._id}/create-by-business`);
-
-    const res = await fetch(`${API_URL}/appointments/${business._id}/create-by-business`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
-
-    console.log("📡 Response status:", res.status);
-    console.log("📡 Response ok:", res.ok);
-
-    const data = await res.json()
-    console.log("📄 Response data:", data);
-    
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to create appointment")
-    }
-
-    // Show success message
-    toast({
-      title: "Success",
-      description: "Appointment created successfully",
-      variant: "default",
-    })
-
-    // Update the appointments list
-    setAppointments(prev => [...prev, data.data])
-    
-    // Reset form and close dialog
-    setNewAppointment({
-      customer: { name: "", email: "", phone: "", notes: "" },
-      service: "",
-      staff: "",
-      date: "",
-      time: ""
-    })
-    
-    // Close the dialog
-    setIsCreateDialogOpen(false)
-    
-  } catch (err:any) {
-    console.error("💥 Error creating appointment:", err);
-    toast({
-      title: "Error",
-      description: err.message || "Failed to create appointment. Please try again.",
-      variant: "destructive",
-    })
+    return `${hours}:${minutes}`
   }
-}
+
+  // Updated handleCreateAppointment function
+  const handleCreateAppointment = async () => {
+    console.log("🚀 handleCreateAppointment function called")
+    console.log("📋 Current form data:", newAppointment)
+
+    try {
+      setIsCreatingAppointment(true)
+
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Auth token not found")
+
+      const businessProfile = localStorage.getItem("businessProfile")
+      if (!businessProfile) throw new Error("Business profile not found")
+
+      const business = JSON.parse(businessProfile)
+
+      // Format and validate time
+      const formattedTime = formatTimeForAPI(newAppointment.time)
+      const formattedDate = newAppointment.date.trim()
+
+      // Validate time format
+      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
+      if (!timeRegex.test(formattedTime)) {
+        toast({
+          title: "Error",
+          description: "Please select a valid time",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Validate required fields
+      const requiredFields = {
+        name: newAppointment.customer.name?.trim(),
+        phone: newAppointment.customer.phone?.trim(),
+        service: newAppointment.service,
+        staff: newAppointment.staff,
+        date: formattedDate,
+        time: formattedTime,
+      }
+
+      const missingFields = Object.entries(requiredFields)
+        .filter(([key, value]) => !value)
+        .map(([key]) => key)
+
+      if (missingFields.length > 0) {
+        toast({
+          title: "Error",
+          description: `Please fill in: ${missingFields.join(", ")}`,
+          variant: "destructive",
+        })
+        return
+      }
+
+      const payload = {
+        customer: {
+          name: newAppointment.customer.name.trim(),
+          email: newAppointment.customer.email.trim(),
+          phone: newAppointment.customer.phone.trim(),
+          notes: newAppointment.customer.notes?.trim() || "",
+        },
+        service: newAppointment.service,
+        staff: newAppointment.staff,
+        date: formattedDate,
+        time: formattedTime,
+      }
+
+      const res = await fetch(`${API_URL}/appointments/${business._id}/create-by-business`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to create appointment")
+      }
+
+      // Close the dialog first
+      setIsCreateDialogOpen(false)
+
+      // Reset form
+      setNewAppointment({
+        customer: { name: "", email: "", phone: "", notes: "" },
+        service: "",
+        staff: "",
+        date: "",
+        time: "",
+      })
+
+      // Refresh all data to get the latest appointments
+      await fetchData()
+
+      // Show success message after data is refreshed
+      toast({
+        title: "Success! 🎉",
+        description: "Appointment created successfully",
+        duration: 3000,
+      })
+    } catch (err: any) {
+      console.error("💥 Error creating appointment:", err)
+      toast({
+        title: "Error",
+        description: err.message || "Failed to create appointment. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      })
+    } finally {
+      setIsCreatingAppointment(false)
+    }
+  }
+
   const handleBlockTime = async () => {
     try {
       setIsBlockingTime(true)
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Auth token not found")
 
-      const businessProfile = localStorage.getItem('businessProfile')
-      if (!businessProfile) throw new Error('Business profile not found')
+      const businessProfile = localStorage.getItem("businessProfile")
+      if (!businessProfile) throw new Error("Business profile not found")
 
       const business = JSON.parse(businessProfile)
+
       const payload = {
         ...blockDetails,
         status: "blocked",
-        notes: blockDetails.reason
+        notes: blockDetails.reason,
       }
 
       const res = await fetch(`${API_URL}/appointments/${business._id}/block`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) throw new Error("Failed to block time")
 
-      toast({ title: "Success", description: "Time blocked successfully" })
+      toast({
+        title: "Success",
+        description: "Time blocked successfully",
+      })
+
       setIsBlockDialogOpen(false)
       setBlockDetails({
         reason: "",
         staff: "",
         date: "",
         time: "",
-        duration: 60
+        duration: 60,
       })
+
+      // Refresh data to show blocked time
+      await fetchData()
     } catch (err: any) {
       toast({
         title: "Error",
@@ -473,46 +460,26 @@ const handleCreateAppointment = async () => {
     ...apt,
   }))
 
-const resources = staffMembers
-  .filter(staff => staff.jobTitle !== "Owner")  // Only include employees
-  .map(staff => ({
-    resourceId: staff._id,
-    resourceTitle: staff.name,
-    resourceImage: staff.profilePicUrl || "",
-  }));
+  const resources = staffMembers
+    .filter((staff) => staff.jobTitle !== "Owner")
+    // Only include employees
+    .map((staff) => ({
+      resourceId: staff._id,
+      resourceTitle: staff.name,
+      resourceImage: staff.profilePicUrl || "",
+    }))
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date; resourceId?: string }) => {
     setSelectedTimeSlot({
       start: slotInfo.start,
       end: slotInfo.end,
-      staffId: slotInfo.resourceId || staffMembers[0]?._id || ""
+      staffId: slotInfo.resourceId || staffMembers[0]?._id || "",
     })
   }
 
   const handleSelectEvent = (event: any) => {
     setSelectedAppointment(event)
     setIsEditDialogOpen(true)
-  }
-
-  const eventStyleGetter = (event: { status: 'confirmed' | 'pending' | 'completed' | 'cancelled' | 'blocked' }) => {
-    const statusColors = {
-      confirmed: '#38a169',
-      pending: '#d69e2e',
-      completed: '#3182ce',
-      cancelled: '#e53e3e',
-      blocked: '#718096'
-    }
-
-    return {
-      style: {
-        backgroundColor: statusColors[event.status] || '#805ad5',
-        borderRadius: '4px',
-        opacity: 0.8,
-        color: 'white',
-        border: '0px',
-        display: 'block',
-      },
-    }
   }
 
   return (
@@ -537,7 +504,7 @@ const resources = staffMembers
         </header>
 
         <div className="flex-1 space-y-6 p-6 bg-gray-50">
-          {isListViewOpen &&
+          {isListViewOpen && (
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -570,9 +537,9 @@ const resources = staffMembers
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Dates</SelectItem>
-                      {Array.from(new Set(appointments.map(apt => apt.date))).map(date => (
+                      {Array.from(new Set(appointments.map((apt) => apt.date))).map((date) => (
                         <SelectItem key={date} value={date}>
-                          {format(parseISO(date), 'MMM dd, yyyy')}
+                          {format(parseISO(date), "MMM dd, yyyy")}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -580,13 +547,17 @@ const resources = staffMembers
                 </div>
               </CardContent>
             </Card>
-          }
+          )}
 
           {/* Appointments Tabs */}
           <Tabs defaultValue="list" className="w-[84vw] overflow-scroll">
             <TabsList className="grid w-full grid-cols-2 max-w-xs bg-white">
-              <TabsTrigger value="list" onClick={() => setIsListViewOpen(true)}>List View</TabsTrigger>
-              <TabsTrigger value="calendar" onClick={() => setIsListViewOpen(false)}>Calendar View</TabsTrigger>
+              <TabsTrigger value="list" onClick={() => setIsListViewOpen(true)}>
+                List View
+              </TabsTrigger>
+              <TabsTrigger value="calendar" onClick={() => setIsListViewOpen(false)}>
+                Calendar View
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="list" className="space-y-4">
@@ -617,12 +588,17 @@ const resources = staffMembers
                         <div className="flex items-center space-x-4">
                           <Avatar className="h-10 w-10">
                             <AvatarFallback>
-                              {appointment.customer.name.split(" ").map((n) => n[0]).join("")}
+                              {appointment.customer.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <h3 className="text-base font-semibold text-gray-900">{appointment.customer.name}</h3>
-                            <p className="text-purple-600 font-medium text-sm">{appointment.service?.title || 'Service'}</p>
+                            <p className="text-purple-600 font-medium text-sm">
+                              {appointment.service?.title || "Service"}
+                            </p>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 mt-1">
                               <span className="flex items-center">
                                 <User className="h-3 w-3 mr-1" />
@@ -630,7 +606,7 @@ const resources = staffMembers
                               </span>
                               <span className="flex items-center">
                                 <CalendarIcon className="h-3 w-3 mr-1" />
-                                {format(parseISO(appointment.date), 'MMM dd, yyyy')}
+                                {format(parseISO(appointment.date), "MMM dd, yyyy")}
                               </span>
                               <span className="flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
@@ -639,12 +615,10 @@ const resources = staffMembers
                             </div>
                           </div>
                         </div>
-
                         <div className="flex flex-col md:flex-row md:items-center gap-3">
                           <Badge className={cn("text-xs", getStatusColor(appointment.status))}>
                             {appointment.status}
                           </Badge>
-
                           <div className="flex gap-2">
                             {appointment.status === "pending" && (
                               <>
@@ -653,6 +627,7 @@ const resources = staffMembers
                                   variant="outline"
                                   onClick={() => handleStatusChange(appointment._id, "confirmed")}
                                   className="text-green-600 border-green-200 hover:bg-green-50 h-8"
+                                  disabled={isUpdatingStatus}
                                 >
                                   {isUpdatingStatus ? (
                                     <Loader2 className="h-3 w-3 mr-1 animate-spin" />
@@ -666,28 +641,28 @@ const resources = staffMembers
                                   variant="outline"
                                   onClick={() => handleStatusChange(appointment._id, "cancelled")}
                                   className="text-red-600 border-red-200 hover:bg-red-50 h-8"
+                                  disabled={isUpdatingStatus}
                                 >
                                   <XCircle className="h-3 w-3 mr-1" />
                                   Cancel
                                 </Button>
                               </>
                             )}
-
                             {appointment.status === "confirmed" && (
                               <Button
                                 size="sm"
                                 onClick={() => handleStatusChange(appointment._id, "completed")}
                                 className="bg-gradient-to-r from-purple-600 to-purple-700 h-8"
+                                disabled={isUpdatingStatus}
                               >
                                 <CheckCircle className="h-3 w-3 mr-1" />
                                 Complete
                               </Button>
                             )}
-
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-8"
+                              className="h-8 bg-transparent"
                               onClick={() => {
                                 setSelectedAppointment(appointment)
                                 setIsEditDialogOpen(true)
@@ -699,13 +674,11 @@ const resources = staffMembers
                           </div>
                         </div>
                       </div>
-
                       {appointment.customer.notes && (
                         <div className="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
                           <strong>Notes:</strong> {appointment.customer.notes}
                         </div>
                       )}
-
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
                         <span className="flex items-center">
                           <Phone className="h-3 w-3 mr-1" />
@@ -721,6 +694,7 @@ const resources = staffMembers
                 ))
               )}
             </TabsContent>
+
             <TabsContent value="calendar" className="space-y-4">
               <Card className="border border-gray-100 shadow-sm rounded-lg overflow-hidden">
                 <CardContent className="p-0">
@@ -748,7 +722,10 @@ const resources = staffMembers
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback>
-                      {selectedAppointment.customer.name.split(" ").map((n) => n[0]).join("")}
+                      {selectedAppointment.customer.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
@@ -758,11 +735,10 @@ const resources = staffMembers
                     </Badge>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label className="text-muted-foreground">Service</Label>
-                    <p className="text-sm font-medium">{selectedAppointment.service?.title || 'N/A'}</p>
+                    <p className="text-sm font-medium">{selectedAppointment.service?.title || "N/A"}</p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-muted-foreground">Staff</Label>
@@ -770,9 +746,7 @@ const resources = staffMembers
                   </div>
                   <div className="space-y-1">
                     <Label className="text-muted-foreground">Date</Label>
-                    <p className="text-sm font-medium">
-                      {format(parseISO(selectedAppointment.date), 'PPP')}
-                    </p>
+                    <p className="text-sm font-medium">{format(parseISO(selectedAppointment.date), "PPP")}</p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-muted-foreground">Time</Label>
@@ -780,25 +754,19 @@ const resources = staffMembers
                   </div>
                   <div className="space-y-1">
                     <Label className="text-muted-foreground">Phone</Label>
-                    <p className="text-sm font-medium">
-                      {selectedAppointment.customer.phone || 'N/A'}
-                    </p>
+                    <p className="text-sm font-medium">{selectedAppointment.customer.phone || "N/A"}</p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-muted-foreground">Email</Label>
-                    <p className="text-sm font-medium">
-                      {selectedAppointment.customer.email || 'N/A'}
-                    </p>
+                    <p className="text-sm font-medium">{selectedAppointment.customer.email || "N/A"}</p>
                   </div>
                 </div>
-
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Notes</Label>
                   <div className="p-3 rounded-md border bg-muted/50 text-sm">
-                    {selectedAppointment.customer.notes || 'No notes provided'}
+                    {selectedAppointment.customer.notes || "No notes provided"}
                   </div>
                 </div>
-
                 <div className="flex justify-end gap-2 pt-4">
                   {selectedAppointment.status === "pending" && (
                     <>
@@ -809,6 +777,7 @@ const resources = staffMembers
                           setIsEditDialogOpen(false)
                         }}
                         className="text-green-600 border-green-200 hover:bg-green-50"
+                        disabled={isUpdatingStatus}
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Confirm
@@ -820,13 +789,13 @@ const resources = staffMembers
                           setIsEditDialogOpen(false)
                         }}
                         className="text-red-600 border-red-200 hover:bg-red-50"
+                        disabled={isUpdatingStatus}
                       >
                         <XCircle className="h-4 w-4 mr-1" />
                         Cancel
                       </Button>
                     </>
                   )}
-
                   {selectedAppointment.status === "confirmed" && (
                     <Button
                       onClick={() => {
@@ -834,16 +803,13 @@ const resources = staffMembers
                         setIsEditDialogOpen(false)
                       }}
                       className="bg-gradient-to-r from-purple-600 to-purple-700"
+                      disabled={isUpdatingStatus}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
                       Mark as Completed
                     </Button>
                   )}
-
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditDialogOpen(false)}
-                  >
+                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                     Close
                   </Button>
                 </div>
@@ -851,7 +817,6 @@ const resources = staffMembers
             )}
           </DialogContent>
         </Dialog>
-
 
         {/* Create Appointment Modal */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -862,13 +827,16 @@ const resources = staffMembers
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Customer Name</Label>
+                  <Label>Customer Name *</Label>
                   <Input
                     value={newAppointment.customer.name}
-                    onChange={(e) => setNewAppointment({
-                      ...newAppointment,
-                      customer: { ...newAppointment.customer, name: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setNewAppointment({
+                        ...newAppointment,
+                        customer: { ...newAppointment.customer, name: e.target.value },
+                      })
+                    }
+                    placeholder="Enter customer name"
                   />
                 </div>
                 <div>
@@ -876,25 +844,31 @@ const resources = staffMembers
                   <Input
                     type="email"
                     value={newAppointment.customer.email}
-                    onChange={(e) => setNewAppointment({
-                      ...newAppointment,
-                      customer: { ...newAppointment.customer, email: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setNewAppointment({
+                        ...newAppointment,
+                        customer: { ...newAppointment.customer, email: e.target.value },
+                      })
+                    }
+                    placeholder="Enter customer email"
                   />
                 </div>
                 <div>
-                  <Label>Customer Phone</Label>
+                  <Label>Customer Phone *</Label>
                   <Input
                     type="tel"
                     value={newAppointment.customer.phone}
-                    onChange={(e) => setNewAppointment({
-                      ...newAppointment,
-                      customer: { ...newAppointment.customer, phone: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      setNewAppointment({
+                        ...newAppointment,
+                        customer: { ...newAppointment.customer, phone: e.target.value },
+                      })
+                    }
+                    placeholder="Enter customer phone"
                   />
                 </div>
                 <div>
-                  <Label>Service</Label>
+                  <Label>Service *</Label>
                   <Select
                     value={newAppointment.service}
                     onValueChange={(value) => setNewAppointment({ ...newAppointment, service: value })}
@@ -912,7 +886,7 @@ const resources = staffMembers
                   </Select>
                 </div>
                 <div>
-                  <Label>Staff</Label>
+                  <Label>Staff *</Label>
                   <Select
                     value={newAppointment.staff}
                     onValueChange={(value) => setNewAppointment({ ...newAppointment, staff: value })}
@@ -930,16 +904,20 @@ const resources = staffMembers
                   </Select>
                 </div>
                 <div>
-                  <Label>Date</Label>
+                  <Label>Date *</Label>
                   <Input
                     type="date"
-                    value={newAppointment.date >= new Date().toISOString().split('T')[0] ? newAppointment.date : format(new Date(), 'yyyy-MM-dd')}
+                    value={
+                      newAppointment.date >= new Date().toISOString().split("T")[0]
+                        ? newAppointment.date
+                        : format(new Date(), "yyyy-MM-dd")
+                    }
                     onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
-                    min={format(new Date(), 'yyyy-MM-dd')}
+                    min={format(new Date(), "yyyy-MM-dd")}
                   />
                 </div>
                 <div>
-                  <Label>Time</Label>
+                  <Label>Time *</Label>
                   <Input
                     type="time"
                     value={newAppointment.time}
@@ -950,49 +928,52 @@ const resources = staffMembers
               <div>
                 <Label>Notes</Label>
                 <Textarea
-                  value={newAppointment.customer.notes || ''}
-                  onChange={(e) => setNewAppointment({
-                    ...newAppointment,
-                    customer: { ...newAppointment.customer, notes: e.target.value }
-                  })}
+                  value={newAppointment.customer.notes || ""}
+                  onChange={(e) =>
+                    setNewAppointment({
+                      ...newAppointment,
+                      customer: { ...newAppointment.customer, notes: e.target.value },
+                    })
+                  }
                   rows={3}
                   placeholder="Any special requests or notes..."
                 />
               </div>
             </div>
             <DialogFooter>
-  <Button 
-    variant="outline" 
-    onClick={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsCreateDialogOpen(false);
-    }}
-    type="button"
-  >
-    Cancel
-  </Button>
-  <Button
-    className="bg-gradient-to-r from-purple-600 to-purple-700"
-    onClick={(e) => {
-      console.log("🔘 Create button clicked!");
-      e.preventDefault();
-      e.stopPropagation();
-      handleCreateAppointment();
-    }}
-    type="button"
-    disabled={loading}
-  >
-    {loading ? (
-      <>
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-        Creating...
-      </>
-    ) : (
-      "Create Appointment"
-    )}
-  </Button>
-</DialogFooter>
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsCreateDialogOpen(false)
+                }}
+                type="button"
+                disabled={isCreatingAppointment}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-gradient-to-r from-purple-600 to-purple-700"
+                onClick={(e) => {
+                  console.log("🔘 Create button clicked!")
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleCreateAppointment()
+                }}
+                type="button"
+                disabled={isCreatingAppointment}
+              >
+                {isCreatingAppointment ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Appointment"
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
@@ -1007,20 +988,26 @@ const resources = staffMembers
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-medium text-gray-900 mb-2">Selected Time Slot</h4>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p><strong>Date:</strong> {format(selectedTimeSlot.start, 'PPP')}</p>
-                    <p><strong>Time:</strong> {format(selectedTimeSlot.start, 'p')} - {format(selectedTimeSlot.end, 'p')}</p>
-                    <p><strong>Staff:</strong> {staffMembers.find(s => s._id === selectedTimeSlot.staffId)?.name || 'Unknown'}</p>
+                    <p>
+                      <strong>Date:</strong> {format(selectedTimeSlot.start, "PPP")}
+                    </p>
+                    <p>
+                      <strong>Time:</strong> {format(selectedTimeSlot.start, "p")} - {format(selectedTimeSlot.end, "p")}
+                    </p>
+                    <p>
+                      <strong>Staff:</strong>{" "}
+                      {staffMembers.find((s) => s._id === selectedTimeSlot.staffId)?.name || "Unknown"}
+                    </p>
                   </div>
                 </div>
-
                 <div className="flex gap-2">
                   <Button
                     onClick={() => {
                       setNewAppointment({
                         ...newAppointment,
                         staff: selectedTimeSlot.staffId,
-                        date: format(selectedTimeSlot.start, 'yyyy-MM-dd'),
-                        time: format(selectedTimeSlot.start, 'HH:mm')
+                        date: format(selectedTimeSlot.start, "yyyy-MM-dd"),
+                        time: format(selectedTimeSlot.start, "HH:mm"),
                       })
                       setSelectedTimeSlot(null)
                       setIsCreateDialogOpen(true)
@@ -1036,9 +1023,11 @@ const resources = staffMembers
                       setBlockDetails({
                         ...blockDetails,
                         staff: selectedTimeSlot.staffId,
-                        date: format(selectedTimeSlot.start, 'yyyy-MM-dd'),
-                        time: format(selectedTimeSlot.start, 'HH:mm'),
-                        duration: Math.floor((selectedTimeSlot.end.getTime() - selectedTimeSlot.start.getTime()) / 60000)
+                        date: format(selectedTimeSlot.start, "yyyy-MM-dd"),
+                        time: format(selectedTimeSlot.start, "HH:mm"),
+                        duration: Math.floor(
+                          (selectedTimeSlot.end.getTime() - selectedTimeSlot.start.getTime()) / 60000,
+                        ),
                       })
                       setSelectedTimeSlot(null)
                       setIsBlockDialogOpen(true)
@@ -1085,10 +1074,12 @@ const resources = staffMembers
                   <Input
                     type="number"
                     value={blockDetails.duration}
-                    onChange={(e) => setBlockDetails({
-                      ...blockDetails,
-                      duration: parseInt(e.target.value) || 60
-                    })}
+                    onChange={(e) =>
+                      setBlockDetails({
+                        ...blockDetails,
+                        duration: Number.parseInt(e.target.value) || 60,
+                      })
+                    }
                     min="15"
                     step="15"
                   />
@@ -1099,7 +1090,7 @@ const resources = staffMembers
                     type="date"
                     value={blockDetails.date}
                     onChange={(e) => setBlockDetails({ ...blockDetails, date: e.target.value })}
-                    min={format(new Date(), 'yyyy-MM-dd')}
+                    min={format(new Date(), "yyyy-MM-dd")}
                   />
                 </div>
                 <div>
@@ -1130,11 +1121,7 @@ const resources = staffMembers
                 onClick={handleBlockTime}
                 disabled={isBlockingTime}
               >
-                {isBlockingTime ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Lock className="h-4 w-4 mr-2" />
-                )}
+                {isBlockingTime ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Lock className="h-4 w-4 mr-2" />}
                 Block Time
               </Button>
             </DialogFooter>
