@@ -59,16 +59,15 @@ export default function Hero() {
             </>
           }
         >
-          
-        <video
-          src="https://res.cloudinary.com/dwyyrm9xw/video/upload/v1752247613/Zifypay__The_Future_of_Payments_is_HERE_Instant_Secure_Game-Changing_zrh9ud.mp4"
-          height={500}
-          width={1000}
-          className="mx-auto rounded-2xl object-cover h-full object-left-top"
-          draggable={false}
-          controls
-        ></video>
-       
+          <video
+            src="https://res.cloudinary.com/dwyyrm9xw/video/upload/v1753191939/zify_pay_website_22_july_2025_yufxei.mp4"
+            height={500}
+            width={1000}
+            className="mx-auto rounded-2xl object-cover h-full object-left-top"
+            draggable={false}
+            controls
+          ></video>
+
           {/* <iframe
             width="1000"
             height="500"
