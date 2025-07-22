@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import CTASection from "../CTASection";
 import ForWhomSection from "../ForWhomSection";
 import React from "react";
+// import HowItWork from "";
 
 export default function CategoryLandingPage({
   params,

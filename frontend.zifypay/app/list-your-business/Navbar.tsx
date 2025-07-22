@@ -232,15 +232,16 @@ function Navbar() {
             <Menu setActive={setActive} className="text-sm">
               <MenuItem setActive={setActive} active={active} item="Features">
                 <div className="flex flex-col  text-sm min-w-[220px]">
+                  <HoveredLink href="/list-your-business/feature/howItwork">
+                    How It Work
+                  </HoveredLink>
                   <HoveredLink href="/list-your-business/feature/appointmentCalendar">
                     Appointment calendar
                   </HoveredLink>
                   <HoveredLink href="/list-your-business/feature/pointOfSale">
                     Point of sale
                   </HoveredLink>
-                  {/* <HoveredLink href="/list-your-business/feature/onlineBookings">
-                    Online bookings
-                  </HoveredLink> */}
+
                   <HoveredLink href="/list-your-business/feature/payments">
                     Payments
                   </HoveredLink>
