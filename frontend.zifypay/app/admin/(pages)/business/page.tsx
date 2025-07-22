@@ -234,7 +234,7 @@ const BusinessPage = () => {
                     <div className="font-semibold text-white">Total Customers</div>
                     <div className="text-lg text-gray-300">{analyticsData.totalCustomers}</div>
                     <div className="font-semibold text-white mt-4">Top Customer</div>
-                    <div className="text-lg text-gray-300">{analyticsData.topCustomer ? `${analyticsData.topCustomer.email} (${analyticsData.topCustomer.appointments} appointments, ₹${analyticsData.topCustomer.revenue})` : '-'}</div>
+                    <div className="text-lg text-gray-300">{analyticsData.topCustomer ? `${analyticsData.topCustomer.email} (${analyticsData.topCustomer.appointments} appointments, $${analyticsData.topCustomer.revenue})` : '-'}</div>
                     <div className="font-semibold text-white mt-4">Repeat Customer Rate</div>
                     <div className="text-lg text-gray-300">{(analyticsData.repeatCustomerRate * 100).toFixed(1)}%</div>
                   </div>

@@ -340,7 +340,7 @@ const ServiceManagerPage = () => {
                       <div className="space-y-2">
                         <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                           <DollarSign className="h-4 w-4" />
-                          <span>Price (₹)</span>
+                          <span>Price ($)</span>
                         </label>
                         <Input
                           name="price"
@@ -471,7 +471,7 @@ const ServiceManagerPage = () => {
                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{service.description}</p>
                         <div className="flex items-center justify-between text-sm">
                           <span className="flex items-center text-green-600 font-semibold">
-                            <DollarSign className="h-4 w-4 mr-1" />₹{service.price}
+                            <DollarSign className="h-4 w-4 mr-1" />${service.price}
                           </span>
                           <span className="flex items-center text-blue-600">
                             <Clock className="h-4 w-4 mr-1" />
@@ -526,7 +526,7 @@ const ServiceManagerPage = () => {
                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{service.description}</p>
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-green-600 font-semibold">
-                            <DollarSign className="h-4 w-4 mr-1" />₹{service.price}
+                            <DollarSign className="h-4 w-4 mr-1" />${service.price}
                           </span>
                           <span className="flex items-center text-blue-600">
                             <Clock className="h-4 w-4 mr-1" />
@@ -588,7 +588,7 @@ const ServiceManagerPage = () => {
                         <Separator className="my-4" />
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-green-600 font-bold text-lg">
-                            <DollarSign className="h-5 w-5 mr-1" />₹{service.price}
+                            <DollarSign className="h-5 w-5 mr-1" />${service.price}
                           </span>
                           <span className="flex items-center text-blue-600 font-medium">
                             <Clock className="h-4 w-4 mr-1" />
