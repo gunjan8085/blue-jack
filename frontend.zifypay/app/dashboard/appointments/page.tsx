@@ -272,83 +272,151 @@ export default function AppointmentsPage() {
     }
   }
 
-  const handleCreateAppointment = async () => {
-    try {
-      const token = localStorage.getItem("token")
-      if (!token) throw new Error("Auth token not found")
+ // Add this helper function at the top of your component
+const formatTimeForAPI = (timeString : string) => {
+  if (!timeString) return "";
+  
+  // Ensure the time is in HH:mm format
+  const timeParts = timeString.split(':');
+  if (timeParts.length !== 2) return timeString;
+  
+  const hours = timeParts[0].padStart(2, '0');
+  const minutes = timeParts[1].padStart(2, '0');
+  
+  return `${hours}:${minutes}`;
+};
 
-      const businessProfile = localStorage.getItem('businessProfile')
-      if (!businessProfile) throw new Error('Business profile not found')
+// Updated handleCreateAppointment function
+const handleCreateAppointment = async () => {
+  console.log("🚀 handleCreateAppointment function called");
+  console.log("📋 Current form data:", newAppointment);
+  
+  try {
+    const token = localStorage.getItem("token")
+    console.log("🔑 Token found:", !!token);
+    
+    if (!token) throw new Error("Auth token not found")
 
-      const business = JSON.parse(businessProfile)
-      
-      // Validate required fields
-      if (!newAppointment.customer.name || !newAppointment.customer.phone || 
-          !newAppointment.service || !newAppointment.staff || 
-          !newAppointment.date || !newAppointment.time) {
-        toast({
-          title: "Error",
-          description: "Please fill in all required fields",
-          variant: "destructive",
-        })
-        return;
-      }
+    const businessProfile = localStorage.getItem('businessProfile')
+    console.log("🏢 Business profile found:", !!businessProfile);
+    
+    if (!businessProfile) throw new Error('Business profile not found')
 
-      const payload = {
-        customer: newAppointment.customer,
-        service: newAppointment.service,
-        staff: newAppointment.staff,
-        date: newAppointment.date,
-        time: newAppointment.time,
-      }
-
-      const res = await fetch(`${API_URL}/appointments/${business._id}/create-by-business`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      })
-
-      const data = await res.json()
-      
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to create appointment")
-      }
-
-      // Show success message
-      toast({
-        title: "Success",
-        description: "Appointment created successfully",
-        variant: "default",
-      })
-
-      // Update the appointments list
-      setAppointments(prev => [...prev, data.data])
-      
-      // Reset form and close dialog
-      setNewAppointment({
-        customer: { name: "", email: "", phone: "", notes: "" },
-        service: "",
-        staff: "",
-        date: "",
-        time: ""
-      })
-      
-      // Close the dialog
-      setIsCreateDialogOpen(false)
-      
-    } catch (err: any) {
-      console.error("Error creating appointment:", err);
+    const business = JSON.parse(businessProfile)
+    console.log("🏢 Business ID:", business._id);
+    
+    // Format and validate time
+    const formattedTime = formatTimeForAPI(newAppointment.time);
+    const formattedDate = newAppointment.date.trim();
+    
+    console.log("🕐 Original time:", newAppointment.time);
+    console.log("🕐 Formatted time:", formattedTime);
+    console.log("📅 Formatted date:", formattedDate);
+    
+    // Validate time format
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(formattedTime)) {
+      console.error("❌ Time format validation failed:", formattedTime);
       toast({
         title: "Error",
-        description: err.message || "Failed to create appointment. Please try again.",
+        description: "Please select a valid time",
         variant: "destructive",
       })
+      return;
     }
-  }
+    
+    // Validate required fields
+    const requiredFields = {
+      name: newAppointment.customer.name?.trim(),
+      phone: newAppointment.customer.phone?.trim(),
+      service: newAppointment.service,
+      staff: newAppointment.staff,
+      date: formattedDate,
+      time: formattedTime
+    };
+    
+    console.log("✅ Required fields check:", requiredFields);
+    
+    const missingFields = Object.entries(requiredFields)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+    
+    if (missingFields.length > 0) {
+      console.error("❌ Missing required fields:", missingFields);
+      toast({
+        title: "Error",
+        description: `Please fill in: ${missingFields.join(', ')}`,
+        variant: "destructive",
+      })
+      return;
+    }
 
+    const payload = {
+      customer: {
+        name: newAppointment.customer.name.trim(),
+        email: newAppointment.customer.email.trim(),
+        phone: newAppointment.customer.phone.trim(),
+        notes: newAppointment.customer.notes?.trim() || ""
+      },
+      service: newAppointment.service,
+      staff: newAppointment.staff,
+      date: formattedDate,
+      time: formattedTime,
+    }
+
+    console.log("📦 Payload being sent:", payload);
+    console.log("🌐 API URL:", `${API_URL}/appointments/${business._id}/create-by-business`);
+
+    const res = await fetch(`${API_URL}/appointments/${business._id}/create-by-business`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+
+    console.log("📡 Response status:", res.status);
+    console.log("📡 Response ok:", res.ok);
+
+    const data = await res.json()
+    console.log("📄 Response data:", data);
+    
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to create appointment")
+    }
+
+    // Show success message
+    toast({
+      title: "Success",
+      description: "Appointment created successfully",
+      variant: "default",
+    })
+
+    // Update the appointments list
+    setAppointments(prev => [...prev, data.data])
+    
+    // Reset form and close dialog
+    setNewAppointment({
+      customer: { name: "", email: "", phone: "", notes: "" },
+      service: "",
+      staff: "",
+      date: "",
+      time: ""
+    })
+    
+    // Close the dialog
+    setIsCreateDialogOpen(false)
+    
+  } catch (err:any) {
+    console.error("💥 Error creating appointment:", err);
+    toast({
+      title: "Error",
+      description: err.message || "Failed to create appointment. Please try again.",
+      variant: "destructive",
+    })
+  }
+}
   const handleBlockTime = async () => {
     try {
       setIsBlockingTime(true)
@@ -893,16 +961,38 @@ const resources = staffMembers
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                className="bg-gradient-to-r from-purple-600 to-purple-700"
-                onClick={handleCreateAppointment}
-              >
-                Create Appointment
-              </Button>
-            </DialogFooter>
+  <Button 
+    variant="outline" 
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsCreateDialogOpen(false);
+    }}
+    type="button"
+  >
+    Cancel
+  </Button>
+  <Button
+    className="bg-gradient-to-r from-purple-600 to-purple-700"
+    onClick={(e) => {
+      console.log("🔘 Create button clicked!");
+      e.preventDefault();
+      e.stopPropagation();
+      handleCreateAppointment();
+    }}
+    type="button"
+    disabled={loading}
+  >
+    {loading ? (
+      <>
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        Creating...
+      </>
+    ) : (
+      "Create Appointment"
+    )}
+  </Button>
+</DialogFooter>
           </DialogContent>
         </Dialog>
 
