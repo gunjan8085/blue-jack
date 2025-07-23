@@ -123,6 +123,7 @@ export default function AppointmentsPage() {
   const [error, setError] = useState<string | null>(null)
   const [isListViewOpen, setIsListViewOpen] = useState(false)
   const [blockConflictMessage, setBlockConflictMessage] = useState<string | null>(null)
+
   const [newAppointment, setNewAppointment] = useState({
     customer: { name: "", email: "", phone: "", notes: "" },
     service: "",
@@ -130,6 +131,7 @@ export default function AppointmentsPage() {
     date: "",
     time: "",
   })
+
   const [blockDetails, setBlockDetails] = useState({
     reason: "",
     staff: "",
@@ -204,7 +206,7 @@ export default function AppointmentsPage() {
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-200"
       case "blocked":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-gray-100 text-gray-800 border-gray-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
@@ -215,6 +217,7 @@ export default function AppointmentsPage() {
     const customerName = appointment?.customer?.name || ""
     const serviceName = appointment?.service?.title || "Service"
     const staffName = appointment?.staff?.name || ""
+
     const matchesSearch =
       customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -289,6 +292,7 @@ export default function AppointmentsPage() {
 
       const eventDate = new Date(event.start).toDateString()
       const selectedDate = new Date(`${date}T${startTime}`).toDateString()
+
       if (eventDate !== selectedDate) return false
 
       const eventStart = new Date(event.start)
@@ -304,6 +308,7 @@ export default function AppointmentsPage() {
   const handleCreateAppointment = async () => {
     console.log("🚀 handleCreateAppointment function called")
     console.log("📋 Current form data:", newAppointment)
+
     // Clear any previous block conflict messages
     setBlockConflictMessage(null)
 
@@ -311,6 +316,7 @@ export default function AppointmentsPage() {
       setIsCreatingAppointment(true)
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Auth token not found")
+
       const businessProfile = localStorage.getItem("businessProfile")
       if (!businessProfile) throw new Error("Business profile not found")
       const business = JSON.parse(businessProfile)
@@ -413,6 +419,7 @@ export default function AppointmentsPage() {
 
       // Close the dialog first
       setIsCreateDialogOpen(false)
+
       // Reset form
       setNewAppointment({
         customer: { name: "", email: "", phone: "", notes: "" },
@@ -450,6 +457,7 @@ export default function AppointmentsPage() {
       setIsBlockingTime(true)
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Auth token not found")
+
       const businessProfile = localStorage.getItem("businessProfile")
       if (!businessProfile) throw new Error("Business profile not found")
       const business = JSON.parse(businessProfile)
@@ -490,7 +498,7 @@ export default function AppointmentsPage() {
       console.log("🔒 Blocking time with payload:", payload)
 
       // Updated API endpoint to match your specification
-      const res = await fetch(`${API_URL}/appointments/appointments/${business._id}/staff/${blockDetails.staff}/block`, {
+      const res = await fetch(`${API_URL}/appointments/${business._id}/staff/${blockDetails.staff}/block`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -559,11 +567,21 @@ export default function AppointmentsPage() {
       let endDate: Date
 
       if (apt.status === "blocked" && apt.startTime && apt.endTime) {
-        startDate = new Date(`${apt.date}T${apt.startTime}`)
-        endDate = new Date(`${apt.date}T${apt.endTime}`)
+        // Parse the date and time correctly for blocked appointments
+        startDate = new Date(`${apt.date}T${apt.startTime}:00`)
+        endDate = new Date(`${apt.date}T${apt.endTime}:00`)
       } else {
-        startDate = new Date(`${apt.date}T${apt.time}`)
+        // For regular appointments
+        startDate = new Date(`${apt.date}T${apt.time}:00`)
         endDate = new Date(startDate.getTime() + (apt.service?.duration || apt.duration || 30) * 60000)
+      }
+
+      // Validate dates
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.warn("Invalid date for appointment:", apt)
+        // Fallback to current time if dates are invalid
+        startDate = new Date()
+        endDate = new Date(startDate.getTime() + 30 * 60000)
       }
 
       return {
@@ -707,7 +725,7 @@ export default function AppointmentsPage() {
                   <Button
                     variant="outline"
                     onClick={() => setIsBlockDialogOpen(true)}
-                    className="bg-white  border-red-200 text-red-700 hover:bg-red-50"
+                    className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-50"
                   >
                     <Lock className="h-4 w-4 mr-2" />
                     Block Time
@@ -785,7 +803,7 @@ export default function AppointmentsPage() {
                             <AvatarFallback
                               className={
                                 appointment.status === "blocked"
-                                  ? "bg-red-100 text-red-600"
+                                  ? "bg-gray-100 text-gray-600"
                                   : "bg-purple-100 text-purple-600"
                               }
                             >
@@ -811,7 +829,7 @@ export default function AppointmentsPage() {
                                 : appointment.time}
                             </div>
                             {appointment.status === "blocked" ? (
-                              <p className="text-sm text-red-600 mt-1">
+                              <p className="text-sm text-gray-600 mt-1">
                                 Reason: {appointment.reason || "Time blocked by admin"}
                               </p>
                             ) : (
@@ -1002,7 +1020,7 @@ export default function AppointmentsPage() {
           <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5 text-red-600" />
+                <Lock className="h-5 w-5 text-gray-600" />
                 Block Time Slot
               </DialogTitle>
             </DialogHeader>
@@ -1074,8 +1092,8 @@ export default function AppointmentsPage() {
                 </Select>
               </div>
               {blockDetails.staff && blockDetails.date && blockDetails.time && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-700">
+                <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                  <p className="text-sm text-gray-700">
                     <strong>Preview:</strong> This will block{" "}
                     {staffMembers.find((s) => s._id === blockDetails.staff)?.name}'s schedule from {blockDetails.time}{" "}
                     to {calculateEndTime(blockDetails.time, blockDetails.duration)} on{" "}
@@ -1088,7 +1106,7 @@ export default function AppointmentsPage() {
               <Button variant="outline" onClick={() => setIsBlockDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleBlockTime} disabled={isBlockingTime} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={handleBlockTime} disabled={isBlockingTime} className="bg-gray-600 hover:bg-gray-700">
                 {isBlockingTime ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1119,7 +1137,7 @@ export default function AppointmentsPage() {
                   <>
                     <div className="grid gap-2">
                       <Label>Reason</Label>
-                      <p className="text-sm text-gray-600 p-2 bg-red-50 border border-red-200 rounded">
+                      <p className="text-sm text-gray-600 p-2 bg-gray-50 border border-gray-200 rounded">
                         {selectedAppointment.reason || "Time blocked by admin"}
                       </p>
                     </div>
