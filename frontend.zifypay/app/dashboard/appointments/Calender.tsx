@@ -1,8 +1,8 @@
 "use client"
+
 import { useState, useRef } from "react"
 import type React from "react"
-
-import { ChevronLeft, ChevronRight, Loader2, Clock, User, MoreHorizontal } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2, Clock, User, MoreHorizontal, Lock } from "lucide-react"
 import Image from "next/image"
 
 interface CalendarEvent {
@@ -11,7 +11,7 @@ interface CalendarEvent {
   start: Date
   end: Date
   resourceId: string
-  status: "confirmed" | "pending" | "completed" | "cancelled"
+  status: "confirmed" | "pending" | "completed" | "cancelled" | "blocked"
   service?: any
   customer: any
   staff: {
@@ -22,6 +22,8 @@ interface CalendarEvent {
     jobTitle?: string
     phoneNumber?: string
   }
+  isBlocked?: boolean
+  reason?: string
 }
 
 interface CalendarResource {
@@ -53,12 +55,13 @@ export default function CalendarComponent({
   const [staffTooltipPosition, setStaffTooltipPosition] = useState({ top: 0, left: 0 })
   const calendarRef = useRef<HTMLDivElement>(null)
 
-  // Status colors with better visual hierarchy
+  // Status colors with better visual hierarchy - Updated for blocked status
   const statusColors = {
     confirmed: "bg-green-500 border-green-600",
     pending: "bg-yellow-500 border-yellow-600",
     completed: "bg-blue-500 border-blue-600",
     cancelled: "bg-red-500 border-red-600",
+    blocked: "bg-red-600 border-red-700", // Changed to red for blocked
   }
 
   const statusTextColors = {
@@ -66,6 +69,7 @@ export default function CalendarComponent({
     pending: "text-yellow-600",
     completed: "text-blue-600",
     cancelled: "text-red-600",
+    blocked: "text-red-600", // Changed to red for blocked
   }
 
   const statusLightColors = {
@@ -73,6 +77,7 @@ export default function CalendarComponent({
     pending: "bg-yellow-50 border-yellow-100",
     completed: "bg-blue-50 border-blue-100",
     cancelled: "bg-red-50 border-red-100",
+    blocked: "bg-red-50 border-red-200", // Changed to red for blocked
   }
 
   // Format time without seconds
@@ -91,13 +96,11 @@ export default function CalendarComponent({
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-
     if (date.toDateString() === today.toDateString()) {
       return "Today"
     } else if (date.toDateString() === yesterday.toDateString()) {
       return "Yesterday"
     }
-
     return date
       .toLocaleDateString("en-US", {
         weekday: "short",
@@ -142,7 +145,6 @@ export default function CalendarComponent({
     const week = []
     const startOfWeek = new Date(date)
     startOfWeek.setDate(date.getDate() - date.getDay())
-
     for (let i = 0; i < 7; i++) {
       const day = new Date(startOfWeek)
       day.setDate(startOfWeek.getDate() + i)
@@ -178,21 +180,17 @@ export default function CalendarComponent({
   const getEventBlocks = (date: Date, resourceId: string) => {
     const dayEvents = getEventsForDay(date, resourceId)
     const blocks = []
-
     for (const event of dayEvents) {
       const eventStart = new Date(event.start)
       const eventEnd = new Date(event.end)
-
       // Calculate position and height
       const startHour = eventStart.getHours()
       const startMinute = eventStart.getMinutes()
       const endHour = eventEnd.getHours()
       const endMinute = eventEnd.getMinutes()
-
       const startSlot = (startHour - 8) * 2 + (startMinute >= 30 ? 1 : 0)
       const endSlot = (endHour - 8) * 2 + (endMinute > 30 ? 1 : 0)
       const duration = Math.max(endSlot - startSlot, 1) // Minimum 1 slot
-
       blocks.push({
         ...event,
         startSlot,
@@ -201,11 +199,10 @@ export default function CalendarComponent({
         height: duration * 48 - 4, // Subtract margin
       })
     }
-
     return blocks
   }
 
-  // Check if a slot has overlapping event
+  // Check if a slot has overlapping event or is blocked
   const hasOverlappingEvent = (date: Date, hour: number, minute: number, resourceId: string) => {
     const slotStart = new Date(date)
     slotStart.setHours(hour, minute, 0, 0)
@@ -216,20 +213,36 @@ export default function CalendarComponent({
       const eventStart = new Date(event.start)
       const eventEnd = new Date(event.end)
       const matchesResource = event.resourceId === resourceId
+      const isOverlapping = matchesResource && eventStart < slotEnd && eventEnd > slotStart
 
-      return matchesResource && eventStart < slotEnd && eventEnd > slotStart
+      return isOverlapping
+    })
+  }
+
+  // Check if a slot is blocked (specifically for visual indication)
+  const isSlotBlocked = (date: Date, hour: number, minute: number, resourceId: string) => {
+    const slotStart = new Date(date)
+    slotStart.setHours(hour, minute, 0, 0)
+    const slotEnd = new Date(slotStart)
+    slotEnd.setMinutes(slotEnd.getMinutes() + 30)
+
+    return events.some((event) => {
+      const eventStart = new Date(event.start)
+      const eventEnd = new Date(event.end)
+      const matchesResource = event.resourceId === resourceId
+      const isOverlapping = matchesResource && eventStart < slotEnd && eventEnd > slotStart
+
+      return event.status === "blocked" && isOverlapping
     })
   }
 
   // Navigation functions
   const navigateCalendar = (direction: "prev" | "next" | "today") => {
     const newDate = new Date(currentDate)
-
     if (direction === "today") {
       setCurrentDate(new Date())
       return
     }
-
     if (view === "day") {
       newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : -1))
     } else if (view === "week") {
@@ -237,7 +250,6 @@ export default function CalendarComponent({
     } else if (view === "month") {
       newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1))
     }
-
     setCurrentDate(newDate)
   }
 
@@ -246,12 +258,10 @@ export default function CalendarComponent({
     if (resourceId && hasOverlappingEvent(date, hour, minute, resourceId)) {
       return // Don't allow booking on occupied slots
     }
-
     const start = new Date(date)
     start.setHours(hour, minute, 0, 0)
     const end = new Date(start)
     end.setMinutes(end.getMinutes() + 30)
-
     onSelectSlot({ start, end, resourceId })
   }
 
@@ -267,7 +277,6 @@ export default function CalendarComponent({
   // Day View Component
   const renderDayView = () => {
     const timeSlots = getTimeSlots()
-
     return (
       <div className="flex flex-col h-full" onMouseLeave={handleMouseLeave}>
         {/* Resource Headers */}
@@ -299,7 +308,6 @@ export default function CalendarComponent({
             </div>
           ))}
         </div>
-
         {/* Calendar Grid */}
         <div className="flex-1 overflow-y-auto">
           <div className="flex">
@@ -316,32 +324,42 @@ export default function CalendarComponent({
                 </div>
               ))}
             </div>
-
             {/* Resource Columns */}
             {resources.map((resource) => {
               const eventBlocks = getEventBlocks(currentDate, resource.resourceId)
-
               return (
                 <div key={resource.resourceId} className="flex-1 border-r border-gray-200 last:border-r-0 relative">
                   {/* Time slots for clicking */}
                   {timeSlots.map(({ hour, minute }) => {
                     const hasEvent = hasOverlappingEvent(currentDate, hour, minute, resource.resourceId)
+                    const isBlocked = isSlotBlocked(currentDate, hour, minute, resource.resourceId)
                     return (
                       <div
                         key={`${hour}-${minute}`}
                         className={`h-12 border-b border-gray-100 transition-colors duration-150 ${
-                          hasEvent ? "cursor-not-allowed" : "hover:bg-purple-50 cursor-pointer"
+                          isBlocked
+                            ? "bg-red-100 cursor-not-allowed border-red-200"
+                            : hasEvent
+                              ? "cursor-not-allowed"
+                              : "hover:bg-purple-50 cursor-pointer"
                         }`}
-                        onClick={() => handleSlotClick(currentDate, hour, minute, resource.resourceId)}
-                      />
+                        onClick={() => !hasEvent && handleSlotClick(currentDate, hour, minute, resource.resourceId)}
+                      >
+                        {isBlocked && (
+                          <div className="flex items-center justify-center h-full">
+                            <Lock className="h-3 w-3 text-red-500" />
+                          </div>
+                        )}
+                      </div>
                     )
                   })}
-
                   {/* Event blocks */}
                   {eventBlocks.map((event) => (
                     <div
                       key={event.id}
-                      className={`absolute left-1 right-1 rounded-md border shadow-sm cursor-pointer transition-all duration-200 ${statusColors[event.status]}`}
+                      className={`absolute left-1 right-1 rounded-md border shadow-sm cursor-pointer transition-all duration-200 ${
+                        event.status === "blocked" ? "bg-red-600 border-red-700" : statusColors[event.status]
+                      }`}
                       style={{
                         top: `${event.top}px`,
                         height: `${event.height}px`,
@@ -352,7 +370,16 @@ export default function CalendarComponent({
                     >
                       <div className="p-2 h-full flex flex-col justify-between overflow-hidden">
                         <div className="flex justify-between items-start">
-                          <div className="font-medium text-xs text-white truncate">{event.title}</div>
+                          <div className="font-medium text-xs text-white truncate">
+                            {event.status === "blocked" ? (
+                              <div className="flex items-center">
+                                <Lock className="h-3 w-3 mr-1" />
+                                {event.reason || "BLOCKED"}
+                              </div>
+                            ) : (
+                              event.title
+                            )}
+                          </div>
                           <button
                             className="text-white/70 hover:text-white"
                             onClick={(e) => {
@@ -379,7 +406,6 @@ export default function CalendarComponent({
   const renderWeekView = () => {
     const weekDays = getWeekDays(currentDate)
     const timeSlots = getTimeSlots()
-
     return (
       <div className="flex flex-col h-full" onMouseLeave={handleMouseLeave}>
         {/* Weekday Headers */}
@@ -412,7 +438,6 @@ export default function CalendarComponent({
             )
           })}
         </div>
-
         {/* Calendar Grid */}
         <div className="flex-1 overflow-y-auto">
           <div className="flex">
@@ -429,7 +454,6 @@ export default function CalendarComponent({
                 </div>
               ))}
             </div>
-
             {/* Day Columns */}
             {weekDays.map((day) => {
               const dayEvents = getEventsForDay(day)
@@ -442,21 +466,17 @@ export default function CalendarComponent({
                 }
               > = []
               const isToday = day.toDateString() === new Date().toDateString()
-
               // Create event blocks for this day
               for (const event of dayEvents) {
                 const eventStart = new Date(event.start)
                 const eventEnd = new Date(event.end)
-
                 const startHour = eventStart.getHours()
                 const startMinute = eventStart.getMinutes()
                 const endHour = eventEnd.getHours()
                 const endMinute = eventEnd.getMinutes()
-
                 const startSlot = (startHour - 8) * 2 + (startMinute >= 30 ? 1 : 0)
                 const endSlot = (endHour - 8) * 2 + (endMinute > 30 ? 1 : 0)
                 const duration = Math.max(endSlot - startSlot, 1)
-
                 eventBlocks.push({
                   ...event,
                   startSlot,
@@ -465,7 +485,6 @@ export default function CalendarComponent({
                   height: duration * 48 - 4,
                 })
               }
-
               return (
                 <div
                   key={day.toISOString()}
@@ -480,22 +499,43 @@ export default function CalendarComponent({
                       return slotIndex >= event.startSlot && slotIndex < event.startSlot + event.duration
                     })
 
+                    // Check if any of the events in this slot are blocked
+                    const isBlocked = eventBlocks.some((event) => {
+                      const slotIndex = (hour - 8) * 2 + (minute >= 30 ? 1 : 0)
+                      return (
+                        event.status === "blocked" &&
+                        slotIndex >= event.startSlot &&
+                        slotIndex < event.startSlot + event.duration
+                      )
+                    })
+
                     return (
                       <div
                         key={`${hour}-${minute}`}
                         className={`h-12 border-b border-gray-100 transition-colors duration-150 ${
-                          hasEvent ? "cursor-not-allowed" : "hover:bg-purple-50 cursor-pointer"
+                          isBlocked
+                            ? "bg-red-100 cursor-not-allowed border-red-200"
+                            : hasEvent
+                              ? "cursor-not-allowed"
+                              : "hover:bg-purple-50 cursor-pointer"
                         }`}
                         onClick={() => !hasEvent && handleSlotClick(day, hour, minute)}
-                      />
+                      >
+                        {isBlocked && (
+                          <div className="flex items-center justify-center h-full">
+                            <Lock className="h-3 w-3 text-red-500" />
+                          </div>
+                        )}
+                      </div>
                     )
                   })}
-
                   {/* Event blocks */}
                   {eventBlocks.map((event) => (
                     <div
                       key={event.id}
-                      className={`absolute left-1 right-1 rounded-md border shadow-sm cursor-pointer transition-all duration-200 ${statusColors[event.status]}`}
+                      className={`absolute left-1 right-1 rounded-md border shadow-sm cursor-pointer transition-all duration-200 ${
+                        event.status === "blocked" ? "bg-red-600 border-red-700" : statusColors[event.status]
+                      }`}
                       style={{
                         top: `${event.top}px`,
                         height: `${event.height}px`,
@@ -505,7 +545,16 @@ export default function CalendarComponent({
                       onMouseLeave={handleMouseLeave}
                     >
                       <div className="p-2 h-full flex flex-col justify-between overflow-hidden">
-                        <div className="font-medium text-xs text-white truncate">{event.title}</div>
+                        <div className="font-medium text-xs text-white truncate">
+                          {event.status === "blocked" ? (
+                            <div className="flex items-center">
+                              <Lock className="h-3 w-3 mr-1" />
+                              {event.reason || "BLOCKED"}
+                            </div>
+                          ) : (
+                            event.title
+                          )}
+                        </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             {event.staff.profilePicUrl ? (
@@ -571,14 +620,12 @@ export default function CalendarComponent({
     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
     const startDate = new Date(firstDayOfMonth)
     startDate.setDate(startDate.getDate() - firstDayOfMonth.getDay())
-
     const days = []
     for (let i = 0; i < 42; i++) {
       const day = new Date(startDate)
       day.setDate(startDate.getDate() + i)
       days.push(day)
     }
-
     return (
       <div className="flex flex-col h-full" onMouseLeave={handleMouseLeave}>
         {/* Weekday Headers */}
@@ -589,7 +636,6 @@ export default function CalendarComponent({
             </div>
           ))}
         </div>
-
         {/* Calendar Grid */}
         <div className="flex-1 grid grid-cols-7 gap-0">
           {days.map((day) => {
@@ -597,12 +643,15 @@ export default function CalendarComponent({
             const isCurrentMonth = day.getMonth() === currentDate.getMonth()
             const isToday = day.toDateString() === new Date().toDateString()
 
+            // Check if there are any blocked events for this day
+            const hasBlockedEvents = dayEvents.some((event) => event.status === "blocked")
+
             return (
               <div
                 key={day.toISOString()}
                 className={`p-1.5 border-r border-b border-gray-200 hover:bg-purple-50 cursor-pointer transition-colors duration-150 ${
                   !isCurrentMonth ? "bg-gray-50 text-gray-400" : "bg-white"
-                } ${isToday ? "bg-blue-50" : ""}`}
+                } ${isToday ? "bg-blue-50" : ""} ${hasBlockedEvents ? "bg-red-50" : ""}`}
                 onClick={() => handleSlotClick(day, 9, 0)}
               >
                 <div
@@ -618,7 +667,9 @@ export default function CalendarComponent({
                   {dayEvents.slice(0, 3).map((event) => (
                     <div
                       key={event.id}
-                      className={`p-1 rounded text-xs cursor-pointer hover:shadow-md transition-all duration-200 ${statusLightColors[event.status]} border`}
+                      className={`p-1 rounded text-xs cursor-pointer hover:shadow-md transition-all duration-200 ${
+                        event.status === "blocked" ? "bg-red-50 border-red-200" : statusLightColors[event.status]
+                      } border`}
                       onClick={(e) => {
                         e.stopPropagation()
                         onSelectEvent(event)
@@ -626,7 +677,20 @@ export default function CalendarComponent({
                       onMouseEnter={(e) => handleEventHover(event, e)}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className={`font-medium truncate ${statusTextColors[event.status]}`}>{event.title}</div>
+                      <div
+                        className={`font-medium truncate ${
+                          event.status === "blocked" ? "text-red-600" : statusTextColors[event.status]
+                        }`}
+                      >
+                        {event.status === "blocked" ? (
+                          <div className="flex items-center">
+                            <Lock className="h-3 w-3 mr-1" />
+                            {event.reason || "BLOCKED"}
+                          </div>
+                        ) : (
+                          event.title
+                        )}
+                      </div>
                       <div className="flex items-center mt-1">
                         {event.staff.profilePicUrl ? (
                           <Image
@@ -667,7 +731,11 @@ export default function CalendarComponent({
                             <User className="h-2 w-2 text-gray-600" />
                           </div>
                         )}
-                        <span className={`text-xs truncate ${statusTextColors[event.status]}`}>
+                        <span
+                          className={`text-xs truncate ${
+                            event.status === "blocked" ? "text-red-600" : statusTextColors[event.status]
+                          }`}
+                        >
                           {event.staff?.name?.split(" ")[0] || "Staff"}
                         </span>
                       </div>
@@ -721,7 +789,6 @@ export default function CalendarComponent({
                 : currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
           </h2>
         </div>
-
         <div className="flex items-center space-x-2">
           {/* Status Legend */}
           <div className="hidden md:flex items-center space-x-3 mr-4">
@@ -730,6 +797,7 @@ export default function CalendarComponent({
               pending: "Pending",
               cancelled: "Cancelled",
               completed: "Completed",
+              blocked: "Blocked",
             }).map(([status, label]) => (
               <div key={status} className="flex items-center">
                 <div
@@ -739,7 +807,6 @@ export default function CalendarComponent({
               </div>
             ))}
           </div>
-
           {/* View Toggle */}
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
             {["day", "week", "month"].map((viewType) => (
@@ -756,13 +823,11 @@ export default function CalendarComponent({
           </div>
         </div>
       </div>
-
       {/* Calendar Content */}
       <div className="flex-1 overflow-hidden relative">
         {view === "day" && renderDayView()}
         {view === "week" && renderWeekView()}
         {view === "month" && renderMonthView()}
-
         {/* Event Tooltip */}
         {hoveredEvent && (
           <div
@@ -773,9 +838,15 @@ export default function CalendarComponent({
             }}
           >
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-medium text-gray-900">{hoveredEvent.title}</h3>
+              <h3 className="font-medium text-gray-900">
+                {hoveredEvent.status === "blocked" ? "🔒 Blocked Time" : hoveredEvent.title}
+              </h3>
               <span
-                className={`text-xs px-2 py-1 rounded-full ${statusLightColors[hoveredEvent.status]} ${statusTextColors[hoveredEvent.status]}`}
+                className={`text-xs px-2 py-1 rounded-full ${
+                  hoveredEvent.status === "blocked"
+                    ? "bg-red-50 text-red-600"
+                    : `${statusLightColors[hoveredEvent.status]} ${statusTextColors[hoveredEvent.status]}`
+                }`}
               >
                 {hoveredEvent.status.charAt(0).toUpperCase() + hoveredEvent.status.slice(1)}
               </span>
@@ -784,12 +855,17 @@ export default function CalendarComponent({
               <Clock className="h-4 w-4 mr-2 text-gray-400" />
               {formatTime(new Date(hoveredEvent.start))} - {formatTime(new Date(hoveredEvent.end))}
             </div>
-            <div className="text-sm text-gray-700 mb-1">
-              <span className="font-medium">Customer:</span> {hoveredEvent.customer?.name || "N/A"}
-            </div>
+            {hoveredEvent.status === "blocked" ? (
+              <div className="text-sm text-gray-700 mb-1">
+                <span className="font-medium">Reason:</span> {hoveredEvent.reason || "Time blocked by admin"}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-700 mb-1">
+                <span className="font-medium">Customer:</span> {hoveredEvent.customer?.name || "N/A"}
+              </div>
+            )}
           </div>
         )}
-
         {/* Staff Tooltip */}
         {hoveredStaff && (
           <div

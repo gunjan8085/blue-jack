@@ -1,19 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import {
-  CalendarIcon,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  Search,
-  Plus,
-  Edit,
-  CheckCircle,
-  XCircle,
-  Lock,
-  Loader2,
-} from "lucide-react"
+import { CalendarIcon, Clock, User, Search, Plus, Edit, Lock, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +18,7 @@ import { format, parseISO } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import CalendarComponent from "./Calender"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // Types for API response
 interface Customer {
@@ -72,7 +60,11 @@ interface Appointment {
   customer: Customer
   date: string
   time: string
-  status: "pending" | "confirmed" | "cancelled" | "completed"
+  status: "pending" | "confirmed" | "completed" | "cancelled" | "blocked"
+  reason?: string
+  duration?: number
+  startTime?: string
+  endTime?: string
   createdAt: string
   updatedAt: string
 }
@@ -109,6 +101,7 @@ interface CalendarEvent {
   service?: Service
   customer: Customer
   staff: Staff
+  reason?: string
 }
 
 export default function AppointmentsPage() {
@@ -129,7 +122,7 @@ export default function AppointmentsPage() {
   const [isCreatingAppointment, setIsCreatingAppointment] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isListViewOpen, setIsListViewOpen] = useState(false)
-
+  const [blockConflictMessage, setBlockConflictMessage] = useState<string | null>(null)
   const [newAppointment, setNewAppointment] = useState({
     customer: { name: "", email: "", phone: "", notes: "" },
     service: "",
@@ -137,7 +130,6 @@ export default function AppointmentsPage() {
     date: "",
     time: "",
   })
-
   const [blockDetails, setBlockDetails] = useState({
     reason: "",
     staff: "",
@@ -153,7 +145,6 @@ export default function AppointmentsPage() {
       setError(null)
       const businessProfile = localStorage.getItem("businessProfile")
       if (!businessProfile) throw new Error("Business profile not found")
-
       const business = JSON.parse(businessProfile)
       const businessId = business._id
       const token = localStorage.getItem("token")
@@ -212,16 +203,22 @@ export default function AppointmentsPage() {
         return "bg-blue-100 text-blue-800 border-blue-200"
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-200"
+      case "blocked":
+        return "bg-red-100 text-red-800 border-red-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
   const filteredAppointments = appointments.filter((appointment) => {
+    // Add null checks to prevent undefined errors
+    const customerName = appointment?.customer?.name || ""
+    const serviceName = appointment?.service?.title || "Service"
+    const staffName = appointment?.staff?.name || ""
     const matchesSearch =
-      appointment.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (appointment.service?.title || "Service").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appointment.staff.name.toLowerCase().includes(searchQuery.toLowerCase())
+      customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      staffName.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
     const matchesDate = dateFilter === "all" || appointment.date === dateFilter
@@ -248,7 +245,6 @@ export default function AppointmentsPage() {
 
       // Refresh data to get latest status
       await fetchData()
-
       toast({
         title: "Success",
         description: `Appointment status changed to ${newStatus}`,
@@ -266,34 +262,57 @@ export default function AppointmentsPage() {
     }
   }
 
-  // Add this helper function at the top of your component
+  // Helper function to format time for API
   const formatTimeForAPI = (timeString: string) => {
     if (!timeString) return ""
-
     // Ensure the time is in HH:mm format
     const timeParts = timeString.split(":")
     if (timeParts.length !== 2) return timeString
-
     const hours = timeParts[0].padStart(2, "0")
     const minutes = timeParts[1].padStart(2, "0")
-
     return `${hours}:${minutes}`
   }
 
-  // Updated handleCreateAppointment function
+  // Helper function to calculate end time
+  const calculateEndTime = (startTime: string, durationMinutes: number): string => {
+    const [hours, minutes] = startTime.split(":").map(Number)
+    const startDate = new Date()
+    startDate.setHours(hours, minutes, 0, 0)
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
+    return `${endDate.getHours().toString().padStart(2, "0")}:${endDate.getMinutes().toString().padStart(2, "0")}`
+  }
+
+  // Check if a time slot is blocked
+  const isTimeSlotBlocked = (staffId: string, date: string, startTime: string, endTime: string): boolean => {
+    return events.some((event) => {
+      if (event.status !== "blocked" || event.resourceId !== staffId) return false
+
+      const eventDate = new Date(event.start).toDateString()
+      const selectedDate = new Date(`${date}T${startTime}`).toDateString()
+      if (eventDate !== selectedDate) return false
+
+      const eventStart = new Date(event.start)
+      const eventEnd = new Date(event.end)
+      const selectedStart = new Date(`${date}T${startTime}`)
+      const selectedEnd = new Date(`${date}T${endTime}`)
+
+      return selectedStart < eventEnd && selectedEnd > eventStart
+    })
+  }
+
+  // Updated handleCreateAppointment function with block conflict handling
   const handleCreateAppointment = async () => {
     console.log("🚀 handleCreateAppointment function called")
     console.log("📋 Current form data:", newAppointment)
+    // Clear any previous block conflict messages
+    setBlockConflictMessage(null)
 
     try {
       setIsCreatingAppointment(true)
-
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Auth token not found")
-
       const businessProfile = localStorage.getItem("businessProfile")
       if (!businessProfile) throw new Error("Business profile not found")
-
       const business = JSON.parse(businessProfile)
 
       // Format and validate time
@@ -334,6 +353,23 @@ export default function AppointmentsPage() {
         return
       }
 
+      // Get service duration for end time calculation
+      const selectedService = services.find((s) => s._id === newAppointment.service)
+      const serviceDuration = selectedService?.duration || 60
+      const endTime = calculateEndTime(formattedTime, serviceDuration)
+
+      // Check if the selected time slot is blocked
+      if (isTimeSlotBlocked(newAppointment.staff, formattedDate, formattedTime, endTime)) {
+        setBlockConflictMessage("This time slot is blocked. No appointments can be booked.")
+        toast({
+          title: "Time Slot Blocked",
+          description: "This time is blocked. No appointments can be booked.",
+          variant: "destructive",
+          duration: 5000,
+        })
+        return
+      }
+
       const payload = {
         customer: {
           name: newAppointment.customer.name.trim(),
@@ -358,13 +394,25 @@ export default function AppointmentsPage() {
 
       const data = await res.json()
 
+      // Handle block conflict (409 status)
+      if (res.status === 409) {
+        const errorMessage = data.message || "This time slot is blocked. No appointments can be booked."
+        setBlockConflictMessage(errorMessage)
+        toast({
+          title: "Time Slot Blocked",
+          description: "This time is blocked. No appointments can be booked.",
+          variant: "destructive",
+          duration: 5000,
+        })
+        return
+      }
+
       if (!res.ok) {
         throw new Error(data.message || "Failed to create appointment")
       }
 
       // Close the dialog first
       setIsCreateDialogOpen(false)
-
       // Reset form
       setNewAppointment({
         customer: { name: "", email: "", phone: "", notes: "" },
@@ -396,24 +444,53 @@ export default function AppointmentsPage() {
     }
   }
 
+  // Updated handleBlockTime function with correct API endpoint
   const handleBlockTime = async () => {
     try {
       setIsBlockingTime(true)
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Auth token not found")
-
       const businessProfile = localStorage.getItem("businessProfile")
       if (!businessProfile) throw new Error("Business profile not found")
-
       const business = JSON.parse(businessProfile)
 
-      const payload = {
-        ...blockDetails,
-        status: "blocked",
-        notes: blockDetails.reason,
+      // Validate required fields
+      if (!blockDetails.staff || !blockDetails.date || !blockDetails.time) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields",
+          variant: "destructive",
+        })
+        return
       }
 
-      const res = await fetch(`${API_URL}/appointments/${business._id}/block`, {
+      // Format times
+      const startTime = formatTimeForAPI(blockDetails.time)
+      const endTime = calculateEndTime(startTime, blockDetails.duration)
+
+      // Check if time slot is already blocked
+      if (isTimeSlotBlocked(blockDetails.staff, blockDetails.date, startTime, endTime)) {
+        toast({
+          title: "Error",
+          description: "Time slot is already blocked",
+          variant: "destructive",
+          duration: 5000,
+        })
+        return
+      }
+
+      const payload = {
+        staffId: blockDetails.staff,
+        date: blockDetails.date,
+        startTime: startTime,
+        endTime: endTime,
+        reason: blockDetails.reason || "Time blocked by admin",
+      }
+
+      console.log("🔒 Blocking time with payload:", payload)
+
+      // Updated API endpoint to match your specification
+      const res = await fetch(`${API_URL}/appointments/appointments/${business._id}/staff/${blockDetails.staff}/block`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -422,47 +499,90 @@ export default function AppointmentsPage() {
         body: JSON.stringify(payload),
       })
 
-      if (!res.ok) throw new Error("Failed to block time")
+      const data = await res.json()
 
-      toast({
-        title: "Success",
-        description: "Time blocked successfully",
-      })
+      if (!res.ok) {
+        // Handle specific error cases
+        if (res.status === 409) {
+          toast({
+            title: "Error",
+            description: "Time slot is already blocked",
+            variant: "destructive",
+            duration: 5000,
+          })
+          return
+        }
+        throw new Error(data.message || "Failed to block time")
+      }
 
-      setIsBlockDialogOpen(false)
-      setBlockDetails({
-        reason: "",
-        staff: "",
-        date: "",
-        time: "",
-        duration: 60,
-      })
+      // Success response handling
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: data.message || "Time blocked successfully",
+          duration: 3000,
+        })
 
-      // Refresh data to show blocked time
-      await fetchData()
+        setIsBlockDialogOpen(false)
+        setBlockDetails({
+          reason: "",
+          staff: "",
+          date: "",
+          time: "",
+          duration: 60,
+        })
+
+        // Refresh data to show blocked time
+        await fetchData()
+      } else {
+        throw new Error(data.message || "Failed to block time")
+      }
     } catch (err: any) {
+      console.error("💥 Error blocking time:", err)
       toast({
         title: "Error",
         description: "Failed to block time: " + err.message,
         variant: "destructive",
+        duration: 5000,
       })
     } finally {
       setIsBlockingTime(false)
     }
   }
 
-  const events = appointments.map((apt) => ({
-    id: apt._id,
-    title: `${apt.customer.name} - ${apt.service?.title || "Service"}`,
-    start: new Date(`${apt.date}T${apt.time}`),
-    end: new Date(new Date(`${apt.date}T${apt.time}`).getTime() + (apt.service?.duration || 30) * 60000),
-    resourceId: apt.staff._id,
-    ...apt,
-  }))
+  // Updated events mapping to handle blocked slots properly
+  const events = appointments
+    .filter((apt) => apt?.customer || apt?.status === "blocked") // Allow blocked events without customers
+    .map((apt) => {
+      // For blocked appointments, use startTime and endTime if available
+      let startDate: Date
+      let endDate: Date
+
+      if (apt.status === "blocked" && apt.startTime && apt.endTime) {
+        startDate = new Date(`${apt.date}T${apt.startTime}`)
+        endDate = new Date(`${apt.date}T${apt.endTime}`)
+      } else {
+        startDate = new Date(`${apt.date}T${apt.time}`)
+        endDate = new Date(startDate.getTime() + (apt.service?.duration || apt.duration || 30) * 60000)
+      }
+
+      return {
+        ...apt, // Move spread operator first
+        id: apt._id,
+        title:
+          apt.status === "blocked"
+            ? "🔒 BLOCKED"
+            : `${apt.customer?.name || "Unknown"} - ${apt.service?.title || "Service"}`,
+        start: startDate,
+        end: endDate,
+        resourceId: apt.staff._id,
+        status: apt.status,
+        reason: apt.reason,
+      }
+    })
 
   const resources = staffMembers
-    .filter((staff) => staff.jobTitle !== "Owner")
-    // Only include employees
+    .filter((staff) => staff?.jobTitle !== "Owner" && staff?._id && staff?.name)
     .map((staff) => ({
       resourceId: staff._id,
       resourceTitle: staff.name,
@@ -470,6 +590,23 @@ export default function AppointmentsPage() {
     }))
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date; resourceId?: string }) => {
+    // Check if the selected slot is blocked
+    if (slotInfo.resourceId) {
+      const slotDate = slotInfo.start.toISOString().split("T")[0]
+      const slotStartTime = slotInfo.start.toTimeString().slice(0, 5)
+      const slotEndTime = slotInfo.end.toTimeString().slice(0, 5)
+
+      if (isTimeSlotBlocked(slotInfo.resourceId, slotDate, slotStartTime, slotEndTime)) {
+        toast({
+          title: "Time Slot Blocked",
+          description: "This time slot is blocked and unavailable for booking.",
+          variant: "destructive",
+          duration: 3000,
+        })
+        return
+      }
+    }
+
     setSelectedTimeSlot({
       start: slotInfo.start,
       end: slotInfo.end,
@@ -529,6 +666,7 @@ export default function AppointmentsPage() {
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="blocked">Blocked</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={dateFilter} onValueChange={setDateFilter}>
@@ -549,286 +687,185 @@ export default function AppointmentsPage() {
             </Card>
           )}
 
-          {/* Appointments Tabs */}
-          <Tabs defaultValue="list" className="w-[84vw] overflow-scroll">
-            <TabsList className="grid w-full grid-cols-2 max-w-xs bg-white">
-              <TabsTrigger value="list" onClick={() => setIsListViewOpen(true)}>
-                List View
-              </TabsTrigger>
-              <TabsTrigger value="calendar" onClick={() => setIsListViewOpen(false)}>
-                Calendar View
-              </TabsTrigger>
+          <Tabs defaultValue="calendar" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+              <TabsTrigger value="list">List View</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="list" className="space-y-4">
-              {loading ? (
-                <div className="flex justify-center items-center h-64">
-                  <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+            <TabsContent value="calendar" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(true)}
+                    className="bg-white hover:bg-gray-50"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Appointment
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsBlockDialogOpen(true)}
+                    className="bg-white  border-red-200 text-red-700 hover:bg-red-50"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Block Time
+                  </Button>
                 </div>
-              ) : filteredAppointments.length === 0 ? (
-                <Card className="border-0 shadow-sm">
-                  <CardContent className="p-8 text-center">
-                    <CalendarIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No appointments found</h3>
-                    <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
-                    <Button
-                      className="bg-gradient-to-r from-purple-600 to-purple-700"
-                      onClick={() => setIsCreateDialogOpen(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Appointment
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredAppointments.map((appointment) => (
+              </div>
+
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-0">
+                  <div className="h-[600px]">
+                    <CalendarComponent
+                      events={events}
+                      resources={resources}
+                      onSelectEvent={handleSelectEvent}
+                      onSelectSlot={handleSelectSlot}
+                      loading={loading}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="list" className="space-y-4">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Input
+                          placeholder="Search appointments..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="blocked">Blocked</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={dateFilter} onValueChange={setDateFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by date" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Dates</SelectItem>
+                        {Array.from(new Set(appointments.map((apt) => apt.date))).map((date) => (
+                          <SelectItem key={date} value={date}>
+                            {format(parseISO(date), "MMM dd, yyyy")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid gap-4">
+                {filteredAppointments.map((appointment) => (
                   <Card key={appointment._id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback>
-                              {appointment.customer.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                          <Avatar className="h-12 w-12">
+                            <AvatarFallback
+                              className={
+                                appointment.status === "blocked"
+                                  ? "bg-red-100 text-red-600"
+                                  : "bg-purple-100 text-purple-600"
+                              }
+                            >
+                              {appointment.status === "blocked" ? (
+                                <Lock className="h-6 w-6" />
+                              ) : (
+                                appointment.customer?.name?.charAt(0) || "U"
+                              )}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="text-base font-semibold text-gray-900">{appointment.customer.name}</h3>
-                            <p className="text-purple-600 font-medium text-sm">
-                              {appointment.service?.title || "Service"}
-                            </p>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 mt-1">
-                              <span className="flex items-center">
-                                <User className="h-3 w-3 mr-1" />
-                                {appointment.staff.name}
-                              </span>
-                              <span className="flex items-center">
-                                <CalendarIcon className="h-3 w-3 mr-1" />
-                                {format(parseISO(appointment.date), "MMM dd, yyyy")}
-                              </span>
-                              <span className="flex items-center">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {appointment.time}
-                              </span>
+                            <h3 className="font-semibold text-gray-900">
+                              {appointment.status === "blocked"
+                                ? "🔒 Blocked Time"
+                                : appointment.customer?.name || "Unknown Customer"}
+                            </h3>
+                            <div className="flex items-center text-sm text-gray-600 mt-1">
+                              <CalendarIcon className="h-4 w-4 mr-1" />
+                              {format(parseISO(appointment.date), "MMM dd, yyyy")}
+                              <Clock className="h-4 w-4 ml-3 mr-1" />
+                              {appointment.status === "blocked" && appointment.startTime && appointment.endTime
+                                ? `${appointment.startTime} - ${appointment.endTime}`
+                                : appointment.time}
                             </div>
+                            {appointment.status === "blocked" ? (
+                              <p className="text-sm text-red-600 mt-1">
+                                Reason: {appointment.reason || "Time blocked by admin"}
+                              </p>
+                            ) : (
+                              <div className="flex items-center text-sm text-gray-600 mt-1">
+                                <User className="h-4 w-4 mr-1" />
+                                {appointment.staff?.name}
+                                <span className="mx-2">•</span>
+                                {appointment.service?.title || "Service"}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="flex flex-col md:flex-row md:items-center gap-3">
-                          <Badge className={cn("text-xs", getStatusColor(appointment.status))}>
-                            {appointment.status}
+                        <div className="flex items-center space-x-3">
+                          <Badge className={cn("border", getStatusColor(appointment.status))}>
+                            {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                           </Badge>
-                          <div className="flex gap-2">
-                            {appointment.status === "pending" && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleStatusChange(appointment._id, "confirmed")}
-                                  className="text-green-600 border-green-200 hover:bg-green-50 h-8"
-                                  disabled={isUpdatingStatus}
-                                >
-                                  {isUpdatingStatus ? (
-                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                  ) : (
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                  )}
-                                  Confirm
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleStatusChange(appointment._id, "cancelled")}
-                                  className="text-red-600 border-red-200 hover:bg-red-50 h-8"
-                                  disabled={isUpdatingStatus}
-                                >
-                                  <XCircle className="h-3 w-3 mr-1" />
-                                  Cancel
-                                </Button>
-                              </>
-                            )}
-                            {appointment.status === "confirmed" && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleStatusChange(appointment._id, "completed")}
-                                className="bg-gradient-to-r from-purple-600 to-purple-700 h-8"
-                                disabled={isUpdatingStatus}
-                              >
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Complete
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 bg-transparent"
-                              onClick={() => {
-                                setSelectedAppointment(appointment)
-                                setIsEditDialogOpen(true)
-                              }}
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Details
-                            </Button>
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedAppointment(appointment)
+                              setIsEditDialogOpen(true)
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </div>
-                      {appointment.customer.notes && (
-                        <div className="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                          <strong>Notes:</strong> {appointment.customer.notes}
-                        </div>
-                      )}
-                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-                        <span className="flex items-center">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {appointment.customer.phone}
-                        </span>
-                        <span className="flex items-center">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {appointment.customer.email}
-                        </span>
                       </div>
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="calendar" className="space-y-4">
-              <Card className="border border-gray-100 shadow-sm rounded-lg overflow-hidden">
-                <CardContent className="p-0">
-                  <CalendarComponent
-                    events={events}
-                    resources={resources}
-                    onSelectEvent={handleSelectEvent}
-                    onSelectSlot={handleSelectSlot}
-                    loading={loading}
-                  />
-                </CardContent>
-              </Card>
+                ))}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Appointment Details Modal */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Appointment Details</DialogTitle>
-            </DialogHeader>
-            {selectedAppointment && (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback>
-                      {selectedAppointment.customer.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-lg font-semibold">{selectedAppointment.customer.name}</h3>
-                    <Badge className={cn("mt-1", getStatusColor(selectedAppointment.status))}>
-                      {selectedAppointment.status}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground">Service</Label>
-                    <p className="text-sm font-medium">{selectedAppointment.service?.title || "N/A"}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground">Staff</Label>
-                    <p className="text-sm font-medium">{selectedAppointment.staff.name}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground">Date</Label>
-                    <p className="text-sm font-medium">{format(parseISO(selectedAppointment.date), "PPP")}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground">Time</Label>
-                    <p className="text-sm font-medium">{selectedAppointment.time}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground">Phone</Label>
-                    <p className="text-sm font-medium">{selectedAppointment.customer.phone || "N/A"}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-muted-foreground">Email</Label>
-                    <p className="text-sm font-medium">{selectedAppointment.customer.email || "N/A"}</p>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground">Notes</Label>
-                  <div className="p-3 rounded-md border bg-muted/50 text-sm">
-                    {selectedAppointment.customer.notes || "No notes provided"}
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-4">
-                  {selectedAppointment.status === "pending" && (
-                    <>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          handleStatusChange(selectedAppointment._id, "confirmed")
-                          setIsEditDialogOpen(false)
-                        }}
-                        className="text-green-600 border-green-200 hover:bg-green-50"
-                        disabled={isUpdatingStatus}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Confirm
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          handleStatusChange(selectedAppointment._id, "cancelled")
-                          setIsEditDialogOpen(false)
-                        }}
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                        disabled={isUpdatingStatus}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Cancel
-                      </Button>
-                    </>
-                  )}
-                  {selectedAppointment.status === "confirmed" && (
-                    <Button
-                      onClick={() => {
-                        handleStatusChange(selectedAppointment._id, "completed")
-                        setIsEditDialogOpen(false)
-                      }}
-                      className="bg-gradient-to-r from-purple-600 to-purple-700"
-                      disabled={isUpdatingStatus}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Mark as Completed
-                    </Button>
-                  )}
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                    Close
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Create Appointment Modal */}
+        {/* Create Appointment Dialog */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Create New Appointment</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Customer Name *</Label>
+            <div className="grid gap-4 py-4">
+              {blockConflictMessage && (
+                <Alert className="border-red-200 bg-red-50">
+                  <Lock className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-700">{blockConflictMessage}</AlertDescription>
+                </Alert>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="customer-name">Customer Name *</Label>
                   <Input
+                    id="customer-name"
                     value={newAppointment.customer.name}
                     onChange={(e) =>
                       setNewAppointment({
@@ -839,24 +876,10 @@ export default function AppointmentsPage() {
                     placeholder="Enter customer name"
                   />
                 </div>
-                <div>
-                  <Label>Customer Email</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="customer-phone">Phone Number *</Label>
                   <Input
-                    type="email"
-                    value={newAppointment.customer.email}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        customer: { ...newAppointment.customer, email: e.target.value },
-                      })
-                    }
-                    placeholder="Enter customer email"
-                  />
-                </div>
-                <div>
-                  <Label>Customer Phone *</Label>
-                  <Input
-                    type="tel"
+                    id="customer-phone"
                     value={newAppointment.customer.phone}
                     onChange={(e) =>
                       setNewAppointment({
@@ -864,29 +887,46 @@ export default function AppointmentsPage() {
                         customer: { ...newAppointment.customer, phone: e.target.value },
                       })
                     }
-                    placeholder="Enter customer phone"
+                    placeholder="Enter phone number"
                   />
                 </div>
-                <div>
-                  <Label>Service *</Label>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="customer-email">Email</Label>
+                <Input
+                  id="customer-email"
+                  type="email"
+                  value={newAppointment.customer.email}
+                  onChange={(e) =>
+                    setNewAppointment({
+                      ...newAppointment,
+                      customer: { ...newAppointment.customer, email: e.target.value },
+                    })
+                  }
+                  placeholder="Enter email address"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="service">Service *</Label>
                   <Select
                     value={newAppointment.service}
                     onValueChange={(value) => setNewAppointment({ ...newAppointment, service: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a service" />
+                      <SelectValue placeholder="Select service" />
                     </SelectTrigger>
                     <SelectContent>
                       {services.map((service) => (
                         <SelectItem key={service._id} value={service._id}>
-                          {service.title} ({service.duration} mins) - ${service.price}
+                          {service.title} - ${service.price} ({service.duration}min)
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Staff *</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="staff">Staff Member *</Label>
                   <Select
                     value={newAppointment.staff}
                     onValueChange={(value) => setNewAppointment({ ...newAppointment, staff: value })}
@@ -897,76 +937,56 @@ export default function AppointmentsPage() {
                     <SelectContent>
                       {staffMembers.map((staff) => (
                         <SelectItem key={staff._id} value={staff._id}>
-                          {staff.name}
+                          {staff.name} - {staff.jobTitle}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Date *</Label>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="date">Date *</Label>
                   <Input
+                    id="date"
                     type="date"
-                    value={
-                      newAppointment.date >= new Date().toISOString().split("T")[0]
-                        ? newAppointment.date
-                        : format(new Date(), "yyyy-MM-dd")
-                    }
+                    value={newAppointment.date}
                     onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
-                    min={format(new Date(), "yyyy-MM-dd")}
                   />
                 </div>
-                <div>
-                  <Label>Time *</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="time">Time *</Label>
                   <Input
+                    id="time"
                     type="time"
                     value={newAppointment.time}
                     onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
                   />
                 </div>
               </div>
-              <div>
-                <Label>Notes</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="notes">Notes</Label>
                 <Textarea
-                  value={newAppointment.customer.notes || ""}
+                  id="notes"
+                  value={newAppointment.customer.notes}
                   onChange={(e) =>
                     setNewAppointment({
                       ...newAppointment,
                       customer: { ...newAppointment.customer, notes: e.target.value },
                     })
                   }
-                  rows={3}
-                  placeholder="Any special requests or notes..."
+                  placeholder="Additional notes..."
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setIsCreateDialogOpen(false)
-                }}
-                type="button"
-                disabled={isCreatingAppointment}
-              >
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                className="bg-gradient-to-r from-purple-600 to-purple-700"
-                onClick={(e) => {
-                  console.log("🔘 Create button clicked!")
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleCreateAppointment()
-                }}
-                type="button"
-                disabled={isCreatingAppointment}
-              >
+              <Button onClick={handleCreateAppointment} disabled={isCreatingAppointment}>
                 {isCreatingAppointment ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...
                   </>
                 ) : (
@@ -977,152 +997,228 @@ export default function AppointmentsPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Time Slot Action Modal */}
-        <Dialog open={!!selectedTimeSlot} onOpenChange={(open) => !open && setSelectedTimeSlot(null)}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Time Slot Actions</DialogTitle>
-            </DialogHeader>
-            {selectedTimeSlot && (
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Selected Time Slot</h4>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>
-                      <strong>Date:</strong> {format(selectedTimeSlot.start, "PPP")}
-                    </p>
-                    <p>
-                      <strong>Time:</strong> {format(selectedTimeSlot.start, "p")} - {format(selectedTimeSlot.end, "p")}
-                    </p>
-                    <p>
-                      <strong>Staff:</strong>{" "}
-                      {staffMembers.find((s) => s._id === selectedTimeSlot.staffId)?.name || "Unknown"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      setNewAppointment({
-                        ...newAppointment,
-                        staff: selectedTimeSlot.staffId,
-                        date: format(selectedTimeSlot.start, "yyyy-MM-dd"),
-                        time: format(selectedTimeSlot.start, "HH:mm"),
-                      })
-                      setSelectedTimeSlot(null)
-                      setIsCreateDialogOpen(true)
-                    }}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Book Appointment
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setBlockDetails({
-                        ...blockDetails,
-                        staff: selectedTimeSlot.staffId,
-                        date: format(selectedTimeSlot.start, "yyyy-MM-dd"),
-                        time: format(selectedTimeSlot.start, "HH:mm"),
-                        duration: Math.floor(
-                          (selectedTimeSlot.end.getTime() - selectedTimeSlot.start.getTime()) / 60000,
-                        ),
-                      })
-                      setSelectedTimeSlot(null)
-                      setIsBlockDialogOpen(true)
-                    }}
-                    className="flex-1"
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    Block Time
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Block Time Modal */}
+        {/* Block Time Dialog */}
         <Dialog open={isBlockDialogOpen} onOpenChange={setIsBlockDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
-              <DialogTitle>Block Time Slot</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5 text-red-600" />
+                Block Time Slot
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Staff</Label>
-                  <Select
-                    value={blockDetails.staff}
-                    onValueChange={(value) => setBlockDetails({ ...blockDetails, staff: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select staff" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {staffMembers.map((staff) => (
-                        <SelectItem key={staff._id} value={staff._id}>
-                          {staff.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Duration (minutes)</Label>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="block-reason">Reason</Label>
+                <Input
+                  id="block-reason"
+                  value={blockDetails.reason}
+                  onChange={(e) => setBlockDetails({ ...blockDetails, reason: e.target.value })}
+                  placeholder="Reason for blocking (optional)"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="block-staff">Staff Member *</Label>
+                <Select
+                  value={blockDetails.staff}
+                  onValueChange={(value) => setBlockDetails({ ...blockDetails, staff: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select staff member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {staffMembers.map((staff) => (
+                      <SelectItem key={staff._id} value={staff._id}>
+                        {staff.name} - {staff.jobTitle}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="block-date">Date *</Label>
                   <Input
-                    type="number"
-                    value={blockDetails.duration}
-                    onChange={(e) =>
-                      setBlockDetails({
-                        ...blockDetails,
-                        duration: Number.parseInt(e.target.value) || 60,
-                      })
-                    }
-                    min="15"
-                    step="15"
-                  />
-                </div>
-                <div>
-                  <Label>Date</Label>
-                  <Input
+                    id="block-date"
                     type="date"
                     value={blockDetails.date}
                     onChange={(e) => setBlockDetails({ ...blockDetails, date: e.target.value })}
-                    min={format(new Date(), "yyyy-MM-dd")}
                   />
                 </div>
-                <div>
-                  <Label>Time</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="block-time">Start Time *</Label>
                   <Input
+                    id="block-time"
                     type="time"
                     value={blockDetails.time}
                     onChange={(e) => setBlockDetails({ ...blockDetails, time: e.target.value })}
                   />
                 </div>
               </div>
-              <div>
-                <Label>Reason for blocking</Label>
-                <Textarea
-                  value={blockDetails.reason}
-                  onChange={(e) => setBlockDetails({ ...blockDetails, reason: e.target.value })}
-                  rows={3}
-                  placeholder="Break, maintenance, personal time, etc."
-                />
+              <div className="grid gap-2">
+                <Label htmlFor="block-duration">Duration (minutes) *</Label>
+                <Select
+                  value={blockDetails.duration.toString()}
+                  onValueChange={(value) => setBlockDetails({ ...blockDetails, duration: Number.parseInt(value) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="120">2 hours</SelectItem>
+                    <SelectItem value="180">3 hours</SelectItem>
+                    <SelectItem value="240">4 hours</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+              {blockDetails.staff && blockDetails.date && blockDetails.time && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-700">
+                    <strong>Preview:</strong> This will block{" "}
+                    {staffMembers.find((s) => s._id === blockDetails.staff)?.name}'s schedule from {blockDetails.time}{" "}
+                    to {calculateEndTime(blockDetails.time, blockDetails.duration)} on{" "}
+                    {format(parseISO(blockDetails.date), "MMM dd, yyyy")}
+                  </p>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsBlockDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                className="bg-gradient-to-r from-red-600 to-red-700"
-                onClick={handleBlockTime}
-                disabled={isBlockingTime}
-              >
-                {isBlockingTime ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Lock className="h-4 w-4 mr-2" />}
-                Block Time
+              <Button onClick={handleBlockTime} disabled={isBlockingTime} className="bg-red-600 hover:bg-red-700">
+                {isBlockingTime ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Blocking...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="mr-2 h-4 w-4" />
+                    Block Time
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Appointment Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedAppointment?.status === "blocked" ? "🔒 Blocked Time Details" : "Appointment Details"}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedAppointment && (
+              <div className="grid gap-4 py-4">
+                {selectedAppointment.status === "blocked" ? (
+                  <>
+                    <div className="grid gap-2">
+                      <Label>Reason</Label>
+                      <p className="text-sm text-gray-600 p-2 bg-red-50 border border-red-200 rounded">
+                        {selectedAppointment.reason || "Time blocked by admin"}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label>Staff Member</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.staff?.name}</p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Duration</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.duration || 60} minutes</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label>Date</Label>
+                        <p className="text-sm text-gray-600">
+                          {format(parseISO(selectedAppointment.date), "MMM dd, yyyy")}
+                        </p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Time</Label>
+                        <p className="text-sm text-gray-600">
+                          {selectedAppointment.startTime && selectedAppointment.endTime
+                            ? `${selectedAppointment.startTime} - ${selectedAppointment.endTime}`
+                            : selectedAppointment.time}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label>Customer</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.customer?.name}</p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Phone</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.customer?.phone}</p>
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Email</Label>
+                      <p className="text-sm text-gray-600">{selectedAppointment.customer?.email || "Not provided"}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label>Service</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.service?.title}</p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Staff</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.staff?.name}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label>Date</Label>
+                        <p className="text-sm text-gray-600">
+                          {format(parseISO(selectedAppointment.date), "MMM dd, yyyy")}
+                        </p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Time</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.time}</p>
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Status</Label>
+                      <Select
+                        value={selectedAppointment.status}
+                        onValueChange={(value) => handleStatusChange(selectedAppointment._id, value)}
+                        disabled={isUpdatingStatus}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {selectedAppointment.customer?.notes && (
+                      <div className="grid gap-2">
+                        <Label>Notes</Label>
+                        <p className="text-sm text-gray-600">{selectedAppointment.customer.notes}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Close
               </Button>
             </DialogFooter>
           </DialogContent>

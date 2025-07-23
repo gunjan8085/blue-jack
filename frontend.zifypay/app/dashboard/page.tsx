@@ -92,12 +92,12 @@ const BusinessDashboard = () => {
     filtered.sort((a, b) => {
       switch (sortOption) {
         case "time-asc":
-          const timeA = a.time.split(":").map(Number)
-          const timeB = b.time.split(":").map(Number)
+          const timeA = (a.time || "00:00").split(":").map(Number)
+          const timeB = (b.time || "00:00").split(":").map(Number)
           return timeA[0] - timeB[0] || timeA[1] - timeB[1]
         case "time-desc":
-          const timeA2 = a.time.split(":").map(Number)
-          const timeB2 = b.time.split(":").map(Number)
+          const timeA2 = (a.time || "00:00").split(":").map(Number)
+          const timeB2 = (b.time || "00:00").split(":").map(Number)
           return timeB2[0] - timeA2[0] || timeB2[1] - timeA2[1]
         case "name-asc":
           return (a.customer?.name || "").localeCompare(b.customer?.name || "")

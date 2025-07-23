@@ -1,6 +1,10 @@
 const router = require("express").Router();
 const appointController = require("../controllers/appoint.controller");
 
+
+// Block time slot route
+router.post("/appointments/:businessId/staff/:staffId/block", appointController.blockTimeSlot);
+
 // GET /api/v1/appointments/user?userId=...
 router.get("/user", appointController.getAppointmentsForUser);
 // POST /api/v1/appointments/:businessId/create

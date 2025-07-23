@@ -630,6 +630,18 @@ const createAppointmentByBusiness = async (req, res, next) => {
     const trimmedDate = date.trim();
     const trimmedTime = time.trim();
 
+    const blockedSlot = await Appoint.findOne({
+      staff,
+      date: trimmedDate,
+      startTime: { $lte: trimmedTime },
+      endTime: { $gte: trimmedTime },
+      status: "blocked",
+    });
+
+    if (blockedSlot) {
+      return res.status(409).json({ success: false, message: "This slot is blocked." });
+    }
+
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
@@ -758,6 +770,66 @@ const createAppointmentByBusiness = async (req, res, next) => {
     return res.status(500).json({
       success: false,
       message: err.message || "Something went wrong while creating appointment.",
+    });
+  }
+};
+
+const blockTimeSlot = async (req, res, next) => {
+  try {
+    const { businessId, staffId } = req.params;
+    const { date, startTime, endTime, reason } = req.body;
+
+    // Validate required fields
+    if (!date || !startTime || !endTime || !reason) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+    if (!dateRegex.test(date)) {
+      return res.status(400).json({ success: false, message: "Invalid date format (expected YYYY-MM-DD)" });
+    }
+
+    if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+      return res.status(400).json({ success: false, message: "Invalid time format (expected HH:mm)" });
+    }
+
+    // Check for overlapping appointments
+    const existingBlocked = await Appoint.findOne({
+      staff: staffId,
+      date,
+      status: "blocked",
+      startTime: { $lt: endTime },
+      endTime: { $gt: startTime }, // Check if the time range overlaps
+    });
+
+    if (existingBlocked) {
+      return res.status(409).json({ success: false, message: "Time slot is already blocked." });
+    }
+
+    // Create the blocked time slot
+    const block = await Appoint.create({
+      business: businessId,
+      staff: staffId,
+      date,
+      startTime,
+      endTime,
+      reason,
+      status: "blocked",
+      type: "block",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Time slot blocked successfully.",
+      data: block,
+    });
+  } catch (err) {
+    console.error("🔥 Block time slot error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Something went wrong while blocking time slot.",
     });
   }
 };
@@ -1558,5 +1630,6 @@ module.exports = {
   createAppointmentByBusiness,
   getBookedTimesForEmployee,
   getBusinessAnalytics,
-  checkAvailability
+  checkAvailability,
+  blockTimeSlot
 };
