@@ -143,7 +143,8 @@ export default function SignupPage() {
               {/* Profile Picture */}
               <div className="w-42 rounded-xl bordar-2 border-gray-600">
                 <label className="block text-xs font-semibold text-gray-700 mb-1 text-center">
-                  Profile Picture
+                  Profile Picture{" "}
+                  <span className="text-gray-400 text-xs">(optional)</span>
                 </label>
                 <div className="flex items-center justify-center gap-2">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-200 bg-white shadow-sm">
@@ -159,7 +160,8 @@ export default function SignupPage() {
                       />
                     ) : (
                       <div className="flex items-center justify-center w-full h-full text-gray-400">
-                        <UploadCloud className="w-5 h-5" />
+                        {/* <UploadCloud className="w-5 h-5" /> */}
+                        <img src="/profile.jpg" alt="" />
                       </div>
                     )}
                   </div>
