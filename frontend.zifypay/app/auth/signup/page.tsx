@@ -60,10 +60,7 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.profileImage) {
-      setError("Profile image is required.");
-      return;
-    }
+    // Removed profile image required check
     if (imageUploading) {
       setError("Please wait for image to finish uploading.");
       return;
@@ -172,7 +169,8 @@ export default function SignupPage() {
               </div>
               <div className="w-42 rounded-md border-2 px-2 py-2 bg-blue/10">
                 <label className="block text-xs font-semibold   mb-1 text-center ">
-                  Profile Image <span className="text-red-500">*</span>
+                  Profile Image{" "}
+                  <span className="text-gray-400 text-xs">(optional)</span>
                 </label>
                 <div className="flex items-center justify-center gap-2">
                   <div className="relative w-12 h-12 rounded-full bg-gray-100 overflow-hidden border border-gray-200 shadow-sm">
@@ -187,9 +185,7 @@ export default function SignupPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400 text-xs">
-                        Avatar
-                      </div>
+                      <img src="/profile.jpg" alt="" />
                     )}
                   </div>
                   <button
