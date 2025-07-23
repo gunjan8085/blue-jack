@@ -234,7 +234,7 @@ function Footer() {
                 </Link>
               ))}
             </div>
-            <p className="text-gray-400 text-sm">&copy; 2025 zifypay.com. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">&copy; 2025 zifypay.com All rights reserved.</p>
           </div>
         </div>
       </div>
