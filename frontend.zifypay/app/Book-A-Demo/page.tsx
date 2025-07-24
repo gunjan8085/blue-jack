@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/landingPage/Navbar";
+import Navbar from "../list-your-business/Navbar";
 export default function Home() {
   const [isHovered, setIsHovered] = useState(false);
 

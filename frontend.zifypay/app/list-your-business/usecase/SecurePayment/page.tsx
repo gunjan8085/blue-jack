@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link"
 import React, { useRef, useEffect } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import Navbar from "../../Navbar";
@@ -57,12 +57,16 @@ export default function FuelPumps() {
           </p>
 
           <div className="mt-6 flex gap-4">
-            <button className="rounded-xl bg-blue-500 px-6 py-3 text-sm md:text-base font-semibold hover:bg-blue-600 transition">
-              Book a Demo
-            </button>
-            <button className="rounded-xl border border-white/40 bg-white/10 backdrop-blur-md px-6 py-3 text-sm md:text-base font-semibold hover:bg-white/20 transition">
-              Learn More
-            </button>
+            <Link href="/Book-A-Demo">
+              <button className="rounded-xl bg-blue-500 px-6 py-3 text-sm md:text-base font-semibold hover:bg-blue-600 transition">
+                Book a Demo
+              </button>
+            </Link>
+            <Link href="/auth/login">
+              <button className="rounded-xl border border-white/40 bg-white/10 backdrop-blur-md px-6 py-3 text-sm md:text-base font-semibold hover:bg-white/20 transition">
+                Get Started
+              </button>
+            </Link>
           </div>
 
           <p className="text-xs text-gray-400 mt-6 w-96 hidden md:block">
@@ -308,19 +312,15 @@ export default function FuelPumps() {
       </section>
       {/* <Bendo /> */}
       <section className="min-h-screen flex flex-col justify-center items-center py-12 px-4 md:px-20 bg-gradient-to-r from-[#001A39] to-[#001433]">
-        <div className="flex flex-col md:flex-row items-center w-full max-w-7xl gap-12">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-12 max-w-7xl mx-auto">
           {/* Left: Hexagon Image */}
           <div className="relative flex-1 flex justify-center items-center min-w-[320px] min-h-[320px]">
             {/* Large Hexagon */}
             <div className="w-72 h-72 md:w-96 md:h-96 relative z-10">
-              <svg viewBox="0 0 200 200" className="absolute w-full h-full">
-                <polygon
-                  points="100,10 190,55 190,145 100,190 10,145 10,55"
-                  fill="#0d1a2f"
-                  stroke="#fff"
-                  strokeWidth="4"
-                />
-              </svg>
+              <svg
+                viewBox="0 0 200 200"
+                className="absolute w-full h-full"
+              ></svg>
               <Image
                 src="/lock.png"
                 alt="Secure Payment"
@@ -389,12 +389,6 @@ export default function FuelPumps() {
                 </div>
               </div>
             </div>
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition"
-              style={{ fontFamily: "'Proxima Nova', sans-serif" }}
-            >
-              Know Details
-            </button>
           </div>
         </div>
       </section>

@@ -117,12 +117,12 @@ const HeroSection = () => {
 
           {/* Action Buttons */}
           <div className="mt-8 flex gap-4 flex-wrap justify-center md:justify-start">
-            <Link href="#get-started">
+            <Link href="/auth/login">
               <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-md">
                 Get Started
               </button>
             </Link>
-            <Link href="#learn-more">
+            <Link href="/Book-A-Demo">
               <button className="border border-white hover:bg-white hover:text-blue-900 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-md">
                 Learn More
               </button>
@@ -193,154 +193,155 @@ const HeroSection = () => {
           <div className="flex items-center gap-3 mb-4"></div>
         </div>
         {/* Right: Application Form */}
-          <form
-      onSubmit={handleSubmit}
-      className="flex-1 max-w-xl bg-white/10 rounded-2xl p-8 shadow-lg backdrop-blur-md border border-white/20 grid grid-cols-1 md:grid-cols-2 gap-4 text-white"
-    >
-      <input
-        name="firstName"
-        value={form.firstName}
-        onChange={handleChange}
-        placeholder="First Name *"
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
-      />
-      <input
-        name="lastName"
-        value={form.lastName}
-        onChange={handleChange}
-        placeholder="Last Name *"
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
-      />
-      <input
-        name="businessName"
-        value={form.businessName}
-        onChange={handleChange}
-        placeholder="Business Name *"
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none md:col-span-2"
-      />
-      <input
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        type="email"
-        placeholder="Email Address *"
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
-      />
-      <input
-        name="phone"
-        value={form.phone}
-        onChange={handleChange}
-        placeholder="+1 Business Phone *"
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
-      />
-      <input
-        name="mobile"
-        value={form.mobile}
-        onChange={handleChange}
-        placeholder="+1 Mobile Phone *"
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
-      />
-      <select
-        name="industry"
-        value={form.industry}
-        onChange={handleChange}
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none"
-      >
-        <option value="" disabled>
-          Industry*
-        </option>
-        <option>Retail</option>
-        <option>Restaurant</option>
-        <option>Healthcare</option>
-        <option>Other</option>
-      </select>
-      <select
-        name="timeInBusiness"
-        value={form.timeInBusiness}
-        onChange={handleChange}
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none"
-      >
-        <option value="" disabled>
-          Time in Business*
-        </option>
-        <option>Less than 1 year</option>
-        <option>1-2 years</option>
-        <option>3-5 years</option>
-        <option>5+ years</option>
-      </select>
-      <select
-        name="annualSales"
-        value={form.annualSales}
-        onChange={handleChange}
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none"
-      >
-        <option value="" disabled>
-          Annual Sales*
-        </option>
-        <option>Under $100K</option>
-        <option>$100K-$500K</option>
-        <option>$500K-$1M</option>
-        <option>$1M+</option>
-      </select>
-      <select
-        name="product"
-        value={form.product}
-        onChange={handleChange}
-        required
-        className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none md:col-span-2"
-      >
-        <option value="" disabled>
-          Product*
-        </option>
-        <option>Term Loan</option>
-        <option>Line of Credit</option>
-        <option>Equipment Financing</option>
-        <option>Other</option>
-      </select>
-      <div className="md:col-span-2 flex items-center gap-2 mt-2">
-        <input
-          type="checkbox"
-          id="terms"
-          name="agreedToTerms"
-          checked={form.agreedToTerms}
-          onChange={handleChange}
-          required
-          className="accent-blue-600 w-4 h-4"
-        />
-        <label htmlFor="terms" className="text-xs text-white">
-          By checking this checkbox I agree to the terms of use, privacy policy
-          as well as receiving SMS, email and phone communication.
-        </label>
-      </div>
+        <form
+          id="apply"
+          onSubmit={handleSubmit}
+          className="flex-1 max-w-xl bg-white/10 rounded-2xl p-8 shadow-lg backdrop-blur-md border border-white/20 grid grid-cols-1 md:grid-cols-2 gap-4 text-white"
+        >
+          <input
+            name="firstName"
+            value={form.firstName}
+            onChange={handleChange}
+            placeholder="First Name *"
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
+          />
+          <input
+            name="lastName"
+            value={form.lastName}
+            onChange={handleChange}
+            placeholder="Last Name *"
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
+          />
+          <input
+            name="businessName"
+            value={form.businessName}
+            onChange={handleChange}
+            placeholder="Business Name *"
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none md:col-span-2"
+          />
+          <input
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            type="email"
+            placeholder="Email Address *"
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
+          />
+          <input
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="+1 Business Phone *"
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
+          />
+          <input
+            name="mobile"
+            value={form.mobile}
+            onChange={handleChange}
+            placeholder="+1 Mobile Phone *"
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black placeholder-gray-500 outline-none"
+          />
+          <select
+            name="industry"
+            value={form.industry}
+            onChange={handleChange}
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none"
+          >
+            <option value="" disabled>
+              Industry*
+            </option>
+            <option>Retail</option>
+            <option>Restaurant</option>
+            <option>Healthcare</option>
+            <option>Other</option>
+          </select>
+          <select
+            name="timeInBusiness"
+            value={form.timeInBusiness}
+            onChange={handleChange}
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none"
+          >
+            <option value="" disabled>
+              Time in Business*
+            </option>
+            <option>Less than 1 year</option>
+            <option>1-2 years</option>
+            <option>3-5 years</option>
+            <option>5+ years</option>
+          </select>
+          <select
+            name="annualSales"
+            value={form.annualSales}
+            onChange={handleChange}
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none"
+          >
+            <option value="" disabled>
+              Annual Sales*
+            </option>
+            <option>Under $100K</option>
+            <option>$100K-$500K</option>
+            <option>$500K-$1M</option>
+            <option>$1M+</option>
+          </select>
+          <select
+            name="product"
+            value={form.product}
+            onChange={handleChange}
+            required
+            className="rounded-lg px-4 py-3 bg-white/80 text-black outline-none md:col-span-2"
+          >
+            <option value="" disabled>
+              Product*
+            </option>
+            <option>Term Loan</option>
+            <option>Line of Credit</option>
+            <option>Equipment Financing</option>
+            <option>Other</option>
+          </select>
+          <div className="md:col-span-2 flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="terms"
+              name="agreedToTerms"
+              checked={form.agreedToTerms}
+              onChange={handleChange}
+              required
+              className="accent-blue-600 w-4 h-4"
+            />
+            <label htmlFor="terms" className="text-xs text-white">
+              By checking this checkbox I agree to the terms of use, privacy
+              policy as well as receiving SMS, email and phone communication.
+            </label>
+          </div>
 
-      <button
-        type="submit"
-        className="md:col-span-2 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-4 rounded-full shadow-lg transition-all"
-        disabled={loading}
-      >
-        {loading ? "Submitting..." : "Apply Now"}
-      </button>
+          <button
+            type="submit"
+            className="md:col-span-2 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-4 rounded-full shadow-lg transition-all"
+            disabled={loading}
+          >
+            {loading ? "Submitting..." : "Apply Now"}
+          </button>
 
-      {submitted && (
-        <p className="md:col-span-2 text-green-300 text-sm mt-2">
-          ✅ Application submitted successfully!
-        </p>
-      )}
-      {error && (
-        <p className="md:col-span-2 text-red-400 text-sm mt-2">
-          ❌ {error}
-        </p>
-      )}
-    </form>
+          {submitted && (
+            <p className="md:col-span-2 text-green-300 text-sm mt-2">
+              ✅ Application submitted successfully!
+            </p>
+          )}
+          {error && (
+            <p className="md:col-span-2 text-red-400 text-sm mt-2">
+              ❌ {error}
+            </p>
+          )}
+        </form>
       </section>
 
       {/* Built to grow with you Feature Section */}
@@ -475,9 +476,9 @@ const HeroSection = () => {
           </div>
 
           {/* Right: Apply Now Button */}
-          <a href="#loan-application" className="flex-shrink-0 ">
+          <a href="#apply" className="flex-shrink-0 ">
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg md:text-xl px-8 py-3 rounded-full transition-all">
-              Apply Now
+              Apply now
             </button>
           </a>
         </div>
@@ -502,9 +503,11 @@ const HeroSection = () => {
             terms, and the lowest interest. We're available to explain every
             step of the process from applications to your re-payment schedule!
           </p>
-          <button className="bg-[#001433] text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg hover:bg-[#00254d] transition-all">
-            Speak With An Advisor
-          </button>
+          <Link href = "/Book-A-Demo">
+            <button className="bg-[#001433] text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg hover:bg-[#00254d] transition-all">
+              Book A Demo
+            </button>
+          </Link>
         </div>
 
         {/* Right: Illustration */}

@@ -2,6 +2,7 @@ import React from "react";
 import { ContainerAnimated, ContainerStagger } from "./galllery";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import Link from "next/link"
 
 export type AboutDemoSectionProps = {
   subtitle: string;
@@ -45,13 +46,15 @@ export const AboutDemoSection: React.FC<AboutDemoSectionProps> = ({
                 </p>
               </ContainerAnimated>
               <ContainerAnimated>
-                <Button
-                  className={`px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-all duration-300 ${buttonColor}`}
-                  onClick={onButtonClick}
-                  aria-label={buttonText}
-                >
-                  {buttonText}
-                </Button>
+                <Link href="/Book-A-Demo">
+                  <Button
+                    className={`px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-all duration-300 ${buttonColor}`}
+                    onClick={onButtonClick}
+                    aria-label={buttonText}
+                  >
+                    {buttonText}
+                  </Button>
+                </Link>
               </ContainerAnimated>
             </ContainerStagger>
 

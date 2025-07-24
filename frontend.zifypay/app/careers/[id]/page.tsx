@@ -217,7 +217,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-blue-400" />
                   <span>
-                    {job.salaryRange.currency === 'INR' ? '₹' : '$'}
+                    {job.salaryRange.currency === 'INR' ? '$' : '$'}
                     {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
                   </span>
                 </div>
