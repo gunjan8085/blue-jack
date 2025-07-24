@@ -7,6 +7,7 @@ import React, {
   useCallback,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TrustpilotWidget from "./trust";
 
 // Icons (replacing react-icons for simplicity)
 const ArrowLeft = ({ size = 24, color = "#fff" }) => (
@@ -570,18 +571,26 @@ const CircularTestimonials: React.FC<CircularTestimonialsProps> = ({
 // Exported Wrapper Component
 export default function Testimonial() {
   return (
-    <div
-      className="bg-gradient-to-r from-[#001A39] to-[#001433] min-h-screen flex flex-col items-center justify-center text-white"
-      style={{
-        fontFamily:
-          "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      }}
-    >
-      <div className="w-full max-w-7xl px-4 md:px-32">
-        <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold mt-24  md:mb-10 text-white text-center md:text-center">
-          What Our Customers Are Saying
-        </h1>
-        <CircularTestimonials testimonials={testimonials} autoplay={true} />
+    <div>
+      <div
+        className="bg-gradient-to-r from-[#001A39] to-[#001433] min-h-screen flex flex-col items-center justify-center text-white"
+        style={{
+          fontFamily:
+            "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        }}
+      >
+        <div className="w-full max-w-7xl px-4 md:px-32">
+          <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold mt-24  md:mb-10 text-white text-center md:text-center">
+            What Our Customers Are Saying
+          </h1>
+          <div className="flex items-center justify-center  w-full">
+            <CircularTestimonials testimonials={testimonials} autoplay={true} />
+          </div>
+          <div className="justify-center mb-12">
+            {" "}
+            <TrustpilotWidget />
+          </div>
+        </div>
       </div>
     </div>
   );
