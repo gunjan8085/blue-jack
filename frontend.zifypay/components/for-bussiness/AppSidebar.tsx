@@ -76,8 +76,11 @@ const sidebarItems = [
     title : "Payments",
     url: "/dashboard/payments",
     icon: CreditCard,
-  }
- 
+  },
+  {title:"Settings",
+    url:"/dashboard/settings",
+    icon:Settings,
+  },
 ]
 
 export default function AppSidebar() {
