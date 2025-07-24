@@ -79,7 +79,7 @@ const BusinessPage = () => {
   const fetchBusinesses = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest("/business/getAllBusiness");
+      const data = await apiRequest("/business/with-status");
       setBusinesses(data.data);
     } catch (err) {
       setError("Failed to fetch businesses");
