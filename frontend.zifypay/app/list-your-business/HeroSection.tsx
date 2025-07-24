@@ -50,7 +50,7 @@ const HeroSection = () => {
               placeholder="What's your work email?"
               className="bg-transparent flex-1 text-white placeholder-white/70 text-sm md:text-base outline-none px-2 py-2"
               value={email}
-              onChange={e => {
+              onChange={(e) => {
                 setEmail(e.target.value);
                 localStorage.setItem("signupEmail", e.target.value);
               }}
@@ -59,11 +59,13 @@ const HeroSection = () => {
               className="ml-2 bg-white text-black text-sm md:text-base font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition"
               onClick={() => {
                 if (email) {
-                  router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
+                  router.push(
+                    `/auth/signup?email=${encodeURIComponent(email)}`
+                  );
                 }
               }}
             >
-              Get started
+              list your business
             </button>
           </div>
         </div>
