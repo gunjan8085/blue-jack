@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import React, { useRef, useEffect } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import Navbar from "../../Navbar";
@@ -68,12 +68,18 @@ export default function FuelPumps() {
           </p>
 
           <div className="mt-6 flex gap-4">
-            <button className="rounded-xl bg-blue-500 px-6 py-3 text-sm md:text-base font-semibold hover:bg-blue-600 transition">
-              Book a Demo
-            </button>
-            <button className="rounded-xl border border-white/40 bg-white/10 backdrop-blur-md px-6 py-3 text-sm md:text-base font-semibold hover:bg-white/20 transition">
-              Learn More
-            </button>
+            <Link href="/Book-A-Demo">
+              {" "}
+              <button className="rounded-xl bg-blue-500 px-6 py-3 text-sm md:text-base font-semibold hover:bg-blue-600 transition">
+                Book a Demo
+              </button>
+            </Link>
+
+            <Link href="https://pos.zifypay.com/">
+              <button className="rounded-xl border border-white/40 bg-white/10 backdrop-blur-md px-6 py-3 text-sm md:text-base font-semibold hover:bg-white/20 transition">
+                Learn More
+              </button>
+            </Link>
           </div>
 
           <p className="text-xs text-gray-400 mt-6 w-96 hidden md:block">

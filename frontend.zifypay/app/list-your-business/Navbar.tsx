@@ -339,21 +339,24 @@ function Navbar() {
                       <source src="/pay.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
-                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition mt-4 w-full">
-                      Contact for Custom Business
-                    </button>
+                    <Link href="/book-a-demo">
+                      <button className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition mt-4 w-full">
+                             Contact for Custom Business
+                                </button>
+                                  </Link>
+
                   </div>
                 </div>
               </MenuItem>
 
               <div className="flex items-center px-4 gap-2">
-                <Link
+                {/* <Link
                   href="/list-your-business/Pricing"
                   className="text-white transition-colors duration-200 px-4 py-2 text-base md:text-lg font-medium"
                   style={{ fontFamily: "'Proxima Nova', sans-serif" }}
                 >
                   Pricing
-                </Link>
+                </Link> */}
                 <Link
                   href="/careers"
                   className="bg-[#001F4D] text-white font- px-4 py-2 rounded-full shadow hover:bg-[#0a1d36] transition text-sm md:text-base"
@@ -376,7 +379,7 @@ function Navbar() {
               <button className="relative inline-flex h-8 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
                 <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
                 <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-3 py-1 text-sm text-white backdrop-blur-3xl">
-                  Booking engine
+                  Book Services
                 </span>
               </button>
             </a>

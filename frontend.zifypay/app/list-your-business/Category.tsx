@@ -91,10 +91,11 @@ const Category: React.FC<CategoryProps> = ({ title, description, image }) => {
           <p className="text-lg text-gray-300 mb-8">{description}</p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-start z-10">
-            <Link href="booking-engine"></Link>
-            <button className="bg-blue-500 text-white text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:bg-blue-600 transition">
-              Get Started
-            </button>
+            <Link href="/auth/login">
+              <button className="bg-blue-500 text-white text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:bg-blue-600 transition">
+                Get Started
+              </button>
+            </Link>
           </div>
         </motion.div>
 

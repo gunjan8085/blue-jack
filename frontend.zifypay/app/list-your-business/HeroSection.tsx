@@ -65,7 +65,7 @@ const HeroSection = () => {
                 }
               }}
             >
-              list your business
+              List your business
             </button>
           </div>
         </div>

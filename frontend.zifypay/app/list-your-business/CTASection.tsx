@@ -59,7 +59,7 @@ const HeroCardSection = () => {
           in 10 mins or less.
         </div>
         <a
-          href="#"
+          href="/auth/login"
           className="bg-[#1e40af] hover:bg-[#1e3a8a] text-white px-8 py-4 rounded-md shadow-md transition font-bold text-lg"
           style={{ fontFamily: "'Proxima Nova', sans-serif" }}
         >

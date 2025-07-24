@@ -3,6 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
+import  Link  from "next/link";
 
 interface TwoSectionCardProps {
   title?: string;
@@ -104,12 +105,11 @@ function TwoSectionCard({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
-                <button className="px-6 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1e40af] transition-colors w-full sm:w-auto">
-                  Learn More
-                </button>
-                <button className="px-6 py-3 border border-[#9b87f5] text-[#2563EB] rounded-lg font-medium hover:bg-[#f3f4f6] transition-colors w-full sm:w-auto">
-                  Get Started
-                </button>
+                <Link href="/auth/login">
+                  <button className="px-6 py-3 border border-[#9b87f5] text-[#2563EB] rounded-lg font-medium hover:bg-[#f3f4f6] transition-colors w-full sm:w-auto">
+                    Get Started
+                  </button>
+                </Link>
               </motion.div>
             </div>
           </motion.div>
