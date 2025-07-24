@@ -28,6 +28,8 @@ interface LoginResponse {
   message?: string;
 }
 
+import ForgotPassword from "./ForgotPassword";
+
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -36,6 +38,7 @@ export default function LoginPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 useEffect(() => {
   const token = localStorage.getItem('businessProfile');
   if (token) {
@@ -102,9 +105,11 @@ useEffect(() => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row  bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <>
+      {showForgot && <ForgotPassword onClose={() => setShowForgot(false)} />}
+      <div className="h-screen w-full flex flex-col md:flex-row  bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900" style={{ filter: showForgot ? 'blur(2px)' : 'none', pointerEvents: showForgot ? 'none' : 'auto' }}>
       {/* Left: Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center  p-8">
+      <div className="w-full md:w-1/2 flex items-center justify-center  p-8" style={{ filter: showForgot ? 'blur(2px)' : 'none', pointerEvents: showForgot ? 'none' : 'auto' }}>
         <div className="w-full max-w-md">
            <Link href="/" className="absolute ml-5 mt-5 top-4 left-4 text-white hover:underline text-sm">
           ← Back
@@ -175,6 +180,17 @@ useEffect(() => {
             </button>
           </form>
 
+          <div className="mt-3 text-center">
+            <button
+              type="button"
+              className="text-blue-200 hover:text-blue-400 text-sm underline"
+              onClick={() => setShowForgot(true)}
+              disabled={loading}
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           <p className="mt-6 text-center text-white">
             Don't have an account?{" "}
             <Link
@@ -197,5 +213,6 @@ useEffect(() => {
         />
       </div>
     </div>
+    </>
   );
 }

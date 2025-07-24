@@ -228,6 +228,73 @@ const userController = {
       });
     }
   },
+  // Forgot Password - Step 1: Send OTP
+  requestPasswordReset: async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+      user.resetPasswordOTP = otp;
+      user.resetPasswordOTPExpires = expires;
+      await user.save();
+      // Send OTP email (non-blocking)
+      const { sendPasswordResetOTP } = require('../services/mail.service');
+      sendPasswordResetOTP(user.email, user.firstName || user.email.split('@')[0], otp)
+        .catch((err) => console.error('Password reset OTP email error:', err));
+      return res.status(200).json({ success: true, message: 'OTP sent to your email' });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  },
+
+  // Forgot Password - Step 2: Verify OTP
+  verifyPasswordResetOTP: async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+      const user = await User.findOne({ email });
+      if (!user || !user.resetPasswordOTP || !user.resetPasswordOTPExpires)
+        return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
+      if (user.resetPasswordOTP !== otp)
+        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+      if (user.resetPasswordOTPExpires < new Date())
+        return res.status(400).json({ success: false, message: 'OTP expired' });
+      return res.status(200).json({ success: true, message: 'OTP verified' });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  },
+
+  // Forgot Password - Step 3: Reset Password
+  resetPassword: async (req, res) => {
+    try {
+      const { email, otp, newPassword } = req.body;
+      if (!email || !otp || !newPassword)
+        return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
+      const user = await User.findOne({ email });
+      if (!user || !user.resetPasswordOTP || !user.resetPasswordOTPExpires)
+        return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
+      if (user.resetPasswordOTP !== otp)
+        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+      if (user.resetPasswordOTPExpires < new Date())
+        return res.status(400).json({ success: false, message: 'OTP expired' });
+      // Hash new password
+      const saltRounds = 10;
+      const hashedPassword = await require('bcryptjs').hash(newPassword, saltRounds);
+      user.password = hashedPassword;
+      user.resetPasswordOTP = null;
+      user.resetPasswordOTPExpires = null;
+      await user.save();
+      return res.status(200).json({ success: true, message: 'Password reset successful' });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  },
+
   // make a api that handles google login and signup
   
    
