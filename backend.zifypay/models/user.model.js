@@ -42,14 +42,7 @@ const userSchema = new mongoose.Schema(
       ref: "Business",
       default: null,
     },
-    resetPasswordOTP: {
-      type: String,
-      default: null,
-    },
-    resetPasswordOTPExpires: {
-      type: Date,
-      default: null,
-    },
+
   },
   {
     timestamps: true,

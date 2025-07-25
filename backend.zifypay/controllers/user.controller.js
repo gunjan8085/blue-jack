@@ -237,10 +237,9 @@ const userController = {
       if (!user) return res.status(404).json({ success: false, message: 'User not found' });
       // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-      user.resetPasswordOTP = otp;
-      user.resetPasswordOTPExpires = expires;
-      await user.save();
+      // Store OTP in node-cache with 10min TTL
+      const otpCache = require('../services/otpCache');
+      otpCache.set(`otp:${email}`, otp);
       // Send OTP email (non-blocking)
       const { sendPasswordResetOTP } = require('../services/mail.service');
       sendPasswordResetOTP(user.email, user.firstName || user.email.split('@')[0], otp)
@@ -286,9 +285,9 @@ const userController = {
       const saltRounds = 10;
       const hashedPassword = await require('bcryptjs').hash(newPassword, saltRounds);
       user.password = hashedPassword;
-      user.resetPasswordOTP = null;
-      user.resetPasswordOTPExpires = null;
       await user.save();
+      // Remove OTP from node-cache after successful reset
+      otpCache.del(`otp:${email}`);
       return res.status(200).json({ success: true, message: 'Password reset successful' });
     } catch (error) {
       return res.status(500).json({ success: false, message: 'Server error', error: error.message });
