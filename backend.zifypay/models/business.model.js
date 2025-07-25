@@ -16,7 +16,7 @@ const businessSchema = new mongoose.Schema(
     businessType: {
       type: String,
       enum: ["SALON", "SPA", "CLINIC", "STUDIO", "OTHER"],
-      required: true
+      required: true,
     },
     contactEmail: { type: String, required: true },
     contactPhone: { type: String, required: true },
@@ -29,7 +29,7 @@ const businessSchema = new mongoose.Schema(
         description: {
           type: String,
         },
-        hashtags: { 
+        hashtags: {
           type: [String], // example: ["#spa", "#relax"]
           default: [],
         },
@@ -58,7 +58,6 @@ const businessSchema = new mongoose.Schema(
         },
       },
     ],
-
 
     teamSize: {
       min: { type: Number, default: 1 },
@@ -132,25 +131,42 @@ const businessSchema = new mongoose.Schema(
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
     // Subscription & Appointment Tracking
     appointmentCount: { type: Number, default: 0 },
-    subscriptionPlan: { type: mongoose.Schema.Types.ObjectId, ref: "PricingPlan", default: null },
+    subscriptionPlan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PricingPlan",
+      default: null,
+    },
     isActive: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["activated", "deactivated"],
+      default: "deactivated",
+    },
     connectedPaymentAccount: {
-      NAME : { type: String, required: false, default: "NORTH" },
-      CUST_NBR: { type: String, required: false , default: "NA"},
-      MERCH_NBR: { type: String, required: false , default: "NA"},
-      DBA_NBR: { type: String, required: false , default: "NA"},
-      TERMINAL_NBR: { type: String, required: false , default: "NA"},
+      NAME: { type: String, required: false, default: "NORTH" },
+      CUST_NBR: { type: String, required: false, default: "NA" },
+      MERCH_NBR: { type: String, required: false, default: "NA" },
+      DBA_NBR: { type: String, required: false, default: "NA" },
+      TERMINAL_NBR: { type: String, required: false, default: "NA" },
     },
     paymentHistory: [
       {
         transactionId: { type: String, required: true },
         amount: { type: Number, required: true },
         date: { type: Date, default: Date.now },
-        status: { type: String, enum: ["success", "failed", "pending"], default: "pending" },
-        customerName : { type: String, required: true },
+        status: {
+          type: String,
+          enum: ["success", "failed", "pending"],
+          default: "pending",
+        },
+        customerName: { type: String, required: true },
         customerNumber: { type: String, required: true },
         customerEmail: { type: String, required: true },
-        paymentMethod: { type: String, enum: ["card", "bank_transfer", "cash"], default: "card" },
+        paymentMethod: {
+          type: String,
+          enum: ["card", "bank_transfer", "cash"],
+          default: "card",
+        },
       },
     ],
   },
