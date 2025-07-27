@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const businessController = require("../controllers/business.controller");
-const {getAllBusinessesWithStatus,} = require("../controllers/business1.controller");
-
-
+const {
+  getAllBusinessesWithStatus,
+  updateBusinessStatus,
+} = require("../controllers/business1.controller");
 
 router.get("/with-status", getAllBusinessesWithStatus);
 router.post("/signup", businessController.registerNewBusiness);
@@ -12,11 +13,13 @@ router.get("/getAllBusiness", businessController.getAllBusinesses);
 router.get("/getAllBusines", businessController.getAllBusinesses);
 router.get("/by-owner/:ownerId", businessController.getBusinessByOwnerId);
 router.get("/:id", businessController.getBusinessById);
-const { addReviewToBusiness, getBusinessReviews , checkExistingReview } = businessController;
+const { addReviewToBusiness, getBusinessReviews, checkExistingReview } =
+  businessController;
 router.post("/:id/reviews", addReviewToBusiness);
 router.get("/:id/reviews", getBusinessReviews);
-router.get('/:businessId/reviews/check', checkExistingReview);
+router.get("/:businessId/reviews/check", checkExistingReview);
 router.get("/with-status", getAllBusinessesWithStatus);
+router.put("/:id/status", updateBusinessStatus);
 
 // Purchase subscription plan (placeholder, no payment integration yet)
 router.post("/purchase-subscription", businessController.purchaseSubscription);

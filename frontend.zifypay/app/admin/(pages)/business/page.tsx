@@ -7,7 +7,7 @@ import { API_URL } from "@/lib/const";
 interface Business {
   _id: string;
   brandName: string;
-  businessType: string;
+  businessType?: string;
   contactEmail: string;
   contactPhone: string;
   website?: string;
@@ -20,8 +20,9 @@ interface Business {
     country: string;
     pincode: string;
   };
-  isActive: boolean;
-  createdAt: string;
+  isActive?: boolean;
+  status: "activated" | "deactivated";
+  createdAt?: string;
 }
 
 interface AnalyticsData {
@@ -45,6 +46,35 @@ interface AnalyticsData {
   topEmployee: { name: string; appointments: number } | null;
 }
 
+// Toggle Component
+const StatusToggle = ({
+  isActive,
+  onToggle,
+  disabled = false,
+}: {
+  isActive: boolean;
+  onToggle: () => void;
+  disabled?: boolean;
+}) => {
+  return (
+    <button
+      onClick={onToggle}
+      disabled={disabled}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+        isActive
+          ? "bg-green-600 hover:bg-green-500"
+          : "bg-red-600 hover:bg-red-500"
+      } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          isActive ? "translate-x-6" : "translate-x-1"
+        }`}
+      />
+    </button>
+  );
+};
+
 const BusinessPage = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,14 +82,26 @@ const BusinessPage = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState("");
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
+    null
+  );
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
+    null
+  );
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   const getAuthToken = () => {
     return localStorage.getItem("adminToken");
   };
 
-  const apiRequest = async (endpoint: string, options: { headers?: Record<string, string>, method?: string } = {}) => {
+  const apiRequest = async (
+    endpoint: string,
+    options: {
+      headers?: Record<string, string>;
+      method?: string;
+      body?: any;
+    } = {}
+  ) => {
     const token = getAuthToken();
     const headers = {
       "Content-Type": "application/json",
@@ -80,12 +122,32 @@ const BusinessPage = () => {
     try {
       setLoading(true);
       const data = await apiRequest("/business/with-status");
-      setBusinesses(data.data);
+      setBusinesses(data.businesses || data.data || []);
     } catch (err) {
       setError("Failed to fetch businesses");
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateBusinessStatus = async (
+    id: string,
+    status: "activated" | "deactivated"
+  ) => {
+    try {
+      setUpdatingStatus(id);
+      await apiRequest(`/business/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      });
+      setBusinesses((prev) =>
+        prev.map((b) => (b._id === id ? { ...b, status } : b))
+      );
+    } catch (err) {
+      setError("Failed to update status");
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -116,7 +178,12 @@ const BusinessPage = () => {
       {error && (
         <div className="mb-4 p-4 bg-red-900/50 border border-red-700 text-red-200 rounded-lg">
           {error}
-          <button onClick={() => setError("")} className="float-right text-red-400 hover:text-red-200">×</button>
+          <button
+            onClick={() => setError("")}
+            className="float-right text-red-400 hover:text-red-200"
+          >
+            ×
+          </button>
         </div>
       )}
       <div className="flex justify-between items-center mb-8">
@@ -130,30 +197,62 @@ const BusinessPage = () => {
           <p className="mt-2 text-blue-200">Loading businesses...</p>
         </div>
       ) : businesses.length === 0 ? (
-        <div className="text-center py-12 text-blue-200">No businesses found.</div>
+        <div className="text-center py-12 text-blue-200">
+          No businesses found.
+        </div>
       ) : (
         <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl shadow-2xl overflow-x-auto border border-gray-700">
           <table className="w-full">
             <thead className="bg-gray-800">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">Brand</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">Address</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">
+                  Brand
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">
+                  Address
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-blue-300 uppercase tracking-wider">
+                  Toggle Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
               {businesses.map((b) => (
-                <tr key={b._id} className="hover:bg-gray-800/50 transition-colors cursor-pointer" onClick={() => fetchAnalytics(b)}>
+                <tr
+                  key={b._id}
+                  className="hover:bg-gray-800/50 transition-colors cursor-pointer"
+                  onClick={() => fetchAnalytics(b)}
+                >
                   <td className="px-6 py-4 flex items-center gap-3">
                     {b.thumbnail && (
-                      <img src={b.thumbnail} alt={b.brandName} className="w-10 h-10 rounded-full object-cover border border-gray-700" />
+                      <img
+                        src={b.thumbnail}
+                        alt={b.brandName}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-700"
+                      />
                     )}
                     <div>
-                      <div className="font-medium text-white">{b.brandName}</div>
+                      <div className="font-medium text-white">
+                        {b.brandName}
+                      </div>
                       {b.website && (
-                        <a href={b.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">{b.website}</a>
+                        <a
+                          href={b.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-400 hover:underline"
+                        >
+                          {b.website}
+                        </a>
                       )}
                     </div>
                   </td>
@@ -163,13 +262,49 @@ const BusinessPage = () => {
                     <div>{b.contactPhone}</div>
                   </td>
                   <td className="px-6 py-4 text-gray-300">
-                    <div>{b.address.addressLine1}{b.address.addressLine2 ? `, ${b.address.addressLine2}` : ""}</div>
-                    <div>{b.address.city}, {b.address.state}, {b.address.country} - {b.address.pincode}</div>
+                    <div>
+                      {b.address?.addressLine1}
+                      {b.address?.addressLine2
+                        ? `, ${b.address.addressLine2}`
+                        : ""}
+                    </div>
+                    <div>
+                      {b.address?.city}, {b.address?.state},{" "}
+                      {b.address?.country} - {b.address?.pincode}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${b.isActive ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-red-900/50 text-red-300 border-red-700'}`}>
-                      {b.isActive ? 'Active' : 'Inactive'}
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full font-medium ${
+                        b.status === "activated"
+                          ? "bg-green-900/50 text-green-300 border border-green-700"
+                          : "bg-red-900/50 text-red-300 border border-red-700"
+                      }`}
+                    >
+                      {b.status === "activated" ? "Activated" : "Deactivated"}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div
+                      className="flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <StatusToggle
+                        isActive={b.status === "activated"}
+                        disabled={updatingStatus === b._id}
+                        onToggle={() =>
+                          updateBusinessStatus(
+                            b._id,
+                            b.status === "activated"
+                              ? "deactivated"
+                              : "activated"
+                          )
+                        }
+                      />
+                      {updatingStatus === b._id && (
+                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -199,57 +334,151 @@ const BusinessPage = () => {
                 <p className="mt-2 text-blue-200">Loading analytics...</p>
               </div>
             ) : analyticsError ? (
-              <div className="p-4 bg-red-900/50 border border-red-700 text-red-200 rounded-lg">{analyticsError}</div>
+              <div className="p-4 bg-red-900/50 border border-red-700 text-red-200 rounded-lg">
+                {analyticsError}
+              </div>
             ) : analyticsData ? (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Revenue & Appointments */}
                   <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
-                    <div className="font-semibold text-white">Total Revenue</div>
-                    <div className="text-lg text-blue-400 font-bold">${analyticsData.totalRevenue.toLocaleString()}</div>
-                    <div className="font-semibold text-white mt-4">Total Appointments</div>
-                    <div className="text-lg text-gray-300">{analyticsData.totalAppointments}</div>
-                    <div className="font-semibold text-white mt-4">Completed Appointments</div>
-                    <div className="text-lg text-gray-300">{analyticsData.completedAppointments}</div>
-                    <div className="font-semibold text-white mt-4">Cancelled Appointments</div>
-                    <div className="text-lg text-gray-300">{analyticsData.cancelledAppointments}</div>
-                    <div className="font-semibold text-white mt-4">No-show Appointments</div>
-                    <div className="text-lg text-gray-300">{analyticsData.noShowAppointments}</div>
-                    <div className="font-semibold text-white mt-4">Average Appointment Value</div>
-                    <div className="text-lg text-gray-300">{analyticsData.averageAppointmentValue.toFixed(2)}</div>
+                    <div className="font-semibold text-white">
+                      Total Revenue
+                    </div>
+                    <div className="text-lg text-blue-400 font-bold">
+                      ${analyticsData.totalRevenue.toLocaleString()}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Total Appointments
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.totalAppointments}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Completed Appointments
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.completedAppointments}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Cancelled Appointments
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.cancelledAppointments}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      No-show Appointments
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.noShowAppointments}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Average Appointment Value
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.averageAppointmentValue.toFixed(2)}
+                    </div>
                   </div>
                   {/* Dates & Services */}
                   <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
-                    <div className="font-semibold text-white">First Appointment</div>
-                    <div className="text-lg text-gray-300">{analyticsData.firstAppointmentDate ? new Date(analyticsData.firstAppointmentDate).toLocaleString() : '-'}</div>
-                    <div className="font-semibold text-white mt-4">Last Appointment</div>
-                    <div className="text-lg text-gray-300">{analyticsData.lastAppointmentDate ? new Date(analyticsData.lastAppointmentDate).toLocaleString() : '-'}</div>
-                    <div className="font-semibold text-white mt-4">Most Popular Service</div>
-                    <div className="text-lg text-gray-300">{analyticsData.mostPopularService ? `${analyticsData.mostPopularService.name} (${analyticsData.mostPopularService.count} times, $${analyticsData.mostPopularService.revenue})` : '-'}</div>
-                    <div className="font-semibold text-white mt-4">Total Services</div>
-                    <div className="text-lg text-gray-300">{analyticsData.totalServices}</div>
+                    <div className="font-semibold text-white">
+                      First Appointment
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.firstAppointmentDate
+                        ? new Date(
+                            analyticsData.firstAppointmentDate
+                          ).toLocaleString()
+                        : "-"}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Last Appointment
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.lastAppointmentDate
+                        ? new Date(
+                            analyticsData.lastAppointmentDate
+                          ).toLocaleString()
+                        : "-"}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Most Popular Service
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.mostPopularService
+                        ? `${analyticsData.mostPopularService.name} (${analyticsData.mostPopularService.count} times, $${analyticsData.mostPopularService.revenue})`
+                        : "-"}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Total Services
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.totalServices}
+                    </div>
                   </div>
                   {/* Customers */}
                   <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
-                    <div className="font-semibold text-white">Total Customers</div>
-                    <div className="text-lg text-gray-300">{analyticsData.totalCustomers}</div>
-                    <div className="font-semibold text-white mt-4">Top Customer</div>
-                    <div className="text-lg text-gray-300">{analyticsData.topCustomer ? `${analyticsData.topCustomer.email} (${analyticsData.topCustomer.appointments} appointments, $${analyticsData.topCustomer.revenue})` : '-'}</div>
-                    <div className="font-semibold text-white mt-4">Repeat Customer Rate</div>
-                    <div className="text-lg text-gray-300">{(analyticsData.repeatCustomerRate * 100).toFixed(1)}%</div>
+                    <div className="font-semibold text-white">
+                      Total Customers
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.totalCustomers}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Top Customer
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.topCustomer
+                        ? `${analyticsData.topCustomer.email} (${analyticsData.topCustomer.appointments} appointments, $${analyticsData.topCustomer.revenue})`
+                        : "-"}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Repeat Customer Rate
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {(analyticsData.repeatCustomerRate * 100).toFixed(1)}%
+                    </div>
                   </div>
                   {/* Reviews & Employees */}
                   <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 space-y-2">
-                    <div className="font-semibold text-white">Average Review Rating</div>
-                    <div className="text-lg text-gray-300">{analyticsData.averageReviewRating.toFixed(2)} / 5</div>
-                    <div className="font-semibold text-white mt-4">Total Reviews</div>
-                    <div className="text-lg text-gray-300">{analyticsData.totalReviews}</div>
-                    <div className="font-semibold text-white mt-4">Most Recent Review</div>
-                    <div className="text-lg text-gray-300">{analyticsData.recentReview ? `"${analyticsData.recentReview.text}" (${analyticsData.recentReview.rating}★ on ${new Date(analyticsData.recentReview.date).toLocaleString()})` : '-'}</div>
-                    <div className="font-semibold text-white mt-4">Total Employees</div>
-                    <div className="text-lg text-gray-300">{analyticsData.totalEmployees}</div>
-                    <div className="font-semibold text-white mt-4">Top Employee</div>
-                    <div className="text-lg text-gray-300">{analyticsData.topEmployee ? `${analyticsData.topEmployee.name} (${analyticsData.topEmployee.appointments} appointments)` : '-'}</div>
+                    <div className="font-semibold text-white">
+                      Average Review Rating
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.averageReviewRating.toFixed(2)} / 5
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Total Reviews
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.totalReviews}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Most Recent Review
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.recentReview
+                        ? `"${analyticsData.recentReview.text}" (${
+                            analyticsData.recentReview.rating
+                          }★ on ${new Date(
+                            analyticsData.recentReview.date
+                          ).toLocaleString()})`
+                        : "-"}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Total Employees
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.totalEmployees}
+                    </div>
+                    <div className="font-semibold text-white mt-4">
+                      Top Employee
+                    </div>
+                    <div className="text-lg text-gray-300">
+                      {analyticsData.topEmployee
+                        ? `${analyticsData.topEmployee.name} (${analyticsData.topEmployee.appointments} appointments)`
+                        : "-"}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -261,4 +490,4 @@ const BusinessPage = () => {
   );
 };
 
-export default BusinessPage; 
+export default BusinessPage;

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const [activeTab, setActiveTab] = useState('jobs');
+  const [activeTab, setActiveTab] = useState('');
   const router = useRouter();
 
   const handleLogout = () => {
