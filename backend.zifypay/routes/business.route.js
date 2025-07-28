@@ -4,8 +4,10 @@ const businessController = require("../controllers/business.controller");
 const {
   getAllBusinessesWithStatus,
   updateBusinessStatus,
+  getBusinessWithStatusById,
 } = require("../controllers/business1.controller");
 
+router.post("/active-status", getBusinessWithStatusById);
 router.get("/with-status", getAllBusinessesWithStatus);
 router.post("/signup", businessController.registerNewBusiness);
 router.post("/upload-thumbnail", businessController.uploadThumbnail);
