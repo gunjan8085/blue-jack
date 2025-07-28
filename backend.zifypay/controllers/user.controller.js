@@ -256,12 +256,11 @@ const userController = {
       const { email, otp } = req.body;
       if (!email || !otp) return res.status(400).json({ success: false, message: 'Email and OTP are required' });
       const user = await User.findOne({ email });
-      if (!user || !user.resetPasswordOTP || !user.resetPasswordOTPExpires)
-        return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
-      if (user.resetPasswordOTP !== otp)
-        return res.status(400).json({ success: false, message: 'Invalid OTP' });
-      if (user.resetPasswordOTPExpires < new Date())
-        return res.status(400).json({ success: false, message: 'OTP expired' });
+      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+      const otpCache = require('../services/otpCache');
+      const storedOtp = otpCache.get(`otp:${email}`);
+      if (!storedOtp) return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
+      if (storedOtp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
       return res.status(200).json({ success: true, message: 'OTP verified' });
     } catch (error) {
       return res.status(500).json({ success: false, message: 'Server error', error: error.message });
@@ -275,12 +274,11 @@ const userController = {
       if (!email || !otp || !newPassword)
         return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
       const user = await User.findOne({ email });
-      if (!user || !user.resetPasswordOTP || !user.resetPasswordOTPExpires)
-        return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
-      if (user.resetPasswordOTP !== otp)
-        return res.status(400).json({ success: false, message: 'Invalid OTP' });
-      if (user.resetPasswordOTPExpires < new Date())
-        return res.status(400).json({ success: false, message: 'OTP expired' });
+      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+      const otpCache = require('../services/otpCache');
+      const storedOtp = otpCache.get(`otp:${email}`);
+      if (!storedOtp) return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
+      if (storedOtp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
       // Hash new password
       const saltRounds = 10;
       const hashedPassword = await require('bcryptjs').hash(newPassword, saltRounds);
