@@ -273,8 +273,6 @@ const userController = {
       const { email, otp, newPassword } = req.body;
       if (!email || !otp || !newPassword)
         return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
-      const user = await User.findOne({ email });
-      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
       const otpCache = require('../services/otpCache');
       const storedOtp = otpCache.get(`otp:${email}`);
       if (!storedOtp) return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
@@ -282,11 +280,73 @@ const userController = {
       // Hash new password
       const saltRounds = 10;
       const hashedPassword = await require('bcryptjs').hash(newPassword, saltRounds);
-      user.password = hashedPassword;
-      await user.save();
+      let updated = false;
+      let modelUpdated = null;
+      let matchCount = 0;
+      // Try User
+      let user = await User.findOne({ email });
+      if (user) {
+        matchCount++;
+        console.log('[RESET PASSWORD] Matched User model for email:', email);
+        user.password = hashedPassword;
+        try {
+          await user.save();
+          modelUpdated = 'User';
+          updated = true;
+          const updatedUser = await User.findOne({ email });
+          console.log('[RESET PASSWORD] User password updated:', updatedUser.password);
+        } catch (err) {
+          console.error('[RESET PASSWORD] Error saving User password:', err);
+        }
+      }
+      // Try Employee
+      if (!updated) {
+        const Employee = require('../models/employee.model');
+        let employee = await Employee.findOne({ email });
+        if (employee) {
+          matchCount++;
+          console.log('[RESET PASSWORD] Matched Employee model for email:', email);
+          employee.password = hashedPassword;
+          try {
+            await employee.save();
+            modelUpdated = 'Employee';
+            updated = true;
+            const updatedEmp = await Employee.findOne({ email });
+            console.log('[RESET PASSWORD] Employee password updated:', updatedEmp.password);
+          } catch (err) {
+            console.error('[RESET PASSWORD] Error saving Employee password:', err);
+          }
+        }
+      }
+      // Try Business (if business login uses email/password)
+      if (!updated) {
+        const Business = require('../models/business.model');
+        let business = await Business.findOne({ contactEmail: email });
+        if (business && business.password !== undefined) {
+          matchCount++;
+          console.log('[RESET PASSWORD] Matched Business model for email:', email);
+          business.password = hashedPassword;
+          try {
+            await business.save();
+            modelUpdated = 'Business';
+            updated = true;
+            const updatedBiz = await Business.findOne({ contactEmail: email });
+            console.log('[RESET PASSWORD] Business password updated:', updatedBiz.password);
+          } catch (err) {
+            console.error('[RESET PASSWORD] Error saving Business password:', err);
+          }
+        }
+      }
       // Remove OTP from node-cache after successful reset
       otpCache.del(`otp:${email}`);
-      return res.status(200).json({ success: true, message: 'Password reset successful' });
+      if (matchCount > 1) {
+        console.warn('[RESET PASSWORD] WARNING: Multiple accounts found with the same email in different models:', email);
+      }
+      if (updated) {
+        return res.status(200).json({ success: true, message: `Password reset successful for ${modelUpdated}` });
+      } else {
+        return res.status(404).json({ success: false, message: 'User/Employee/Business not found with this email' });
+      }
     } catch (error) {
       return res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
