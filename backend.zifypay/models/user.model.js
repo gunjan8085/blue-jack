@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
       ref: "Business",
       default: null,
     },
+
   },
   {
     timestamps: true,

@@ -152,11 +152,32 @@ const sendAppointmentReminderMail1h = async (to, customerName, businessName, ser
   });
 };
 
+const sendPasswordResetOTP = async (to, name, otp) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;">
+      <h2 style="color: #FF9800;">Password Reset Request</h2>
+      <p>Hello ${name || ''},</p>
+      <p>We received a request to reset your password. Use the OTP below to proceed:</p>
+      <div style="font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0; color: #2196F3;">${otp}</div>
+      <p>This OTP is valid for 10 minutes. If you did not request a password reset, you can safely ignore this email.</p>
+      <hr>
+      <p style="font-size: 12px; color: #888;">This is an automated message from Zifypay.</p>
+    </div>
+  `;
+  await transporter.sendMail({
+    from: `Zifypay <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Password Reset OTP - Zifypay',
+    html,
+  });
+};
+
 module.exports = {
   sendSignupMail,
   sendLoginMail,
   sendAppointmentMail,
   sendAppointmentReminderMail24h,
   sendAppointmentReminderMail1h,
-  sendSignupMailForBussiness
+  sendSignupMailForBussiness,
+  sendPasswordResetOTP
 };

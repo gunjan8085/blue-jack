@@ -228,6 +228,122 @@ const userController = {
       });
     }
   },
+  // Forgot Password - Step 1: Send OTP
+  requestPasswordReset: async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      // Store OTP in node-cache with 10min TTL
+      const otpCache = require('../services/otpCache');
+      otpCache.set(`otp:${email}`, otp);
+      // Send OTP email (non-blocking)
+      const { sendPasswordResetOTP } = require('../services/mail.service');
+      sendPasswordResetOTP(user.email, user.firstName || user.email.split('@')[0], otp)
+        .catch((err) => console.error('Password reset OTP email error:', err));
+      return res.status(200).json({ success: true, message: 'OTP sent to your email' });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  },
+
+  // Forgot Password - Step 2: Verify OTP
+  verifyPasswordResetOTP: async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+      const otpCache = require('../services/otpCache');
+      const storedOtp = otpCache.get(`otp:${email}`);
+      if (!storedOtp) return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
+      if (storedOtp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+      return res.status(200).json({ success: true, message: 'OTP verified' });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  },
+
+  // Forgot Password - Step 3: Reset Password
+  resetPassword: async (req, res) => {
+    try {
+      const { email, otp, newPassword } = req.body;
+      if (!email || !otp || !newPassword)
+        return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
+      const otpCache = require('../services/otpCache');
+      const storedOtp = otpCache.get(`otp:${email}`);
+      if (!storedOtp) return res.status(400).json({ success: false, message: 'No OTP request found for this user' });
+      if (storedOtp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+      // Hash new password
+      const saltRounds = 10;
+      const hashedPassword = await require('bcryptjs').hash(newPassword, saltRounds);
+      let updatedModels = [];
+      let matchCount = 0;
+      // Try User
+      let user = await User.findOne({ email });
+      if (user) {
+        matchCount++;
+        console.log('[RESET PASSWORD] Matched User model for email:', email);
+        user.password = hashedPassword;
+        try {
+          await user.save();
+          updatedModels.push('User');
+          const updatedUser = await User.findOne({ email });
+          console.log('[RESET PASSWORD] User password updated:', updatedUser.password);
+        } catch (err) {
+          console.error('[RESET PASSWORD] Error saving User password:', err);
+        }
+      }
+      // Try Employee
+      const Employee = require('../models/employee.model');
+      let employee = await Employee.findOne({ email });
+      if (employee) {
+        matchCount++;
+        console.log('[RESET PASSWORD] Matched Employee model for email:', email);
+        employee.password = hashedPassword;
+        try {
+          await employee.save();
+          updatedModels.push('Employee');
+          const updatedEmp = await Employee.findOne({ email });
+          console.log('[RESET PASSWORD] Employee password updated:', updatedEmp.password);
+        } catch (err) {
+          console.error('[RESET PASSWORD] Error saving Employee password:', err);
+        }
+      }
+      // Try Business (if business login uses email/password)
+      const Business = require('../models/business.model');
+      let business = await Business.findOne({ contactEmail: email });
+      if (business && business.password !== undefined) {
+        matchCount++;
+        console.log('[RESET PASSWORD] Matched Business model for email:', email);
+        business.password = hashedPassword;
+        try {
+          await business.save();
+          updatedModels.push('Business');
+          const updatedBiz = await Business.findOne({ contactEmail: email });
+          console.log('[RESET PASSWORD] Business password updated:', updatedBiz.password);
+        } catch (err) {
+          console.error('[RESET PASSWORD] Error saving Business password:', err);
+        }
+      }
+      // Remove OTP from node-cache after successful reset
+      otpCache.del(`otp:${email}`);
+      if (matchCount > 1) {
+        console.warn('[RESET PASSWORD] WARNING: Multiple accounts found with the same email in different models:', email);
+      }
+      if (updatedModels.length > 0) {
+        return res.status(200).json({ success: true, message: `Password reset successful for: ${updatedModels.join(', ')}` });
+      } else {
+        return res.status(404).json({ success: false, message: 'User/Employee/Business not found with this email' });
+      }
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  },
+
   // make a api that handles google login and signup
   
    
