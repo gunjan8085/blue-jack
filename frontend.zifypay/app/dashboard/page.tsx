@@ -102,7 +102,7 @@ const BusinessDashboard = () => {
   const [loadingRatings, setLoadingRatings] = useState(true)
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all')
   const [sortOption, setSortOption] = useState<'time-asc' | 'time-desc' | 'name-asc' | 'name-desc'>('time-asc')
-
+  const [isBussinessActive, setIsBussinessActive] = useState<boolean>(false)
   const filteredAppointments = useMemo(() => {
     let filtered = [...todaysAppointments]
 
@@ -158,6 +158,14 @@ const BusinessDashboard = () => {
       setLoadingStats(false)
     }
   }
+  // const getBusinessStatus = async () => {
+  //   try {
+     
+  //    // setIsBussinessActive(data.isActive ?? false)
+  //   } catch (err) {
+  //     setIsBussinessActive(false)
+  //   }
+  // }
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -169,6 +177,7 @@ const BusinessDashboard = () => {
 
   useEffect(() => {
     fetchStats()
+
   }, [])
 
   useEffect(() => {
@@ -404,6 +413,7 @@ const BusinessDashboard = () => {
             </div>
           </div>
         </header>
+        {!isBussinessActive && (<p className="bg-red-300 p-4 rounded-md ml-12 mr-12">  Your bussiness is not activate! Set up your merchant credencials to <Link href="/dashboard/payments" className="underline">activate</Link>.</p>)}
         <div className="flex-1 space-y-6 p-6">
           <div className="flex-1 space-y-6 px-6">
             {/* Stats Cards */}
