@@ -34,86 +34,109 @@ export default function Testimonial() {
 
   return (
     <section
-      className="px-16 w-full min-h-screen py-20 bg-white flex flex-col md:flex-row items-center justify-center gap-8 relative"
+      className="w-full min-h-screen bg-white flex items-center justify-center relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20"
       style={{ fontFamily: "'Proxima Nova', sans-serif" }}
     >
       {/* Blurred Blue Background */}
-      <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-[48px] bg-[#4B5CF0] opacity-80 blur-[100px] z-0" />
-      {/* Left Side */}
-      <div className="flex-1 max-w-lg text-left px-6 z-10 flex flex-col justify-center items-start">
-        <span className="inline-block px-4 py-1 mb-4 rounded-full bg-gray-100 text-gray-700 font-medium text-sm">
-          <span className="inline-flex items-center gap-1">
-            <Star
-              className="w-4 h-4 text-black inline-block"
-              fill="currentColor"
-            />{" "}
-            Trusted by businesses
-          </span>
-        </span>
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-black leading-tight">
-          Loved by the community
-        </h2>
-        <p className="text-lg text-gray-500 mb-8">
-          Don't just take our word for it. See what business owners and
-          entrepreneurs have to say about ZifyPay.
-        </p>
-        <div className="flex gap-2 mt-8">
-          {testimonials.map((_, idx) => (
-            <span
-              key={idx}
-              className={`inline-block w-5 h-2 rounded-full transition-all duration-300 ${
-                active === idx ? "bg-black" : "bg-gray-300"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-      {/* Right Side: Testimonial Card */}
-      <div className="flex-1 flex items-center justify-center px-6 z-10 min-h-[480px]">
-        <div className="relative w-full max-w-xl flex items-center justify-center min-h-[300px]">
-          {testimonials.map((t, idx) => (
-            <div
-              key={idx}
-              className={`absolute inset-0 transition-all duration-700 ease-in-out flex items-center justify-center ${
-                active === idx
-                  ? "opacity-100 scale-100 z-10"
-                  : "opacity-0 scale-95 z-0"
-              }`}
-              aria-hidden={active !== idx}
-            >
-              <div className="bg-white rounded-2xl shadow-xl p-8 min-h-[300px] flex flex-col justify-between relative">
-                <div>
-                  <div className="flex gap-1 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-5 h-5 text-yellow-400"
-                        fill="currentColor"
-                      />
-                    ))}
-                  </div>
-                  <blockquote className="text-xl text-black font-medium leading-relaxed relative mb-6">
-                    <span className="text-3xl text-gray-300 absolute -left-4 top-0 select-none">
-                      “
-                    </span>
-                    {t.text}
-                  </blockquote>
-                </div>
-                <hr className="my-4" />
-                <div className="flex items-center gap-4 mt-2">
-                  <img
-                    src={t.avatar}
-                    alt={t.name}
-                    className="w-12 h-12 rounded-full object-cover border"
-                  />
-                  <div>
-                    <div className="font-semibold text-black">{t.name}</div>
-                    <div className="text-gray-500 text-sm">{t.title}</div>
-                  </div>
-                </div>
-              </div>
+      <div className="hidden lg:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-[48px] bg-[#4B5CF0] opacity-80 blur-[100px] z-0" />
+
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto w-full z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+          {/* Left Side - Text Content */}
+          <div className="flex-1 max-w-lg text-center lg:text-left">
+            <span className="inline-block px-4 py-2 mb-6 rounded-full bg-gray-100 text-gray-700 font-medium text-sm">
+              <span className="inline-flex items-center gap-2">
+                <Star className="w-4 h-4 text-black" fill="currentColor" />
+                Trusted by businesses
+              </span>
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-6 text-black leading-tight">
+              Loved by the community
+            </h2>
+
+            <p className="text-base sm:text-lg text-gray-500 mb-8 leading-relaxed">
+              Don't just take our word for it. See what business owners and
+              entrepreneurs have to say about ZifyPay.
+            </p>
+
+            {/* Navigation Dots */}
+            <div className="flex gap-2 justify-center lg:justify-start">
+              {testimonials.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActive(idx)}
+                  className={`w-5 h-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                    active === idx
+                      ? "bg-black"
+                      : "bg-gray-300 hover:bg-gray-400"
+                  }`}
+                  aria-label={`Go to testimonial ${idx + 1}`}
+                />
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Right Side - Testimonial Card */}
+          <div className="flex-1 w-full max-w-xl">
+            <div className="relative w-full flex items-center justify-center min-h-[320px] sm:min-h-[360px]">
+              {testimonials.map((t, idx) => (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 transition-all duration-700 ease-in-out flex items-center justify-center ${
+                    active === idx
+                      ? "opacity-100 scale-100 z-10"
+                      : "opacity-0 scale-95 z-0"
+                  }`}
+                  aria-hidden={active !== idx}
+                >
+                  <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 w-full min-h-[280px] sm:min-h-[320px] flex flex-col justify-between relative">
+                    {/* Star Rating */}
+                    <div>
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400"
+                            fill="currentColor"
+                          />
+                        ))}
+                      </div>
+
+                      {/* Quote */}
+                      <blockquote className="text-lg sm:text-xl text-black font-medium leading-relaxed relative mb-6">
+                        <span className="text-2xl sm:text-3xl text-gray-300 absolute -left-2 sm:-left-4 -top-1 sm:top-0 select-none">
+                          "
+                        </span>
+                        <span className="block pl-4 sm:pl-6">{t.text}</span>
+                      </blockquote>
+                    </div>
+
+                    {/* Divider */}
+                    <hr className="my-4 border-gray-200" />
+
+                    {/* Author Info */}
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-gray-100"
+                      />
+                      <div>
+                        <div className="font-semibold text-black text-base sm:text-lg">
+                          {t.name}
+                        </div>
+                        <div className="text-gray-500 text-sm sm:text-base">
+                          {t.title}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
