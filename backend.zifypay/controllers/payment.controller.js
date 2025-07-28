@@ -161,7 +161,7 @@ async function updatePaymentAccount(req, res) {
         business.connectedPaymentAccount[field] = updateData[field];
       }
     });
-
+    business.isActive = true; // Set the business as active if it has a payment account
     await business.save();
     return res.status(200).json({ success: true, message: "Payment account updated successfully", account: business.connectedPaymentAccount });
   } catch (error) {
