@@ -7,6 +7,7 @@ const Employee = require("../models/employee.model");
 const { log, trace } = require("console");
 const { sendAppointmentMail } = require("../services/mail.service");
 const customerService = require("../services/customer.service");
+const User = require("../models/user.model");
 const { scheduleAppointmentReminders } = require("../services/appointment.service");
 const {  validatePaymentDetails , generateRequestId } = require("../services/batch_counter");
 const axios = require('axios');
@@ -219,8 +220,7 @@ const processPayment = async ({
 
     // STEP 9: Send transaction to EPX
     const response = await axios.post(
-      //'https://secure.epxuap.com',//UAP environment
-      'https://secure.epx.com', // Production environment
+      'https://secure.epxuap.com',
       qs.stringify(basePayload),
       {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -617,42 +617,63 @@ const createAppointment = async (req, res, next) => {
   }
 };
 
-
 const createAppointmentByBusiness = async (req, res, next) => {
   try {
     const { businessId } = req.params;
     const { service, staff, date, time, customer, user } = req.body;
 
-    // Basic field validation
+    // Step 1: Validate required fields
     if (!service || !staff || !date || !time || !customer?.name || !customer?.email || !customer?.phone) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // Time & Date normalization
-    const trimmedTime = time.trim();
     const trimmedDate = date.trim();
+    const trimmedTime = time.trim();
 
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timeRegex.test(trimmedTime)) {
-      return res.status(400).json({ success: false, message: "Invalid time value" });
+    const blockedSlot = await Appoint.findOne({
+      staff,
+      date: trimmedDate,
+      startTime: { $lte: trimmedTime },
+      endTime: { $gte: trimmedTime },
+      status: "blocked",
+    });
+
+    if (blockedSlot) {
+      return res.status(409).json({ success: false, message: "This slot is blocked." });
     }
 
-    // ✅ Double booking check (same staff, same date, same time)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+    if (!dateRegex.test(trimmedDate)) {
+      return res.status(400).json({ success: false, message: "Invalid date format (expected YYYY-MM-DD)" });
+    }
+
+    if (!timeRegex.test(trimmedTime)) {
+      return res.status(400).json({ success: false, message: "Invalid time format (expected HH:mm)" });
+    }
+
+    // Validate full datetime to ensure it's schedulable
+    const fullDateTime = new Date(`${trimmedDate}T${trimmedTime}`);
+    if (isNaN(fullDateTime.getTime())) {
+      return res.status(400).json({ success: false, message: "Invalid datetime value for scheduling" });
+    }
+
+    // Step 2: Check for double booking
     const existing = await Appoint.findOne({
       staff,
       date: trimmedDate,
       time: trimmedTime,
-      status: { $ne: "cancelled" }, // Optional, in case you support cancellations
+      status: { $ne: "cancelled" },
     });
 
     if (existing) {
       return res.status(409).json({ success: false, message: "This slot is already booked." });
     }
 
-    // Find or create user based on email or phone
+    // Step 3: Find or create user
     let userIdToUse = user;
     try {
-      const User = require("../models/user.model");
       const existingUser = await User.findOne({
         $or: [{ email: customer.email }, { phone: customer.phone }],
       });
@@ -667,12 +688,15 @@ const createAppointmentByBusiness = async (req, res, next) => {
         });
         userIdToUse = newUser._id;
       }
-    } catch (e) {
-      console.error("User lookup/creation failed:", e);
-      // Proceed with original `user` if available
+    } catch (userError) {
+      console.error("⚠️ User lookup/creation failed:", userError.message);
     }
 
-    // Create appointment
+    if (!userIdToUse) {
+      return res.status(500).json({ success: false, message: "Failed to associate a user with this appointment." });
+    }
+
+    // Step 4: Create appointment
     const appointment = await Appoint.create({
       business: businessId,
       service,
@@ -687,30 +711,27 @@ const createAppointmentByBusiness = async (req, res, next) => {
       },
     });
 
-    // ✅ Increment appointment count
-    await require("../models/business.model").findByIdAndUpdate(
-      businessId,
-      { $inc: { appointmentCount: 1 } }
-    );
+    // Step 5: Increment appointment count
+    await Business.findByIdAndUpdate(businessId, { $inc: { appointmentCount: 1 } });
 
-    // Fetch business/service/staff for email content
-    let business, serviceObj, staffObj;
+    // Step 6: Fetch metadata
+    let businessInfo, serviceInfo, staffInfo;
     try {
-      business = await require("../models/business.model").findById(businessId);
-      serviceObj = await require("../models/services.model").findById(service);
-      staffObj = await require("../models/employee.model").findById(staff);
-    } catch (e) {
-      console.error("Failed to fetch business/service/staff:", e);
+      businessInfo = await Business.findById(businessId);
+      serviceInfo = await Service.findById(service);
+      staffInfo = await Employee.findById(staff);
+    } catch (metaError) {
+      console.error("⚠️ Failed to fetch service/staff/business info:", metaError.message);
     }
 
-    const businessName = business?.brandName || business?.name || "Business";
-    const serviceName = serviceObj?.name || "Service";
-    const staffName = staffObj?.name || "Staff";
-    const location = business?.address?.addressLine1
-      ? `${business.address.addressLine1}, ${business.address.city}`
+    const businessName = businessInfo?.brandName || businessInfo?.name || "Business";
+    const serviceName = serviceInfo?.name || "Service";
+    const staffName = staffInfo?.name || "Staff";
+    const location = businessInfo?.address?.addressLine1
+      ? `${businessInfo.address.addressLine1}, ${businessInfo.address.city || ""}`
       : "";
 
-    // Send confirmation email
+    // Step 7: Send email
     sendAppointmentMail(
       customer.email,
       customer.name,
@@ -720,33 +741,98 @@ const createAppointmentByBusiness = async (req, res, next) => {
       trimmedDate,
       trimmedTime,
       location
-    ).catch((err) => console.error("Appointment email error:", err));
+    ).catch((err) => console.error("📧 Email error:", err.message));
 
-    // Schedule reminders
-    scheduleAppointmentReminders({
-      customer,
-      businessName,
-      serviceName,
-      staffName,
-      date: trimmedDate,
-      time: trimmedTime,
-      location,
-    });
+    // Step 8: Schedule reminder
+    try {
+      scheduleAppointmentReminders({
+        customer,
+        businessName,
+        serviceName,
+        staffName,
+        date: trimmedDate,
+        time: trimmedTime,
+        location,
+      });
+    } catch (cronError) {
+      console.error("🕒 Reminder scheduling error:", cronError.message);
+    }
 
-    res.status(201).json({
+    // Step 9: Return response
+    return res.status(201).json({
       success: true,
-      message: "Appointment booked",
+      message: "Appointment booked successfully",
       data: appointment,
     });
+
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ success: false, message: "This slot is booked" });
-    }
-    console.error("Create appointment error:", err);
-    next(err);
+    console.error("🔥 Appointment creation error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Something went wrong while creating appointment.",
+    });
   }
 };
 
+const blockTimeSlot = async (req, res, next) => {
+  try {
+    const { businessId, staffId } = req.params;
+    const { date, startTime, endTime, reason } = req.body;
+
+    // Validate required fields
+    if (!date || !startTime || !endTime || !reason) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+    if (!dateRegex.test(date)) {
+      return res.status(400).json({ success: false, message: "Invalid date format (expected YYYY-MM-DD)" });
+    }
+
+    if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+      return res.status(400).json({ success: false, message: "Invalid time format (expected HH:mm)" });
+    }
+
+    // Check for overlapping appointments
+    const existingBlocked = await Appoint.findOne({
+      staff: staffId,
+      date,
+      status: "blocked",
+      startTime: { $lt: endTime },
+      endTime: { $gt: startTime }, // Check if the time range overlaps
+    });
+
+    if (existingBlocked) {
+      return res.status(409).json({ success: false, message: "Time slot is already blocked." });
+    }
+
+    // Create the blocked time slot
+    const block = await Appoint.create({
+      business: businessId,
+      staff: staffId,
+      date,
+      startTime,
+      endTime,
+      reason,
+      status: "blocked",
+      type: "block",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Time slot blocked successfully.",
+      data: block,
+    });
+  } catch (err) {
+    console.error("🔥 Block time slot error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Something went wrong while blocking time slot.",
+    });
+  }
+};
 
 const getAppointmentsForBusiness = async (req, res, next) => {
   try {
@@ -1544,5 +1630,6 @@ module.exports = {
   createAppointmentByBusiness,
   getBookedTimesForEmployee,
   getBusinessAnalytics,
-  checkAvailability
+  checkAvailability,
+  blockTimeSlot
 };

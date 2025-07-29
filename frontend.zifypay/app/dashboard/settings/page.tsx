@@ -213,7 +213,7 @@ export default function SettingsPage() {
     try {
       setBusinessLoading(true);
       const response = await fetch(`${API_URL}/business/${business._id}`, {
-        method: "PATCH",
+        method: "PUT", // ✅ Changed from PATCH to PUT
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
@@ -238,12 +238,12 @@ export default function SettingsPage() {
       setBusinessLoading(false);
     }
   };
-
+  
   const handleBusinessDelete = async () => {
     if (!business) return;
     try {
       setBusinessLoading(true);
-      const response = await fetch(`${API_URL}/business/${business._id}`, {
+      const response = await fetch(`${API_URL}/businesses/business/${business._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
@@ -282,7 +282,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </header>
+  
         <div className="flex-1 flex flex-col gap-8 justify-center items-start p-6">
+          {/* USER PROFILE */}
           <Card className="w-full max-w-2xl border-0 shadow-lg mb-8">
             <CardHeader>
               <CardTitle className="text-2xl">User Profile</CardTitle>
@@ -305,6 +307,7 @@ export default function SettingsPage() {
                     {formData.firstName} {formData.lastName}
                   </span>
                 </div>
+  
                 <form onSubmit={handleSubmit} className="flex-1 space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -334,6 +337,7 @@ export default function SettingsPage() {
                       />
                     </div>
                   </div>
+  
                   <div>
                     <label
                       htmlFor="email"
@@ -348,6 +352,7 @@ export default function SettingsPage() {
                       className="bg-gray-100"
                     />
                   </div>
+  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label
@@ -376,6 +381,7 @@ export default function SettingsPage() {
                       />
                     </div>
                   </div>
+  
                   <div>
                     <label
                       htmlFor="profilePicUrl"
@@ -389,12 +395,9 @@ export default function SettingsPage() {
                       onChange={handleChange}
                     />
                   </div>
+  
                   <div className="flex gap-4 mt-4">
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full md:w-fit"
-                    >
+                    <Button type="submit" disabled={loading} className="w-full md:w-fit">
                       {loading ? "Saving..." : "Save Changes"}
                     </Button>
                     <Button
@@ -408,6 +411,7 @@ export default function SettingsPage() {
                   </div>
                 </form>
               </div>
+  
               {showDeleteConfirm && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
                   <div className="bg-white rounded-lg p-8 shadow-lg max-w-sm w-full">
@@ -437,6 +441,8 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
+  
+          {/* BUSINESS PROFILE */}
           <Card className="w-full max-w-2xl border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Business Profile</CardTitle>
@@ -473,8 +479,7 @@ export default function SettingsPage() {
                       <b>About:</b> {business.about}
                     </div>
                     <div className="mb-2">
-                      <b>Contact:</b> {business.contactEmail} |{" "}
-                      {business.contactPhone}
+                      <b>Contact:</b> {business.contactEmail} | {business.contactPhone}
                     </div>
                     <div className="mb-2">
                       <b>Address:</b> {business.address?.addressLine1},{" "}
@@ -482,15 +487,7 @@ export default function SettingsPage() {
                       {business.address?.country} - {business.address?.pincode}
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <Button onClick={() => setBusinessEditMode(true)}>
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={handleBusinessDelete}
-                      >
-                        Delete
-                      </Button>
+                      <Button onClick={() => setBusinessEditMode(true)}>Edit</Button>
                     </div>
                   </div>
                 )
@@ -503,4 +500,4 @@ export default function SettingsPage() {
       </SidebarInset>
     </SidebarProvider>
   );
-}
+}  
