@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     "Smart booking software with built-in payments — simple, flexible, and ready to grow with your business.",
   icons: {
-    icon: "https://res.cloudinary.com/dfcbjgt3w/image/upload/v1750831568/ChatGPT_Image_Jun_25_2025_11_35_45_AM_njzpw1.png", // you can also use .png or .svg
+    icon: "/icon.png", // you can also use .png or .svg
   },
 };
 export default function RootLayout({
