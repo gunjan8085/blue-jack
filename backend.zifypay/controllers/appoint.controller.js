@@ -3,6 +3,7 @@ const Appoint = require("../models/appoint.model");
 const path = require("path");
 const Business = require("../models/business.model");
 const Service = require("../models/services.model");
+const { sendBookingSMS } = require("../services/sms.service");
 const Employee = require("../models/employee.model");
 const { log, trace } = require("console");
 const { sendAppointmentMail } = require("../services/mail.service");
@@ -533,7 +534,7 @@ const createAppointment = async (req, res, next) => {
         { $inc: { appointmentCount: 1 } }
       );
 
-      // Fetch business, service, staff details for email
+      // Fetch business, service, staff details for email and SMS
       let business, serviceObj, staffObj;
       try {
         [business, serviceObj, staffObj] = await Promise.all([
@@ -569,6 +570,21 @@ const createAppointment = async (req, res, next) => {
           authCode: paymentResult.authCode
         }
       ).catch((err) => console.error("Appointment email error:", err));
+
+       // Send SMS confirmation (non-blocking)
+     if (customer && customer.phone) {
+      const smsMsg = `Hi ${customer.name}, your appointment for ${serviceName} at ${businessName} is confirmed for ${normalizedDate} at ${normalizedTime}.`;
+      sendBookingSMS(customer.phone, smsMsg)
+        .then(() => console.log('SMS sent to', customer.phone))
+        .catch((err) => console.error('Error sending SMS:', err));
+    }
+    // Send SMS to business contact number
+    if (business && business.contactPhone) {
+      const businessSMS = `New appointment booked by ${customer.name} for ${serviceName} on ${normalizedDate} at ${normalizedTime}. Customer phone: ${customer.phone}`;
+      sendBookingSMS(business.contactPhone, businessSMS)
+        .then(() => console.log('SMS sent to business', business.contactPhone))
+        .catch((err) => console.error('Error sending SMS to business:', err));
+    }
 
       // Schedule appointment reminders
       scheduleAppointmentReminders({
@@ -743,7 +759,21 @@ const createAppointmentByBusiness = async (req, res, next) => {
       location
     ).catch((err) => console.error("📧 Email error:", err.message));
 
-    // Step 8: Schedule reminder
+    // Step 8: Send SMS to customer and business
+    if (customer && customer.phone) {
+      const smsMsg = `Hi ${customer.name}, your appointment for ${serviceName} at ${businessName} is confirmed for ${trimmedDate} at ${trimmedTime}.`;
+      sendBookingSMS(customer.phone, smsMsg)
+        .then(() => console.log('SMS sent to customer', customer.phone))
+        .catch((err) => console.error('Error sending SMS to customer:', err));
+    }
+    if (businessInfo && businessInfo.contactPhone) {
+      const businessSMS = `New appointment booked by ${customer.name} for ${serviceName} on ${trimmedDate} at ${trimmedTime}. Customer phone: ${customer.phone}`;
+      sendBookingSMS(businessInfo.contactPhone, businessSMS)
+        .then(() => console.log('SMS sent to business', businessInfo.contactPhone))
+        .catch((err) => console.error('Error sending SMS to business:', err));
+    }
+
+    // Step 9: Schedule reminder
     try {
       scheduleAppointmentReminders({
         customer,
@@ -758,7 +788,7 @@ const createAppointmentByBusiness = async (req, res, next) => {
       console.error("🕒 Reminder scheduling error:", cronError.message);
     }
 
-    // Step 9: Return response
+    // Step 10: Return response
     return res.status(201).json({
       success: true,
       message: "Appointment booked successfully",
