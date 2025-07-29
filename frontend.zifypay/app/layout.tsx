@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     "Smart booking software with built-in payments — simple, flexible, and ready to grow with your business.",
   icons: {
-    icon: "/icon.png", // you can also use .png or .svg
+    icon: "/image4.png", // you can also use .png or .svg
   },
 };
 export default function RootLayout({
