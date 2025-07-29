@@ -328,15 +328,17 @@ useEffect(() => {
         paymentDetails
       }
 
+      console.log('Submitting appointment booking with payload:', payload);
       const response = await fetch(`${API_URL}/appointments/${params.id}/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
-      })
-
-      const result = await response.json()
+      });
+      console.log('Appointment booking response status:', response.status);
+      const result = await response.json();
+      console.log('Appointment booking response body:', result);
 
       if (result.success) {
         console.log("Appointment created successfully:", result.data)
