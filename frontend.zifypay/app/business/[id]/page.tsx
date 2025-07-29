@@ -328,15 +328,17 @@ useEffect(() => {
         paymentDetails
       }
 
+      console.log('Submitting appointment booking with payload:', payload);
       const response = await fetch(`${API_URL}/appointments/${params.id}/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
-      })
-
-      const result = await response.json()
+      });
+      console.log('Appointment booking response status:', response.status);
+      const result = await response.json();
+      console.log('Appointment booking response body:', result);
 
       if (result.success) {
         console.log("Appointment created successfully:", result.data)
@@ -988,9 +990,14 @@ useEffect(() => {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
+                      type="tel"
+                      name="phone"
                       value={customerInfo.phone}
                       onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                      placeholder="Enter your phone number"
+                      placeholder="Enter your phone number (10-15 digits)"
+                      required
+                      pattern="[0-9]{10,15}"
+                      inputMode="numeric"
                     />
                   </div>
 

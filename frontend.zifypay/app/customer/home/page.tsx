@@ -105,7 +105,7 @@ export default function DashboardPage() {
   const fetchBusinesses = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`${API_URL}/business/getAllBusiness`)
+      const response = await fetch(`${API_URL}/business/getAllBusinesses`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch businesses')

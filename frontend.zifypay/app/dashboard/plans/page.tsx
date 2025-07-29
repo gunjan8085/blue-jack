@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { API_URL } from '@/lib/const';
 import AppSidebar from '@/components/for-bussiness/AppSidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import PaymentModal from '@/components/PaymentModal';
 
 const plans = [
@@ -96,6 +96,11 @@ export default function DashboardSubscriptionPlans() {
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <AppSidebar />
+
+        {/* SidebarTrigger for mobile */}
+        <div className="md:hidden p-2 absolute top-2 left-2 z-20">
+          <SidebarTrigger />
+        </div>
 
         {/* Main content */}
         <main className="flex-1 p-6 overflow-y-auto bg-gray-50">

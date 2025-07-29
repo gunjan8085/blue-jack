@@ -15,12 +15,8 @@ module.exports = {
       // Send signup email (non-blocking)
       const { email, name } = req.body;
       if (email) {
-        const {
-          sendSignupMailForBussiness,
-        } = require("../services/mail.service");
-        sendSignupMailForBussiness(email, name || email.split("@")[0]).catch(
-          (err) => console.error("Business signup email error:", err)
-        );
+        const { sendSignupMailForBussiness } = require("../services/mail.service");
+        sendSignupMailForBussiness(email, name || email.split('@')[0]).catch(err => console.error('Business signup email error:', err));
       }
       return res.status(201).json({ data: business, success: true });
     } catch (error) {
@@ -31,12 +27,8 @@ module.exports = {
   getAllBusinesses: async (req, res) => {
     try {
       const businesses = await businessService.getAllBusinesses();
-      // Filter to only activated businesses
-      const activatedBusinesses = businesses.filter(
-        (b) => b.status === "activated"
-      );
       return res.status(200).json({
-        data: activatedBusinesses,
+        data: businesses,
         success: true,
         message: "Businesses retrieved successfully",
       });
@@ -119,12 +111,12 @@ module.exports = {
 
       const existingReview = await Review.findOne({
         appointment: appointment,
-        addedBy: userId,
+        addedBy: userId
       });
       if (existingReview) {
         return res.status(400).json({
           success: false,
-          message: "You've already submitted a review for this appointment.",
+          message: "You've already submitted a review for this appointment."
         });
       }
 
@@ -146,10 +138,7 @@ module.exports = {
       // Optionally update avgReview
       const business = await Business.findById(id).populate("reviews");
       if (business) {
-        const totalStars = business.reviews.reduce(
-          (sum, r) => sum + (r.stars || 0),
-          0
-        );
+        const totalStars = business.reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
         const avg = totalStars / (business.reviews.length || 1);
         business.avgReview = avg;
         await business.save();
@@ -164,8 +153,8 @@ module.exports = {
     try {
       const { id } = req.params;
       const reviews = await Review.find({ forBusiness: id })
-        .populate("addedBy", "firstName lastName email")
-        .populate("appointment", "service staff date time") // populate appointment details
+        .populate('addedBy', 'firstName lastName email')
+        .populate('appointment', 'service staff date time') // populate appointment details
         .sort({ createdAt: -1 });
       return res.status(200).json({ success: true, data: reviews });
     } catch (error) {
@@ -173,32 +162,32 @@ module.exports = {
     }
   },
   checkExistingReview: async (req, res) => {
-    try {
-      const { businessId } = req.params;
-      const { userId, appointmentId } = req.query;
+  try {
+    const { businessId } = req.params;
+    const { userId, appointmentId } = req.query;
 
-      if (!userId || !appointmentId) {
-        return res.status(400).json({
-          success: false,
-          message: "userId and appointmentId are required",
-        });
-      }
-
-      const review = await Review.findOne({
-        forBusiness: businessId,
-        addedBy: userId,
-        appointment: appointmentId,
+    if (!userId || !appointmentId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "userId and appointmentId are required" 
       });
-
-      return res.status(200).json({
-        success: true,
-        exists: !!review,
-        data: review || null,
-      });
-    } catch (error) {
-      return res.status(500).json({ success: false, message: error.message });
     }
-  },
+
+    const review = await Review.findOne({
+      forBusiness: businessId,
+      addedBy: userId,
+      appointment: appointmentId
+    });
+
+    return res.status(200).json({ 
+      success: true, 
+      exists: !!review,
+      data: review || null
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+},
   uploadThumbnail: [
     upload.single("file"),
     async (req, res) => {
@@ -232,11 +221,13 @@ module.exports = {
           .status(404)
           .json({ success: false, message: "Business not found" });
       }
-      return res.status(200).json({
-        success: true,
-        data: business,
-        message: "Business updated successfully",
-      });
+      return res
+        .status(200)
+        .json({
+          success: true,
+          data: business,
+          message: "Business updated successfully",
+        });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
     }
@@ -248,21 +239,13 @@ module.exports = {
       const business = await Business.findById(businessId);
       const plan = await PricingPlan.findById(pricingPlanId);
       if (!business || !plan) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Business or plan not found" });
+        return res.status(404).json({ success: false, message: "Business or plan not found" });
       }
       // Simulate successful payment and subscription
       business.subscriptionPlan = plan._id;
       business.isActive = true;
       await business.save();
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "Subscription purchased and business activated.",
-          data: business,
-        });
+      return res.status(200).json({ success: true, message: "Subscription purchased and business activated.", data: business });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
     }

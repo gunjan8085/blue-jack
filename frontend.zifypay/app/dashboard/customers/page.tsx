@@ -90,9 +90,9 @@ export default function CustomersPage() {
   }, [])
 
   const filteredCustomers = customers.filter((customer) => {
-    return customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
+    return (customer?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (customer?.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (customer?.phone?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   }).sort((a, b) => {
     switch (sortBy) {
       case "name":
@@ -187,11 +187,10 @@ export default function CustomersPage() {
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-12 w-12">
                         <AvatarFallback>
-                          <Image width={100} height={100} src={customer.profilePicUrl} alt={customer.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                          />
+                          {(customer?.name ?? "")
+  .split(" ")
+  .map((n) => n[0])
+  .join("") || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>

@@ -1,29 +1,47 @@
 const express = require("express");
 const router = express.Router();
 const businessController = require("../controllers/business.controller");
-const {
-  getAllBusinessesWithStatus,
-  updateBusinessStatus,
-  getBusinessWithStatusById,
-} = require("../controllers/business1.controller");
+const multer = require("multer");
 
-router.post("/active-status", getBusinessWithStatusById);
-router.get("/with-status", getAllBusinessesWithStatus);
-router.post("/signup", businessController.registerNewBusiness);
-router.post("/upload-thumbnail", businessController.uploadThumbnail);
-router.get("/getAllBusiness", businessController.getAllBusinesses);
-router.get("/getAllBusines", businessController.getAllBusinesses);
-router.get("/by-owner/:ownerId", businessController.getBusinessByOwnerId);
-router.get("/:id", businessController.getBusinessById);
-const { addReviewToBusiness, getBusinessReviews, checkExistingReview } =
-  businessController;
+const upload = multer({ storage: multer.memoryStorage() });
+
+const {
+  registerNewBusiness,
+  uploadThumbnail,
+  getAllBusinesses,
+  getBusinessByOwnerId,
+  getBusinessById,
+  addReviewToBusiness,
+  getBusinessReviews,
+  checkExistingReview,
+  purchaseSubscription,
+  updateBusiness
+} = businessController;
+
+// Register new business
+router.post("/signup", registerNewBusiness);
+
+// Upload business thumbnail
+router.post("/upload-thumbnail", upload.single("file"), uploadThumbnail);
+
+// Get all businesses
+router.get("/getAllBusinesses", getAllBusinesses); // Fixed typo from getAllBusines
+
+// Get business by owner ID
+router.get("/by-owner/:ownerId", getBusinessByOwnerId);
+
+// Get business by business ID
+router.get("/:id", getBusinessById);
+
+// Edit (update) business by ID
+router.put("/:id", updateBusiness);
+
+// Reviews
 router.post("/:id/reviews", addReviewToBusiness);
 router.get("/:id/reviews", getBusinessReviews);
 router.get("/:businessId/reviews/check", checkExistingReview);
-router.get("/with-status", getAllBusinessesWithStatus);
-router.put("/:id/status", updateBusinessStatus);
 
-// Purchase subscription plan (placeholder, no payment integration yet)
-router.post("/purchase-subscription", businessController.purchaseSubscription);
+// Purchase subscription plan
+router.post("/purchase-subscription", purchaseSubscription);
 
 module.exports = router;

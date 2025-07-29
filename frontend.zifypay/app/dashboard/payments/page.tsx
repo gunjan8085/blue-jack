@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { API_URL } from "@/lib/const"
 import AppSidebar from "@/components/for-bussiness/AppSidebar"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -368,6 +368,10 @@ function PaymentsPage() {
   return (
     <SidebarProvider>
       <AppSidebar />
+      {/* SidebarTrigger for mobile */}
+      <div className="md:hidden p-2">
+        <SidebarTrigger />
+      </div>
       <SidebarInset>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           {/* Header */}
