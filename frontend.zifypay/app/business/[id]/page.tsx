@@ -988,9 +988,14 @@ useEffect(() => {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
+                      type="tel"
+                      name="phone"
                       value={customerInfo.phone}
                       onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                      placeholder="Enter your phone number"
+                      placeholder="Enter your phone number (10-15 digits)"
+                      required
+                      pattern="[0-9]{10,15}"
+                      inputMode="numeric"
                     />
                   </div>
 
