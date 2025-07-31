@@ -221,7 +221,7 @@ const processPayment = async ({
 
     // STEP 9: Send transaction to EPX
     const response = await axios.post(
-      'https://secure.epxuap.com',
+      'https://secure.epx.com',
       qs.stringify(basePayload),
       {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
