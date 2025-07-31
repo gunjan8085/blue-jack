@@ -156,15 +156,14 @@ export default function ProfilePage() {
 
   return (
     <Layout>
-      <HeaderForCustomer />
-      <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center py-6">
+      <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center pt-6 pb-2 sm:pb-4">
         Profile Settings
       </h1>
 
-      <div className="flex flex-col md:flex-row gap-10 items-start w-2/3 p-16 mx-auto ">
+      <div className="flex flex-col md:flex-row gap-8 items-start w-full max-w-4xl px-2 sm:px-6 md:px-8 mx-auto">
         {/* Profile Image Upload & Preview */}
-        <div className="flex flex-col items-center gap-2 ">
-          <div className="relative h-48 w-48 rounded-full overflow-hidden border shadow-lg">
+        <div className="flex flex-col items-center gap-2 w-full md:w-auto mb-6 md:mb-0">
+          <div className="relative h-36 w-36 sm:h-44 sm:w-44 md:h-48 md:w-48 rounded-full overflow-hidden border shadow-lg">
             {formData.profilePicUrl ? (
               <img
                 src={formData.profilePicUrl}
@@ -189,7 +188,7 @@ export default function ProfilePage() {
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="text-sm"
+            className="text-sm w-full"
           >
             {uploading ? (
               <>
@@ -208,7 +207,7 @@ export default function ProfilePage() {
         {/* Profile Form */}
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-2xl space-y-6 bg-white p-6 rounded-xl shadow"
+          className="w-full max-w-lg space-y-6 bg-white p-4 sm:p-6 rounded-xl shadow mx-auto"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
