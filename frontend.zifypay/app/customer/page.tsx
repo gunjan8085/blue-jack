@@ -87,7 +87,6 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-150 to-white">
       {/* Header */}
      
-     <HeaderForCustomer />
 
       {/* Hero Section */}
       <section className="py-20 px-4 mt-28">
