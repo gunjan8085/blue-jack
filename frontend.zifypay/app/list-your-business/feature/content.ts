@@ -67,7 +67,7 @@ export const featureContent = {
     title: "Seamless Payment Solutions",
     description:
       "Accept payments fast and securely with multi-method support. Get paid instantly, every time.",
-    image: "https://imgs.search.brave.com/nOmNovnv6nqH_2VIFqTIDq1mWwaNFDNERE4huzYaSHQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9vbmxp/bmVwYXltZW50cGxh/dGZvcm0uY29tL2h1/YmZzL1Zpc3VhbC1E/ZWMtMDUtMjAyNC0x/Mi01Mi0yNy01MDM5/LVBNLnBuZw",
+    image: "/payment1.jpg",
     products: [
       {
         title: "Instant Payouts",
@@ -97,7 +97,8 @@ export const featureContent = {
     title: "Powerful Cloud Dashboard",
     description:
       "Manage your business anywhere with real-time analytics and intuitive controls.",
-    image: "https://imgs.search.brave.com/QQGzWTc4ZdXdq9qYtCqAowcO59uKVpl0N0GLhHqv3xQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/ZHJpYmJibGUuY29t/L3VzZXJ1cGxvYWQv/MTUwODYwMjgvZmls/ZS9vcmlnaW5hbC04/NWQ1NWNiYjljYjEz/ZTU2NWVlOWQ1ZDY0/YWQ3MTdjNC5wbmc_/Zm9ybWF0PXdlYnAm/cmVzaXplPTQwMHgz/MDAmdmVydGljYWw9/Y2VudGVy",
+    image:
+      "https://imgs.search.brave.com/QQGzWTc4ZdXdq9qYtCqAowcO59uKVpl0N0GLhHqv3xQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/ZHJpYmJibGUuY29t/L3VzZXJ1cGxvYWQv/MTUwODYwMjgvZmls/ZS9vcmlnaW5hbC04/NWQ1NWNiYjljYjEz/ZTU2NWVlOWQ1ZDY0/YWQ3MTdjNC5wbmc_/Zm9ybWF0PXdlYnAm/cmVzaXplPTQwMHgz/MDAmdmVydGljYWw9/Y2VudGVy",
     products: [
       {
         title: "Live Analytics",
