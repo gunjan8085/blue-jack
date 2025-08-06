@@ -97,8 +97,7 @@ export const featureContent = {
     title: "Powerful Cloud Dashboard",
     description:
       "Manage your business anywhere with real-time analytics and intuitive controls.",
-    image:
-      "https://imgs.search.brave.com/QQGzWTc4ZdXdq9qYtCqAowcO59uKVpl0N0GLhHqv3xQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/ZHJpYmJibGUuY29t/L3VzZXJ1cGxvYWQv/MTUwODYwMjgvZmls/ZS9vcmlnaW5hbC04/NWQ1NWNiYjljYjEz/ZTU2NWVlOWQ1ZDY0/YWQ3MTdjNC5wbmc_/Zm9ybWF0PXdlYnAm/cmVzaXplPTQwMHgz/MDAmdmVydGljYWw9/Y2VudGVy",
+    image: "/200.png",
     products: [
       {
         title: "Live Analytics",
