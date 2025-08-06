@@ -97,7 +97,7 @@ export const featureContent = {
     title: "Powerful Cloud Dashboard",
     description:
       "Manage your business anywhere with real-time analytics and intuitive controls.",
-    image: "/200.png",
+    image: "/200.jpg",
     products: [
       {
         title: "Live Analytics",
