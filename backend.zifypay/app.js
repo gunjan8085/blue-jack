@@ -7,7 +7,7 @@ const errorHandler = require("./middlewares/errorHandler.middleware");
 // Middlewares
 app.use(
   cors({
-    origin: ["https://zifypay.com", "https://www.zifypay.com"],
+    origin: ["https://zifypay.com", "https://www.zifypay.com", "http://localhost:3000"],
   })
 );
 
