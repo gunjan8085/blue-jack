@@ -65,7 +65,7 @@ const HeroSection = () => {
                 }
               }}
             >
-              List your business
+              Start Free Now
             </button>
           </div>
         </div>

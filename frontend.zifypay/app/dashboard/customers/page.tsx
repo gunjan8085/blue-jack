@@ -142,7 +142,9 @@ export default function CustomersPage() {
           <div className="flex items-center justify-between w-full">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
-              <p className="text-gray-600">Manage your customer relationships</p>
+              <p className="text-gray-600">
+                Manage your customer relationships
+              </p>
             </div>
           </div>
         </header>
@@ -180,21 +182,26 @@ export default function CustomersPage() {
 
           {/* Customers List */}
           <div className="space-y-4">
-            {filteredCustomers.map((customer) => (
-              <Card key={customer.email} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            {filteredCustomers.map((customer, index) => (
+              <Card
+                key={customer._id || customer.email || index}
+                className="border-0 shadow-lg hover:shadow-xl transition-shadow"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-12 w-12">
                         <AvatarFallback>
                           {(customer?.name ?? "")
-  .split(" ")
-  .map((n) => n[0])
-  .join("") || "?"}
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("") || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{customer.name}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {customer.name}
+                        </h3>
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                           <div className="flex items-center">
                             <Mail className="h-4 w-4 mr-1" />
@@ -206,7 +213,8 @@ export default function CustomersPage() {
                           </div>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
-                            Last visit: {new Date(customer.lastVisit).toLocaleDateString()}
+                            Last visit:{" "}
+                            {new Date(customer.lastVisit).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
@@ -214,12 +222,16 @@ export default function CustomersPage() {
 
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-
-                        <div className="text-sm text-purple-600">{customer.favoriteService}</div>
+                        <div className="text-sm text-purple-600">
+                          {customer.favoriteService}
+                        </div>
                       </div>
 
                       <div className="flex space-x-2">
-                        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                        <Dialog
+                          open={isEditDialogOpen}
+                          onOpenChange={setIsEditDialogOpen}
+                        >
                           <DialogTrigger asChild>
                             {/* <Button 
                               size="sm" 
@@ -246,8 +258,12 @@ export default function CustomersPage() {
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <h3 className="text-xl font-semibold">{selectedCustomer.name}</h3>
-                                    <p className="text-purple-600">{selectedCustomer.favoriteService}</p>
+                                    <h3 className="text-xl font-semibold">
+                                      {selectedCustomer.name}
+                                    </h3>
+                                    <p className="text-purple-600">
+                                      {selectedCustomer.favoriteService}
+                                    </p>
                                   </div>
                                 </div>
 
@@ -262,7 +278,11 @@ export default function CustomersPage() {
                                   </div>
                                   <div>
                                     <Label>Last Visit</Label>
-                                    <p>{new Date(selectedCustomer.lastVisit).toLocaleDateString()}</p>
+                                    <p>
+                                      {new Date(
+                                        selectedCustomer.lastVisit
+                                      ).toLocaleDateString()}
+                                    </p>
                                   </div>
                                   <div>
                                     <Label>Total Visits</Label>
@@ -312,8 +332,12 @@ export default function CustomersPage() {
             <Card className="border-0 shadow-lg">
               <CardContent className="p-12 text-center">
                 <User className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers found</h3>
-                <p className="text-gray-600 mb-4">Try adjusting your search or add new customers</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  No customers found
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Try adjusting your search or add new customers
+                </p>
                 <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Add New Customer
@@ -324,5 +348,5 @@ export default function CustomersPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

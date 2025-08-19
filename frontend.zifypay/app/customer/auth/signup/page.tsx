@@ -117,7 +117,7 @@ export default function SignupPage() {
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-blue-700 rounded-full w-full h-8 flex items-center justify-center"></div>
                 <img
-                  src="https://zifypay.com/logo.png"
+                  src="/bluelogo.png"
                   alt="ZifyPay Logo"
                   className="h-8 w-auto relative z-10 transition-transform duration-200 hover:scale-105"
                 />
