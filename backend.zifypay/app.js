@@ -7,9 +7,10 @@ const errorHandler = require("./middlewares/errorHandler.middleware");
 // Middlewares
 app.use(
   cors({
-    origin: "*",
+    origin: ["https://zifypay.com", "https://www.zifypay.com"],
   })
 );
+
 app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
