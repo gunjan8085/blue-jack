@@ -12,6 +12,7 @@ router.post("/verify-otp", userController.verifyPasswordResetOTP);
 router.post("/reset-password", userController.resetPassword);
 router.patch("/update-profile/:userId",  userController.updateUserProfile);
 router.delete("/delete-profile/:userId", userController.deleteUserProfile);
+router.post("/auth/google", userController.googleAuth);
 // GET Routes
 router.get("/profile", userController.getUserProfile);
 module.exports = router;

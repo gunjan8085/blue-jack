@@ -4,6 +4,9 @@ const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendSignupMail, sendLoginMail } = require("../services/mail.service");
+const { OAuth2Client } = require("google-auth-library");
+const { signUserJWT } = require("../utils/jwt");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const userController = {
   // POST /users/signup
@@ -345,8 +348,88 @@ const userController = {
   },
 
   // make a api that handles google login and signup
+  verifyGoogleIdToken: async (idToken) => {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    return ticket.getPayload();
+  },
   
+  /**
+   * POST /auth/google
+   * Body: { idToken: string }
+   */
+  googleAuth: async (req, res) => {
+    try {
+      const { idToken } = req.body;
+      if (!idToken) {
+        return res.status(400).json({ success: false, message: "idToken is required" });
+      }
+  
+      const payload = await userController.verifyGoogleIdToken(idToken);
+      // Payload properties: sub, email, email_verified, name, given_name, family_name, picture
+      const {
+        sub: googleId,
+        email,
+        email_verified: emailVerified,
+        name,
+        given_name,
+        family_name,
+        picture,
+      } = payload || {};
+  
+      if (!email) return res.status(400).json({ success: false, message: "Email not present in Google token" });
+      if (!emailVerified) return res.status(401).json({ success: false, message: "Google email not verified" });
+  
+      // Find existing by email
+      let user = await User.findOne({ email });
+  
+      if (!user) {
+        // Create a new user (no password) for Google auth
+        user = await User.create({
+          email,
+          firstName: given_name || (name ? name.split(" ")[0] : undefined),
+          lastName: family_name || (name ? name.split(" ").slice(1).join(" ") : undefined),
+          profilePicUrl: picture || null,
+          authProvider: "google",
+          googleId,
+          emailVerified: !!emailVerified,
+          lastLoginAt: new Date(),
+        });
+      } else {
+        // Update provider info if needed (don’t overwrite local account unless you want to)
+        const updates = {};
+        if (!user.googleId) updates.googleId = googleId;
+        if (user.authProvider !== "google") updates.authProvider = "google";
+        if (picture && !user.profilePicUrl) updates.profilePicUrl = picture;
+        updates.lastLoginAt = new Date();
+  
+        if (Object.keys(updates).length) {
+          user.set(updates);
+          await user.save();
+        }
+      }
+  
+      const token = signUserJWT({ userId: user._id, email: user.email });
+  
+      const userResponse = user.toObject();
+      delete userResponse.password;
+  
+      // (Optional) sendLoginMail(email, user.firstName || email.split("@")[0]).catch(console.error);
+  
+      return res.status(200).json({
+        success: true,
+        message: "Google sign-in successful",
+        data: { user: userResponse, token },
+      });
+    } catch (err) {
+      console.error("Google auth error:", err);
+      return res.status(401).json({ success: false, message: "Invalid Google token", error: err.message });
+    }
+  },
    
 };
 
 module.exports = userController;
+
