@@ -6,8 +6,8 @@ const {
 } = process.env;
 
 // Provide fallbacks for development
-const developmentUrl = DEV_URL || "https://api.zifypay.com/api/v1";
-const productionUrl = PROD_URL || "https://api.zifypay.com/api/v1";
+const developmentUrl = DEV_URL || "http://localhost:5001/api/v1";
+const productionUrl = PROD_URL || "http://localhost:5001/api/v1";
 
 export const API_URL =
   NODE_ENV === "production" ? productionUrl : developmentUrl;

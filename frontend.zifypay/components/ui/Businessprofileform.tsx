@@ -4,24 +4,23 @@ import { useState, useEffect, Fragment, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
-import { Card } from "./ui/card";
-import { Label } from "./ui/label";
-import { Switch } from "./ui/switch";
+import { Button } from "./button";
+import { Input } from "./input";
+import { Textarea } from "./textarea";
+import { Card } from "./card";
+import { Label } from "./label";
+import { Switch } from "./switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { toast } from "./ui/use-toast";
+} from "./select";
+import { toast } from "./use-toast";
 import { API_URL } from "@/lib/const";
 import { getuserid } from "@/lib/auth";
-import { Progress } from "./ui/progress";
-import { Badge } from "./ui/badge";
+import { Progress } from "./progress";
 import {
   Loader2,
   UploadCloud,
@@ -29,7 +28,14 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import AddressContactPicker, {
+  AddressContactValue,
+} from "./AddressContactPicker";
+import { log } from "console";
 
+/** -----------------------------
+ * Zod schema (unchanged)
+ * ------------------------------*/
 const businessProfileSchema = z.object({
   brandName: z.string().min(2, "Brand name must be at least 2 characters"),
   website: z
@@ -65,26 +71,14 @@ const businessProfileSchema = z.object({
 
 type BusinessProfileFormData = z.infer<typeof businessProfileSchema>;
 
+/** IMPORTANT: Match allowed enum values exactly */
 const BUSINESS_TYPES = [
   { value: "SALON", label: "Salon" },
   { value: "SPA", label: "Spa" },
   { value: "CLINIC", label: "Clinic" },
   { value: "STUDIO", label: "Studio" },
-  { value: "AESTHETIC_MEDICINE", label: "Aesthetic Medicine" },
-  { value: "DENTAL_ORTHODONTICS", label: "Dental & Orthodontics" },
-  { value: "HAIR_REMOVAL", label: "Hair Removal" },
-  { value: "HEALTH_FITNESS", label: "Health & Fitness" },
-  { value: "HOME_SERVICES", label: "Home Services" },
-  { value: "MAKEUP", label: "Makeup" },
-  { value: "PET_SERVICES", label: "Pet Services" },
-  { value: "PIERCING", label: "Piercing" },
-  { value: "PROFESSIONAL_SERVICES", label: "Professional Services" },
-  { value: "SKIN_CARE", label: "Skin Care" },
-  { value: "TATTOO_SHOP", label: "Tattoo Shop" },
-  { value: "WELLNESS_DAY_SPA", label: "Wellness & Day Spa" },
   { value: "OTHER", label: "Other" },
 ];
-
 
 const FOUND_US_OPTIONS = [
   "Google Search",
@@ -110,7 +104,35 @@ const POPULAR_SOFTWARE_OPTIONS = [
   "Other",
 ];
 
-export function BusinessProfileForm({
+/** -----------------------------
+ * Helper: naive formatted-address parser
+ * Parses "Line 1, City, State 12345, Country"
+ * Works well enough, user can still edit fields below.
+ * ------------------------------*/
+function naiveSplitAddress(addr: string) {
+  const parts = addr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const country = parts.pop() || "";
+  const stateZip = parts.pop() || ""; // "State 12345"
+  const city = parts.pop() || "";
+  const line1 = parts.join(", ");
+
+  let state = "";
+  let pincode = "";
+  const m = stateZip.match(/(.+)\s+(\d{4,10})$/); // State + Zip
+  if (m) {
+    state = m[1].trim();
+    pincode = m[2].trim();
+  } else {
+    state = stateZip;
+  }
+
+  return { line1, city, state, country, pincode };
+}
+
+export function BusinessProfileForm1({
   initialData,
   onSubmit: onSubmitProp,
   onCancel,
@@ -137,8 +159,6 @@ export function BusinessProfileForm({
     setValue,
     watch,
     trigger,
-    getValues,
-    control,
     reset,
   } = useForm<BusinessProfileFormData>({
     resolver: zodResolver(businessProfileSchema),
@@ -149,9 +169,56 @@ export function BusinessProfileForm({
       existingSoftware: "",
       foundUsAt: "",
       website: "",
+      address: {
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        country: "",
+        pincode: "",
+      },
+      contactEmail: "",
+      contactPhone: "",
       ...initialData,
     },
   });
+
+  /** AddressContactPicker controlled value */
+  const [mapAddress, setMapAddress] = useState<AddressContactValue>({
+    address:
+      [
+        initialData?.address?.addressLine1,
+        initialData?.address?.city,
+        initialData?.address?.state,
+        initialData?.address?.pincode,
+        initialData?.address?.country,
+      ]
+        .filter(Boolean)
+        .join(", ") || "",
+    location: { type: "Point", coordinates: [0, 0] },
+    contactInfo: {
+      phone: initialData?.contactPhone || "",
+      email: initialData?.contactEmail || "",
+    },
+  });
+
+  /** Keep form in sync when mapAddress changes */
+  useEffect(() => {
+    // Always set phone/email from picker (since you showContactFields=true there)
+    setValue("contactPhone", mapAddress.contactInfo.phone || "");
+    setValue("contactEmail", mapAddress.contactInfo.email || "");
+
+    if (mapAddress.address?.trim()) {
+      const { line1, city, state, country, pincode } = naiveSplitAddress(
+        mapAddress.address
+      );
+      setValue("address.addressLine1", line1 || "");
+      setValue("address.city", city || "");
+      setValue("address.state", state || "");
+      setValue("address.country", country || "");
+      setValue("address.pincode", pincode || "");
+    }
+  }, [mapAddress, setValue]);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -160,6 +227,7 @@ export function BusinessProfileForm({
   const [mediaUploading, setMediaUploading] = useState(false);
   const mediaInputRef = useRef<HTMLInputElement | null>(null);
 
+  /** Fields to validate per step */
   const stepFields: string[][] = [
     ["brandName", "businessType", "thumbnail", "about"],
     ["teamSize.min", "teamSize.max", "existingSoftware"],
@@ -207,25 +275,22 @@ export function BusinessProfileForm({
     try {
       setIsSubmitting(true);
       const userId = getuserid();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
+      if (!userId) throw new Error("User not authenticated");
 
       const payload = {
         ...data,
         owner: userId,
-        media: media, // include uploaded images
+        media,
         timings: [
           {
             days: [1, 2, 3, 4, 5],
             time: [
-              {
-                open: { hour: 9, minute: 0 },
-                close: { hour: 17, minute: 0 },
-              },
+              { open: { hour: 9, minute: 0 }, close: { hour: 17, minute: 0 } },
             ],
           },
         ],
+        location: mapAddress.location,
+        formattedAddress: mapAddress.address,
       };
 
       const response = await fetch(`${API_URL}/business/signup`, {
@@ -238,21 +303,41 @@ export function BusinessProfileForm({
       });
 
       const responseData = await response.json();
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(
           responseData.message || "Failed to create business profile"
         );
+
+      // --- ✅ Save all 4 to localStorage ---
+      const token = localStorage.getItem("token") || ""; // set during login
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}"); // set during login
+      const businessProfile = responseData.data; // from API
+      const businessId = businessProfile?._id || businessProfile?.id || "";
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("userData", JSON.stringify(userData));
+      localStorage.setItem("businessProfile", JSON.stringify(businessProfile));
+      localStorage.setItem("businessId", businessId);
+      // cookie.set("businessId"
+      {
+        const maxAge = 60 * 60 * 24 * 30; // 30 days
+        const secure =
+          typeof window !== "undefined" && window.location.protocol === "https:"
+            ? "; Secure"
+            : "";
+        // Note: middleware reads cookies from the request, so this makes it available to it
+        document.cookie = `businessProfile=true; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
       }
 
-      localStorage.setItem(
-        "businessProfile",
-        JSON.stringify(responseData.data)
-      );
       toast({
         title: "Success!",
         description: "Business profile created successfully.",
       });
+
+      // Redirect (change this path if you want a different page)
       window.location.href = `/dashboard`;
+      // e.g. window.location.href = `/business/${businessId}`;
+      // or use router.push('/dashboard') if you prefer SPA navigation
     } catch (error: any) {
       console.error("Error creating business profile:", error);
       toast({
@@ -267,12 +352,14 @@ export function BusinessProfileForm({
     }
   };
 
+
   const progressValue = ((step + 1) / steps.length) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <Card className="p-6 sm:p-8 shadow-lg bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl">
+          {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center">
               Setup Your Business Profile
@@ -282,7 +369,7 @@ export function BusinessProfileForm({
             </p>
           </div>
 
-          {/* Progress bar */}
+          {/* Progress */}
           <div className="mb-8">
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">
@@ -295,7 +382,7 @@ export function BusinessProfileForm({
             <Progress value={progressValue} className="h-2" />
           </div>
 
-          {/* Stepper labels */}
+          {/* Stepper */}
           <div className="hidden sm:flex justify-between mb-8 px-4">
             {steps.map((label, idx) => (
               <div key={label} className="flex flex-col items-center">
@@ -395,14 +482,13 @@ export function BusinessProfileForm({
                     <Label htmlFor="thumbnail">Business Logo *</Label>
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        {(thumbnailPreview || watch("thumbnail")) && (
+                        {thumbnailPreview || watch("thumbnail") ? (
                           <img
                             src={thumbnailPreview || watch("thumbnail")}
                             alt="Thumbnail Preview"
                             className="w-24 h-24 rounded-lg object-cover border border-gray-200"
                           />
-                        )}
-                        {!thumbnailPreview && !watch("thumbnail") && (
+                        ) : (
                           <div className="w-24 h-24 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
                             <UploadCloud className="w-6 h-6 text-gray-400" />
                           </div>
@@ -485,15 +571,40 @@ export function BusinessProfileForm({
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="about">About Your Business *</Label>
+                    <Textarea
+                      id="about"
+                      {...register("about")}
+                      placeholder="Tell us about your business, your specialties, and what makes you unique"
+                      rows={4}
+                      className={`${
+                        errors.about ? "border-red-500" : "border-gray-300"
+                      } focus:ring-blue-500 focus:border-blue-500`}
+                    />
+                    {errors.about && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.about.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Gallery (unchanged) */}
+                  <div className="space-y-2 md:col-span-2">
                     <Label>Business Images (Gallery)</Label>
                     <div className="flex flex-wrap gap-4 mb-2">
                       {media.map((img, idx) => (
                         <div key={idx} className="relative group">
-                          <img src={img.url} alt="Business Media" className="w-24 h-24 object-cover rounded-lg border" />
+                          <img
+                            src={img.url}
+                            alt="Business Media"
+                            className="w-24 h-24 object-cover rounded-lg border"
+                          />
                           <button
                             type="button"
                             className="absolute top-1 right-1 bg-white/80 rounded-full p-1 text-gray-700 hover:text-red-600"
-                            onClick={() => setMedia(media.filter((_, i) => i !== idx))}
+                            onClick={() =>
+                              setMedia(media.filter((_, i) => i !== idx))
+                            }
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -505,34 +616,45 @@ export function BusinessProfileForm({
                       accept="image/*"
                       multiple
                       ref={mediaInputRef}
-                      style={{ display: 'none' }}
+                      style={{ display: "none" }}
                       onChange={async (e) => {
                         const files = Array.from(e.target.files || []);
                         if (!files.length) return;
                         setMediaUploading(true);
                         try {
-                          const token = localStorage.getItem('token');
+                          const token = localStorage.getItem("token");
                           for (const file of files) {
                             const formData = new FormData();
-                            formData.append('file', file);
-                            const res = await fetch(`${API_URL}/business/upload-thumbnail`, {
-                              method: 'POST',
-                              headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-                              body: formData,
-                            });
+                            formData.append("file", file);
+                            const res = await fetch(
+                              `${API_URL}/business/upload-thumbnail`,
+                              {
+                                method: "POST",
+                                headers: token
+                                  ? { Authorization: `Bearer ${token}` }
+                                  : undefined,
+                                body: formData,
+                              }
+                            );
                             const data = await res.json();
-                            if (!res.ok || !data.url) throw new Error(data.message || 'Upload failed');
-                            setMedia((prev) => [...prev, { url: data.url, type: 'photo' }]);
+                            if (!res.ok || !data.url)
+                              throw new Error(data.message || "Upload failed");
+                            setMedia((prev) => [
+                              ...prev,
+                              { url: data.url, type: "photo" },
+                            ]);
                           }
                         } catch (err) {
                           toast({
-                            title: 'Error',
-                            description: 'One or more images failed to upload. Please try again.',
-                            variant: 'destructive',
+                            title: "Error",
+                            description:
+                              "One or more images failed to upload. Please try again.",
+                            variant: "destructive",
                           });
                         } finally {
                           setMediaUploading(false);
-                          if (mediaInputRef.current) mediaInputRef.current.value = '';
+                          if (mediaInputRef.current)
+                            mediaInputRef.current.value = "";
                         }
                       }}
                     />
@@ -551,29 +673,13 @@ export function BusinessProfileForm({
                       ) : (
                         <>
                           <UploadCloud className="w-4 h-4" />
-                          {media.length ? 'Add More Images' : 'Upload Images'}
+                          {media.length ? "Add More Images" : "Upload Images"}
                         </>
                       )}
                     </Button>
-                    <p className="text-xs text-gray-500 mt-2">You can upload multiple images (JPG or PNG).</p>
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="about">About Your Business *</Label>
-                    <Textarea
-                      id="about"
-                      {...register("about")}
-                      placeholder="Tell us about your business, your specialties, and what makes you unique"
-                      rows={4}
-                      className={`${
-                        errors.about ? "border-red-500" : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.about && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.about.message}
-                      </p>
-                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      You can upload multiple images (JPG or PNG).
+                    </p>
                   </div>
                 </div>
               </Fragment>
@@ -668,170 +774,180 @@ export function BusinessProfileForm({
             {/* Step 3: Contact & Location */}
             {step === 2 && (
               <Fragment>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="contactEmail">Contact Email *</Label>
-                    <Input
-                      id="contactEmail"
-                      type="email"
-                      {...register("contactEmail")}
-                      placeholder="business@example.com"
-                      className={`${
-                        errors.contactEmail
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.contactEmail && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.contactEmail.message}
-                      </p>
-                    )}
-                  </div>
+                <div className="space-y-6">
+                  <AddressContactPicker
+                    apiKey="AIzaSyD6R6cRTzjXV-QDOVy9VIp_kytIpZmBUzs" // <-- use env key
+                    value={mapAddress}
+                    onChange={setMapAddress}
+                    showContactFields={true} // users can change phone/email inside picker
+                  />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="contactPhone">Phone Number *</Label>
-                    <Input
-                      id="contactPhone"
-                      type="tel"
-                      {...register("contactPhone")}
-                      placeholder="+1 (555) 123-4567"
-                      className={`${
-                        errors.contactPhone
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.contactPhone && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.contactPhone.message}
-                      </p>
-                    )}
-                  </div>
+                  {/* Editable address details (ensures Zod validation can pass) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="addressLine1">Street Address *</Label>
+                      <Input
+                        id="addressLine1"
+                        {...register("address.addressLine1")}
+                        placeholder="123 Main St"
+                        className={`${
+                          errors.address?.addressLine1
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.address?.addressLine1 && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address.addressLine1.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="website">Website (Optional)</Label>
-                    <Input
-                      id="website"
-                      type="url"
-                      {...register("website")}
-                      placeholder="https://yourbusiness.com"
-                      className={`${
-                        errors.website ? "border-red-500" : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.website && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.website.message}
-                      </p>
-                    )}
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="addressLine2">
+                        Apartment, suite, etc. (Optional)
+                      </Label>
+                      <Input
+                        id="addressLine2"
+                        {...register("address.addressLine2")}
+                        placeholder="Apt 2B"
+                        className="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="addressLine1">Street Address *</Label>
-                    <Input
-                      id="addressLine1"
-                      {...register("address.addressLine1")}
-                      placeholder="123 Main St"
-                      className={`${
-                        errors.address?.addressLine1
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.address?.addressLine1 && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.address.addressLine1.message}
-                      </p>
-                    )}
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City *</Label>
+                      <Input
+                        id="city"
+                        {...register("address.city")}
+                        placeholder="City"
+                        className={`${
+                          errors.address?.city
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.address?.city && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address.city.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="addressLine2">
-                      Apartment, suite, etc. (Optional)
-                    </Label>
-                    <Input
-                      id="addressLine2"
-                      {...register("address.addressLine2")}
-                      placeholder="Apt 2B"
-                      className="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State/Province *</Label>
+                      <Input
+                        id="state"
+                        {...register("address.state")}
+                        placeholder="State"
+                        className={`${
+                          errors.address?.state
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.address?.state && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address.state.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      {...register("address.city")}
-                      placeholder="New York"
-                      className={`${
-                        errors.address?.city
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.address?.city && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.address.city.message}
-                      </p>
-                    )}
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country *</Label>
+                      <Input
+                        id="country"
+                        {...register("address.country")}
+                        placeholder="Country"
+                        className={`${
+                          errors.address?.country
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.address?.country && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address.country.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State/Province *</Label>
-                    <Input
-                      id="state"
-                      {...register("address.state")}
-                      placeholder="NY"
-                      className={`${
-                        errors.address?.state
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.address?.state && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.address.state.message}
-                      </p>
-                    )}
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pincode">Postal Code *</Label>
+                      <Input
+                        id="pincode"
+                        {...register("address.pincode")}
+                        placeholder="Postal Code"
+                        className={`${
+                          errors.address?.pincode
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.address?.pincode && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address.pincode.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country *</Label>
-                    <Input
-                      id="country"
-                      {...register("address.country")}
-                      placeholder="United States"
-                      className={`${
-                        errors.address?.country
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.address?.country && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.address.country.message}
-                      </p>
-                    )}
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactEmail">Contact Email *</Label>
+                      <Input
+                        id="contactEmail"
+                        type="email"
+                        {...register("contactEmail")}
+                        placeholder="business@example.com"
+                        className={`${
+                          errors.contactEmail
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.contactEmail && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.contactEmail.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="pincode">Postal Code *</Label>
-                    <Input
-                      id="pincode"
-                      {...register("address.pincode")}
-                      placeholder="10001"
-                      className={`${
-                        errors.address?.pincode
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.address?.pincode && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.address.pincode.message}
-                      </p>
-                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPhone">Phone Number *</Label>
+                      <Input
+                        id="contactPhone"
+                        type="tel"
+                        {...register("contactPhone")}
+                        placeholder="+1 (555) 123-4567"
+                        className={`${
+                          errors.contactPhone
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.contactPhone && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.contactPhone.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="website">Website (Optional)</Label>
+                      <Input
+                        id="website"
+                        type="url"
+                        {...register("website")}
+                        placeholder="https://yourbusiness.com"
+                        className={`${
+                          errors.website ? "border-red-500" : "border-gray-300"
+                        } focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.website && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.website.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Fragment>
@@ -845,7 +961,6 @@ export function BusinessProfileForm({
                     <h3 className="text-lg font-medium text-gray-900">
                       Business Preferences
                     </h3>
-
                     <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                       <div>
                         <Label
@@ -903,7 +1018,7 @@ export function BusinessProfileForm({
               </Fragment>
             )}
 
-            {/* Navigation Buttons */}
+            {/* Navigation */}
             <div className="flex justify-between pt-8 border-t border-gray-200">
               {step > 0 ? (
                 <Button
@@ -916,8 +1031,9 @@ export function BusinessProfileForm({
                   Back
                 </Button>
               ) : (
-                <div></div>
+                <div />
               )}
+
               {step < steps.length - 1 ? (
                 <Button type="button" onClick={handleNext} className="gap-2">
                   Next

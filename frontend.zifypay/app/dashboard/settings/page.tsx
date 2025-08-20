@@ -15,6 +15,7 @@ import {
 import { API_URL } from "@/lib/const";
 import { useRouter } from "next/navigation";
 import { BusinessProfileForm } from "@/components/BusinessProfileForm";
+import { BusinessProfileForm1 } from "@/components/ui/Businessprofileform";
 
 export default function SettingsPage() {
   const [formData, setFormData] = useState({
@@ -285,7 +286,7 @@ export default function SettingsPage() {
   
         <div className="flex-1 flex flex-col gap-8 justify-center items-start p-6">
           {/* USER PROFILE */}
-          <Card className="w-full max-w-2xl border-0 shadow-lg mb-8">
+          <Card className="w-full max-w-6xl border-0 shadow-lg mb-8">
             <CardHeader>
               <CardTitle className="text-2xl">User Profile</CardTitle>
             </CardHeader>
@@ -443,7 +444,7 @@ export default function SettingsPage() {
           </Card>
   
           {/* BUSINESS PROFILE */}
-          <Card className="w-full max-w-2xl border-0 shadow-lg">
+          <Card className="w-full max-w-6xl border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Business Profile</CardTitle>
             </CardHeader>
@@ -452,7 +453,7 @@ export default function SettingsPage() {
                 <div>Loading business profile...</div>
               ) : business ? (
                 businessEditMode ? (
-                  <BusinessProfileForm
+                  <BusinessProfileForm1
                     initialData={business}
                     onSubmit={handleBusinessUpdate}
                     onCancel={() => setBusinessEditMode(false)}
