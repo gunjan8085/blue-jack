@@ -1,8 +1,8 @@
-"use client"
-
-import type React from "react"
-import { useState, useEffect } from "react"
-import axios from "axios"
+"use client";
+import Link from "next/link";
+import type React from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Upload,
   Loader2,
@@ -18,49 +18,53 @@ import {
   CheckCircle,
   AlertCircle,
   Settings,
-} from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import AppSidebar from "@/components/for-bussiness/AppSidebar"
-import { API_URL } from "@/lib/const"
-
+  UserPlus,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import AppSidebar from "@/components/for-bussiness/AppSidebar";
+import { API_URL } from "@/lib/const";
 
 interface Service {
-  _id?: string
-  title: string
-  description: string
-  hashtags: string
-  tags: string
-  price: number
-  duration: number
-  image: File | null
+  _id?: string;
+  title: string;
+  description: string;
+  hashtags: string;
+  tags: string;
+  price: number;
+  duration: number;
+  image: File | null;
 }
 
 interface CreatedService {
-  _id: string
-  title: string
-  description: string
-  price: number
-  duration: number
-  imageUrl?: string
-  hashtags?: string
-  tags?: string
-  [key: string]: any
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  duration: number;
+  imageUrl?: string;
+  hashtags?: string;
+  tags?: string;
+  [key: string]: any;
 }
 
 const ServiceManagerPage = () => {
-  const [services, setServices] = useState<Service[]>([])
-  const [createdServices, setCreatedServices] = useState<CreatedService[]>([])
-  const [allServices, setAllServices] = useState<CreatedService[]>([])
-  const [loading, setLoading] = useState(false)
-  const [fetchLoading, setFetchLoading] = useState(true)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
+  const [services, setServices] = useState<Service[]>([]);
+  const [createdServices, setCreatedServices] = useState<CreatedService[]>([]);
+  const [allServices, setAllServices] = useState<CreatedService[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [currentService, setCurrentService] = useState<Service>({
     title: "",
     description: "",
@@ -69,25 +73,27 @@ const ServiceManagerPage = () => {
     price: 0,
     duration: 0,
     image: null,
-  })
+  });
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // ... existing code ...
 
-    // Fetch all services from backend
+  // Fetch all services from backend
   const fetchServices = async () => {
     try {
-      const businessId = getBusinessId()
-      if (!businessId) return
-      const res = await axios.get(`${API_URL}/service-categories/${businessId}/service-categories`)
-      setAllServices(res.data.data || [])
+      const businessId = getBusinessId();
+      if (!businessId) return;
+      const res = await axios.get(
+        `${API_URL}/service-categories/${businessId}/service-categories`
+      );
+      setAllServices(res.data.data || []);
     } catch (error) {
-      console.error("Error fetching services:", error)
+      console.error("Error fetching services:", error);
     } finally {
-      setFetchLoading(false)
+      setFetchLoading(false);
     }
-  }
+  };
 
   // PUT: Update a service
   const handleUpdateService = async () => {
@@ -108,9 +114,13 @@ const ServiceManagerPage = () => {
       if (currentService.image) {
         formData.append("image", currentService.image);
       }
-      const res = await axios.patch(`${API_URL}/service-categories/${businessId}/service-categories/${editingServiceId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.patch(
+        `${API_URL}/service-categories/${businessId}/service-categories/${editingServiceId}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       setSuccessMsg("Service updated successfully.");
       await fetchServices();
       setIsEditing(false);
@@ -126,7 +136,8 @@ const ServiceManagerPage = () => {
       });
     } catch (err: any) {
       setErrorMsg(
-        err?.response?.data?.message || "Failed to update service. Please try again."
+        err?.response?.data?.message ||
+          "Failed to update service. Please try again."
       );
     }
     setLoading(false);
@@ -134,14 +145,17 @@ const ServiceManagerPage = () => {
 
   // DELETE: Delete a service
   const handleDeleteService = async (serviceId: string) => {
-    if (!window.confirm("Are you sure you want to delete this service?")) return;
+    if (!window.confirm("Are you sure you want to delete this service?"))
+      return;
     setLoading(true);
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
       const businessId = getBusinessId();
       if (!businessId) throw new Error("Missing business ID");
-      await axios.delete(`${API_URL}/service-categories/${businessId}/service-categories/${serviceId}`);
+      await axios.delete(
+        `${API_URL}/service-categories/${businessId}/service-categories/${serviceId}`
+      );
       setSuccessMsg("Service deleted successfully.");
       await fetchServices();
       // If currently editing this service, reset form
@@ -160,81 +174,109 @@ const ServiceManagerPage = () => {
       }
     } catch (err: any) {
       setErrorMsg(
-        err?.response?.data?.message || "Failed to delete service. Please try again."
+        err?.response?.data?.message ||
+          "Failed to delete service. Please try again."
       );
     }
     setLoading(false);
   };
 
+  // // Handle Add Staff button click
+  // const handleAddStaff = () => {
+  //   // Add your logic here for adding staff
+  //   console.log("Add Staff clicked");
+  //   // You can navigate to a staff management page or open a modal
+  //   // Example: router.push('/staff-management') or setShowStaffModal(true)
+  // };
 
   // ... existing code ...
 
   const getBusinessId = (): string | null => {
     if (typeof window !== "undefined") {
-      const profile = localStorage.getItem("businessProfile")
+      const profile = localStorage.getItem("businessProfile");
       if (profile) {
         try {
-          return JSON.parse(profile)?._id || null
+          return JSON.parse(profile)?._id || null;
         } catch (error) {
-          console.error("Error parsing business profile:", error)
-          return null
+          console.error("Error parsing business profile:", error);
+          return null;
         }
       }
     }
-    return null
-  }
+    return null;
+  };
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const businessId = getBusinessId()
-        if (!businessId) return
+        const businessId = getBusinessId();
+        if (!businessId) return;
 
-        const res = await axios.get(`${API_URL}/service-categories/${businessId}/service-categories`)
-        setAllServices(res.data.data || [])
+        const res = await axios.get(
+          `${API_URL}/service-categories/${businessId}/service-categories`
+        );
+        setAllServices(res.data.data || []);
       } catch (error) {
-        console.error("Error fetching services:", error)
+        console.error("Error fetching services:", error);
       } finally {
-        setFetchLoading(false)
+        setFetchLoading(false);
       }
-    }
+    };
 
-    fetchServices()
-  }, [])
+    fetchServices();
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setCurrentService(prev => ({
+    setCurrentService((prev) => ({
       ...prev,
-      [name]: (name === 'price' || name === 'duration') ? Number(value) || 0 : value
+      [name]:
+        name === "price" || name === "duration" ? Number(value) || 0 : value,
     }));
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setCurrentService({ ...currentService, image: e.target.files[0] })
+      setCurrentService({ ...currentService, image: e.target.files[0] });
     }
-  }
+  };
 
   const addToQueue = () => {
-    if (!currentService.title || !currentService.price || !currentService.duration) {
-      return
+    if (
+      !currentService.title ||
+      !currentService.price ||
+      !currentService.duration
+    ) {
+      return;
     }
 
     if (isEditing && editingServiceId) {
       // Update existing service in the queue
-      setServices(services.map((s) => (s._id === editingServiceId ? { ...currentService } : s)))
+      setServices(
+        services.map((s) =>
+          s._id === editingServiceId ? { ...currentService } : s
+        )
+      );
 
       // Also update in allServices if it exists there
       if (allServices.some((s) => s._id === editingServiceId)) {
-        setAllServices(allServices.map((s) => (s._id === editingServiceId ? { ...s, ...currentService } : s)))
+        setAllServices(
+          allServices.map((s) =>
+            s._id === editingServiceId ? { ...s, ...currentService } : s
+          )
+        );
       }
 
-      setIsEditing(false)
-      setEditingServiceId(null)
+      setIsEditing(false);
+      setEditingServiceId(null);
     } else {
       // Add new service to queue
-      setServices([...services, { ...currentService, _id: `temp-${Date.now()}` }])
+      setServices([
+        ...services,
+        { ...currentService, _id: `temp-${Date.now()}` },
+      ]);
     }
 
     // Reset form
@@ -246,12 +288,12 @@ const ServiceManagerPage = () => {
       price: 0,
       duration: 0,
       image: null,
-    })
-  }
+    });
+  };
 
   const removeFromQueue = (index: number) => {
-    setServices(services.filter((_, i) => i !== index))
-  }
+    setServices(services.filter((_, i) => i !== index));
+  };
 
   const handleEditService = (service: CreatedService) => {
     setCurrentService({
@@ -263,78 +305,85 @@ const ServiceManagerPage = () => {
       price: service.price,
       duration: service.duration,
       image: null,
-    })
-    setIsEditing(true)
-    setEditingServiceId(service._id)
+    });
+    setIsEditing(true);
+    setEditingServiceId(service._id);
 
     // Scroll to form
-    const formElement = document.getElementById("service-form")
+    const formElement = document.getElementById("service-form");
     if (formElement) {
-      formElement.scrollIntoView({ behavior: "smooth" })
+      formElement.scrollIntoView({ behavior: "smooth" });
     }
-  }
+  };
 
   const uploadServices = async () => {
-    setLoading(true)
-    const businessId = getBusinessId()
+    setLoading(true);
+    const businessId = getBusinessId();
     if (!businessId) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
-    const newCreated: CreatedService[] = []
+    const newCreated: CreatedService[] = [];
 
     for (const s of services) {
-      const formData = new FormData()
-      if (s.image) formData.append("image", s.image)
-      formData.append("title", s.title)
-      formData.append("description", s.description)
-      formData.append("hashtags", s.hashtags)
-      formData.append("tags", s.tags)
-      formData.append("price", s.price.toString())
-      formData.append("duration", s.duration.toString())
+      const formData = new FormData();
+      if (s.image) formData.append("image", s.image);
+      formData.append("title", s.title);
+      formData.append("description", s.description);
+      formData.append("hashtags", s.hashtags);
+      formData.append("tags", s.tags);
+      formData.append("price", s.price.toString());
+      formData.append("duration", s.duration.toString());
 
       try {
-        let res: any
+        let res: any;
         if (s._id && !s._id.startsWith("temp-")) {
           // Update existing service
           res = await axios.put(`${API_URL}/services/${s._id}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
-          })
+          });
           // Update in allServices
-          setAllServices(allServices.map((item) => (item._id === s._id ? res.data.data : item)))
+          setAllServices(
+            allServices.map((item) =>
+              item._id === s._id ? res.data.data : item
+            )
+          );
         } else {
           // Create new service
-          res = await axios.post(`${API_URL}/service-categories/${businessId}/service-categories`, formData)
-          const newService = res.data.data.serviceCategories?.at(-1)
+          res = await axios.post(
+            `${API_URL}/service-categories/${businessId}/service-categories`,
+            formData
+          );
+          const newService = res.data.data.serviceCategories?.at(-1);
           if (newService) {
-            newCreated.push(newService)
+            newCreated.push(newService);
           }
         }
       } catch (err) {
-        console.error("Upload/Update failed:", err)
+        console.error("Upload/Update failed:", err);
       }
     }
 
-    setCreatedServices([...createdServices, ...newCreated])
+    setCreatedServices([...createdServices, ...newCreated]);
     setAllServices((prev) => {
-      const updatedServices = [...prev]
+      const updatedServices = [...prev];
       services.forEach((service) => {
         if (service._id && !service._id.startsWith("temp-")) {
-          const index = updatedServices.findIndex((s) => s._id === service._id)
+          const index = updatedServices.findIndex((s) => s._id === service._id);
           if (index !== -1) {
-            updatedServices[index] = { ...updatedServices[index], ...service }
+            updatedServices[index] = { ...updatedServices[index], ...service };
           }
         }
-      })
-      return [...updatedServices, ...newCreated]
-    })
+      });
+      return [...updatedServices, ...newCreated];
+    });
 
-    setServices([])
-    setLoading(false)
-  }
+    setServices([]);
+    setLoading(false);
+  };
 
   if (loading) {
     return (
@@ -347,16 +396,23 @@ const ServiceManagerPage = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mx-auto mb-4"></div>
                 <div
                   className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-r-pink-400 animate-spin mx-auto"
-                  style={{ animationDirection: "reverse", animationDuration: "1.5s" }}
+                  style={{
+                    animationDirection: "reverse",
+                    animationDuration: "1.5s",
+                  }}
                 ></div>
               </div>
-              <p className="text-gray-600 font-medium">Creating amazing services...</p>
-              <p className="text-sm text-gray-400 mt-1">Please wait while we process your request</p>
+              <p className="text-gray-600 font-medium">
+                Creating amazing services...
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                Please wait while we process your request
+              </p>
             </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
-    )
+    );
   }
 
   return (
@@ -371,15 +427,23 @@ const ServiceManagerPage = () => {
                 <SidebarTrigger className="mr-4" />
                 <div className="inline-block">
                   <h1 className="text-3xl font-bold">Service Manager</h1>
-                  <p className="text-gray-600 mt-1">Create and manage your business services</p>
+                  <p className="text-gray-600 mt-1">
+                    Create and manage your business services
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                <Badge
+                  variant="secondary"
+                  className="bg-purple-100 text-purple-700"
+                >
                   {allServices.length} Total Services
                 </Badge>
                 {services.length > 0 && (
-                  <Badge variant="outline" className="border-orange-300 text-orange-700">
+                  <Badge
+                    variant="outline"
+                    className="border-orange-300 text-orange-700"
+                  >
                     {services.length} Queued
                   </Badge>
                 )}
@@ -391,10 +455,18 @@ const ServiceManagerPage = () => {
             {/* Service Creation Form */}
             <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm">
               <CardHeader className="bg-gray-200">
-                <CardTitle className="flex items-center space-x-2">
-                  <Plus className="h-6 w-6" />
-                  <span>Create New Service</span>
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center space-x-2">
+                    <Plus className="h-6 w-6" />
+                    <span>Create New Service</span>
+                  </CardTitle>
+                  <Link href="/dashboard/staff">
+                    <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Staff
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
               <CardContent className="p-8">
                 <div className="grid lg:grid-cols-2 gap-8">
@@ -504,7 +576,12 @@ const ServiceManagerPage = () => {
                       id="service-form"
                       onClick={isEditing ? handleUpdateService : addToQueue}
                       className="w-full h-12 bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                      disabled={loading || !currentService.title || !currentService.price || !currentService.duration}
+                      disabled={
+                        loading ||
+                        !currentService.title ||
+                        !currentService.price ||
+                        !currentService.duration
+                      }
                     >
                       {loading ? (
                         <Loader2 className="animate-spin h-5 w-5 mr-2" />
@@ -521,10 +598,14 @@ const ServiceManagerPage = () => {
                       )}
                     </Button>
                     {errorMsg && (
-                      <div className="mt-2 text-red-600 text-sm">{errorMsg}</div>
+                      <div className="mt-2 text-red-600 text-sm">
+                        {errorMsg}
+                      </div>
                     )}
                     {successMsg && (
-                      <div className="mt-2 text-green-600 text-sm">{successMsg}</div>
+                      <div className="mt-2 text-green-600 text-sm">
+                        {successMsg}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -572,11 +653,16 @@ const ServiceManagerPage = () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                        <h4 className="font-bold text-lg text-gray-800 mb-2">{service.title}</h4>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{service.description}</p>
+                        <h4 className="font-bold text-lg text-gray-800 mb-2">
+                          {service.title}
+                        </h4>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {service.description}
+                        </p>
                         <div className="flex items-center justify-between text-sm">
                           <span className="flex items-center text-green-600 font-semibold">
-                            <DollarSign className="h-4 w-4 mr-1" />₹{service.price}
+                            <DollarSign className="h-4 w-4 mr-1" />₹
+                            {service.price}
                           </span>
                           <span className="flex items-center text-blue-600">
                             <Clock className="h-4 w-4 mr-1" />
@@ -590,7 +676,11 @@ const ServiceManagerPage = () => {
                                 .split(",")
                                 .slice(0, 3)
                                 .map((tag, i) => (
-                                  <Badge key={i} variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                                  <Badge
+                                    key={i}
+                                    variant="secondary"
+                                    className="text-xs bg-orange-100 text-orange-700"
+                                  >
                                     {tag.trim()}
                                   </Badge>
                                 ))}
@@ -627,11 +717,16 @@ const ServiceManagerPage = () => {
                             className="w-full h-32 object-cover rounded-lg mb-4"
                           />
                         )}
-                        <h4 className="font-bold text-lg text-gray-800 mb-2">{service.title}</h4>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{service.description}</p>
+                        <h4 className="font-bold text-lg text-gray-800 mb-2">
+                          {service.title}
+                        </h4>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {service.description}
+                        </p>
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-green-600 font-semibold">
-                            <DollarSign className="h-4 w-4 mr-1" />₹{service.price}
+                            <DollarSign className="h-4 w-4 mr-1" />₹
+                            {service.price}
                           </span>
                           <span className="flex items-center text-blue-600">
                             <Clock className="h-4 w-4 mr-1" />
@@ -666,8 +761,12 @@ const ServiceManagerPage = () => {
                     <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
                       <Settings className="h-12 w-12 text-purple-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No Services Yet</h3>
-                    <p className="text-gray-500">Create your first service to get started!</p>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      No Services Yet
+                    </h3>
+                    <p className="text-gray-500">
+                      Create your first service to get started!
+                    </p>
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -689,11 +788,14 @@ const ServiceManagerPage = () => {
                         <h4 className="font-bold text-lg text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">
                           {service.title}
                         </h4>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-3">{service.description}</p>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                          {service.description}
+                        </p>
                         <Separator className="my-4" />
                         <div className="flex items-center justify-between">
                           <span className="flex items-center text-green-600 font-bold text-lg">
-                            <DollarSign className="h-5 w-5 mr-1" />₹{service.price}
+                            <DollarSign className="h-5 w-5 mr-1" />₹
+                            {service.price}
                           </span>
                           <span className="flex items-center text-blue-600 font-medium">
                             <Clock className="h-4 w-4 mr-1" />
@@ -732,7 +834,7 @@ const ServiceManagerPage = () => {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
-}
+  );
+};
 
-export default ServiceManagerPage
+export default ServiceManagerPage;

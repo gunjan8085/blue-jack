@@ -335,7 +335,7 @@ export function BusinessProfileForm1({
       });
 
       // Redirect (change this path if you want a different page)
-      window.location.href = `/dashboard`;
+      window.location.href = `/dashboard/services`;
       // e.g. window.location.href = `/business/${businessId}`;
       // or use router.push('/dashboard') if you prefer SPA navigation
     } catch (error: any) {
